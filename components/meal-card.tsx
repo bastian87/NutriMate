@@ -1,0 +1,65 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Clock, RefreshCw } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+
+interface MealCardProps {
+  title: string
+  recipe: string
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+  time: number
+  image: string
+}
+
+export default function MealCard({ title, recipe, calories, protein, carbs, fat, time, image }: MealCardProps) {
+  return (
+    <Card className="overflow-hidden">
+      <div className="relative h-48 w-full">
+        <Image src={image || "/placeholder.svg"} alt={recipe} fill className="object-cover" />
+        <div className="absolute top-2 left-2 bg-white dark:bg-gray-900 rounded-full px-3 py-1 text-sm font-medium">
+          {title}
+        </div>
+      </div>
+      <CardHeader>
+        <CardTitle className="text-lg">{recipe}</CardTitle>
+        <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+          <Clock className="h-4 w-4 mr-1" /> {time} min
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-4 gap-2 mb-4">
+          <div className="text-center">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Calories</p>
+            <p className="font-semibold">{calories}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Protein</p>
+            <p className="font-semibold">{protein}g</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Carbs</p>
+            <p className="font-semibold">{carbs}g</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Fat</p>
+            <p className="font-semibold">{fat}g</p>
+          </div>
+        </div>
+        <div className="flex space-x-2">
+          <Link href={`/recipes/${encodeURIComponent(recipe)}`} className="flex-1">
+            <Button variant="default" className="w-full">
+              View Recipe
+            </Button>
+          </Link>
+          <Button variant="outline" size="icon">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
