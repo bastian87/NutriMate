@@ -26,9 +26,9 @@ export default function OnboardingPage() {
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-3xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-serif font-bold mb-2">{t("onboarding.title")}</h1>
-        <p className="text-gray-600 dark:text-gray-400">{t("onboarding.subtitle")}</p>
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-bold mb-2">Welcome to NutriMate</h1>
+        <p className="text-gray-600 dark:text-gray-400">Let's personalize your nutrition journey</p>
       </div>
 
       <OnboardingForm onComplete={handleComplete} />

@@ -71,7 +71,7 @@ export default function PricingPage() {
     },
     {
       name: "Premium",
-      price: "$9.99",
+      price: "$4.99",
       period: "month",
       description: "Everything you need for complete nutrition management",
       features: [
@@ -91,12 +91,11 @@ export default function PricingPage() {
     },
     {
       name: "Premium Annual",
-      price: "$99.99",
+      price: "$49.99",
       period: "year",
-      description: "Best value - save 17% with annual billing",
+      description: "Best value - save 16.5% with annual billing",
       features: [
-        "Everything in Premium",
-        "2 months free",
+        "Everything in Premium",        
         "Advanced analytics",
         "Recipe recommendations",
         "Meal plan templates",

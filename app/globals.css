@@ -90,16 +90,32 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family:
+      var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   }
 
-  /* Add serif font styling for headings */
+  /* Use Inter for all text elements */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    font-family: var(--font-merriweather, serif);
+    font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  }
+
+  p,
+  span,
+  div,
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  label {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   }
 }
 

@@ -155,7 +155,7 @@ export function Sidebar() {
       >
         <div className="flex items-center justify-center h-16 border-b border-gray-200 dark:border-gray-800">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-primary font-bold text-xl">NM</span>
+            <img src="/logo.png" alt="NutriMate" className="w-8 h-8" />
             <AnimatePresence>
               {!isCollapsed && (
                 <motion.span
@@ -244,7 +244,7 @@ export function Sidebar() {
           >
             <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-800">
               <Link href="/" className="flex items-center gap-2">
-                <span className="text-primary font-bold text-xl">NM</span>
+                <img src="/logo.png" alt="NutriMate" className="w-8 h-8" />
                 <span className="font-bold text-xl">NutriMate</span>
               </Link>
               <button

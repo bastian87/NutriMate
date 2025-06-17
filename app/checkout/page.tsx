@@ -26,7 +26,7 @@ export default function CheckoutPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Pricing
           </Link>
-          <h1 className="text-3xl font-serif font-bold">Complete Your Subscription</h1>
+          <h1 className="text-3xl font-bold">Complete Your Subscription</h1>
           <p className="text-gray-600">Join thousands of users who love NutriMate Premium</p>
         </div>
 

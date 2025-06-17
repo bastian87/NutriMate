@@ -107,8 +107,10 @@ export default function RecipesPage() {
         className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
       >
         <div>
-          <h1 className="text-3xl font-serif font-bold mb-2">{t("recipes.title")}</h1>
-          <p className="text-gray-600 dark:text-gray-400">{t("recipes.subtitle", { count: recipes.length })}</p>
+          <h1 className="text-3xl font-bold mb-2">{t("recipes.title")}</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            {recipes.length > 0 ? `Discover ${recipes.length} delicious recipes` : "Discover delicious recipes"}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {user && (
@@ -323,7 +325,7 @@ export default function RecipesPage() {
 
                   <div className="p-4">
                     <Link href={`/recipes/${recipe.id}`}>
-                      <h3 className="font-serif font-bold text-lg group-hover:text-orange-600 transition-colors duration-200 mb-2 line-clamp-2">
+                      <h3 className="font-bold text-lg group-hover:text-orange-600 transition-colors duration-200 mb-2 line-clamp-2">
                         {recipe.name}
                       </h3>
                     </Link>

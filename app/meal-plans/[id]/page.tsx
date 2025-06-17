@@ -82,7 +82,7 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
           className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
         >
           <div>
-            <h1 className="text-3xl font-serif font-bold mb-2">{mealPlan.name}</h1>
+            <h1 className="text-3xl font-bold mb-2">{mealPlan.name}</h1>
             <p className="text-gray-600">
               {format(new Date(mealPlan.start_date), "MMMM d")} - {format(new Date(mealPlan.end_date), "MMMM d, yyyy")}
             </p>

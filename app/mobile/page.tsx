@@ -117,7 +117,7 @@ export default function MobileHomePage() {
             >
               <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
                 <Image
-                  src={recipe.imageUrl || "/placeholder.svg?height=100&width=100"}
+                  src={`/placeholder.svg?height=100&width=100&query=${recipe.name}`}
                   alt={recipe.name}
                   fill
                   className="object-cover"

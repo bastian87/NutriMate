@@ -13,12 +13,14 @@ import { NutritionSummary } from "@/components/nutrition-summary"
 import { useFavorites } from "@/hooks/use-favorites"
 import { useMealPlanHistory } from "@/hooks/use-meal-plan-history"
 import { motion } from "framer-motion"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function DashboardPage() {
   const [currentMealPlan, setCurrentMealPlan] = useState(mockMealPlan)
   const [isGenerating, setIsGenerating] = useState(false)
   const { favorites } = useFavorites()
   const { history, saveMealPlan } = useMealPlanHistory()
+  const { t } = useLanguage()
 
   // Calculate today's nutrition from current meal plan
   const todaysMeals = currentMealPlan.meals.filter((meal) => meal.day === 1)
@@ -54,17 +56,17 @@ export default function DashboardPage() {
         className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
       >
         <div>
-          <h1 className="text-3xl font-serif font-bold mb-2">Your Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-400">Track your nutrition and manage your meal plans</p>
+          <h1 className="text-3xl font-bold mb-2">{t("dashboard.welcome")}</h1>
+          <p className="text-gray-600 dark:text-gray-400">{t("dashboard.subtitle")}</p>
         </div>
         <div className="flex items-center gap-4">
           <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
             <Heart className="h-3 w-3 mr-1" />
-            {favorites.length} favorites
+            {favorites.length} {t("recipes.favorites")}
           </Badge>
           <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
             <History className="h-3 w-3 mr-1" />
-            {history.length} saved plans
+            {history.length} {t("dashboard.savedPlans")}
           </Badge>
         </div>
       </motion.div>
@@ -80,32 +82,36 @@ export default function DashboardPage() {
           <CardContent className="p-4 text-center">
             <TrendingUp className="h-8 w-8 text-orange-600 mx-auto mb-2" />
             <div className="text-2xl font-bold">{todaysNutrition.calories}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Calories Today</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t("dashboard.caloriesToday")}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-blue-600">{todaysNutrition.protein}g</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Protein</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t("common.protein")}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-green-600">{todaysNutrition.carbs}g</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Carbs</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t("common.carbs")}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-purple-600">{todaysNutrition.fat}g</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Fat</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t("common.fat")}</div>
           </CardContent>
         </Card>
       </motion.div>
 
       {/* Nutrition Summary */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <NutritionSummary data={todaysNutrition} title="Today's Nutrition" period="Based on your current meal plan" />
+        <NutritionSummary
+          data={todaysNutrition}
+          title={t("dashboard.todaysNutrition")}
+          period="Based on your current meal plan"
+        />
       </motion.div>
 
       {/* Current Meal Plan */}
@@ -113,7 +119,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
-              <CardTitle className="font-serif">Current Meal Plan</CardTitle>
+              <CardTitle className="font-bold">{t("dashboard.currentMealPlan")}</CardTitle>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -122,12 +128,12 @@ export default function DashboardPage() {
                   className="flex items-center gap-2"
                 >
                   <RefreshCw className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} />
-                  {isGenerating ? "Generating..." : "Generate New"}
+                  {isGenerating ? t("common.loading") : t("dashboard.generateNew")}
                 </Button>
                 <Link href="/meal-plans">
                   <Button variant="outline">
                     <Calendar className="h-4 w-4 mr-2" />
-                    View Full Plan
+                    {t("dashboard.viewFullPlan")}
                   </Button>
                 </Link>
               </div>
@@ -149,9 +155,9 @@ export default function DashboardPage() {
         {/* Meal Plan History */}
         <Card>
           <CardHeader>
-            <CardTitle className="font-serif flex items-center gap-2">
+            <CardTitle className="font-bold flex items-center gap-2">
               <History className="h-5 w-5" />
-              Recent Meal Plans
+              {t("dashboard.recentMealPlans")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -196,9 +202,9 @@ export default function DashboardPage() {
         {/* Favorite Recipes */}
         <Card>
           <CardHeader>
-            <CardTitle className="font-serif flex items-center gap-2">
+            <CardTitle className="font-bold flex items-center gap-2">
               <Heart className="h-5 w-5" />
-              Favorite Recipes
+              {t("dashboard.favoriteRecipes")}
             </CardTitle>
           </CardHeader>
           <CardContent>

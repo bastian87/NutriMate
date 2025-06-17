@@ -2,127 +2,270 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
-import { ChevronDown, Filter, Clock, Star } from "lucide-react"
-import MobileHeader from "@/components/mobile-header"
+import { Plus, Calendar, Users, Trash2, ChefHat, ArrowLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { useMealPlans } from "@/hooks/use-meal-plans"
+import { useAuthContext } from "@/components/auth/auth-provider"
+import { motion, AnimatePresence } from "framer-motion"
+import { format } from "date-fns"
 import MobileNavigation from "@/components/mobile-navigation"
 
 export default function MobileMealPlansPage() {
-  const [activeFilter, setActiveFilter] = useState("All")
+  const { user } = useAuthContext()
+  const { mealPlans, loading, error, deleteMealPlan, generateMealPlan } = useMealPlans()
+  const [isGenerating, setIsGenerating] = useState(false)
 
-  const filters = ["All", "Vegetarian", "High Protein", "Low Carb", "Keto", "Mediterranean"]
+  const handleGenerateMealPlan = async () => {
+    if (!user) return
 
-  const mealPlans = [
-    {
-      id: 1,
-      name: "Healthy Greens",
-      category: "Vegetarian",
-      image: "/placeholder.svg?height=200&width=300",
-      rating: 9.7,
-      time: "20-30 min",
-      price: "$",
-    },
-    {
-      id: 2,
-      name: "Protein Power",
-      category: "High Protein",
-      image: "/placeholder.svg?height=200&width=300",
-      rating: 9.3,
-      time: "15-25 min",
-      price: "$$",
-    },
-    {
-      id: 3,
-      name: "Mediterranean Diet",
-      category: "Mediterranean",
-      image: "/placeholder.svg?height=200&width=300",
-      rating: 9.5,
-      time: "25-35 min",
-      price: "$$",
-    },
-    {
-      id: 4,
-      name: "Keto Essentials",
-      category: "Keto",
-      image: "/placeholder.svg?height=200&width=300",
-      rating: 9.2,
-      time: "15-25 min",
-      price: "$$",
-    },
-    {
-      id: 5,
-      name: "Low Carb Favorites",
-      category: "Low Carb",
-      image: "/placeholder.svg?height=200&width=300",
-      rating: 9.0,
-      time: "20-30 min",
-      price: "$",
-    },
-  ]
+    setIsGenerating(true)
+    try {
+      await generateMealPlan()
+    } catch (error) {
+      console.error("Error generating meal plan:", error)
+      alert("Failed to generate meal plan. Please try again.")
+    } finally {
+      setIsGenerating(false)
+    }
+  }
 
-  const filteredMealPlans =
-    activeFilter === "All" ? mealPlans : mealPlans.filter((plan) => plan.category === activeFilter)
+  const handleDeleteMealPlan = async (id: string) => {
+    if (confirm("Are you sure you want to delete this meal plan?")) {
+      try {
+        await deleteMealPlan(id)
+      } catch (error) {
+        console.error("Error deleting meal plan:", error)
+        alert("Failed to delete meal plan. Please try again.")
+      }
+    }
+  }
+
+  if (!user) {
+    return (
+      <div className="bg-cream-50 min-h-screen pb-20">
+        {/* Mobile Header */}
+        <div className="bg-white shadow-sm px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/mobile" className="flex items-center text-gray-600">
+              <ArrowLeft className="h-5 w-5 mr-2" />
+              Back
+            </Link>
+            <h1 className="text-lg font-bold">Meal Plans</h1>
+            <div className="w-8"></div>
+          </div>
+        </div>
+
+        <div className="text-center py-12 px-4">
+          <ChefHat className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-4">Sign in to view your meal plans</h2>
+          <p className="text-gray-600 mb-6">Create personalized meal plans and track your nutrition goals.</p>
+          <Link href="/login">
+            <Button className="bg-orange-600 hover:bg-orange-700">Sign In</Button>
+          </Link>
+        </div>
+        <MobileNavigation />
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-cream-50 min-h-screen pb-20">
+        {/* Mobile Header */}
+        <div className="bg-white shadow-sm px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/mobile" className="flex items-center text-gray-600">
+              <ArrowLeft className="h-5 w-5 mr-2" />
+              Back
+            </Link>
+            <h1 className="text-lg font-bold">Meal Plans</h1>
+            <div className="w-8"></div>
+          </div>
+        </div>
+
+        <div className="text-center py-12 px-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading meal plans...</p>
+        </div>
+        <MobileNavigation />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-cream-50 min-h-screen pb-20">
+        {/* Mobile Header */}
+        <div className="bg-white shadow-sm px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/mobile" className="flex items-center text-gray-600">
+              <ArrowLeft className="h-5 w-5 mr-2" />
+              Back
+            </Link>
+            <h1 className="text-lg font-bold">Meal Plans</h1>
+            <div className="w-8"></div>
+          </div>
+        </div>
+
+        <div className="text-center py-12 px-4">
+          <p className="text-red-600 mb-4">Error loading meal plans: {error}</p>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
+        </div>
+        <MobileNavigation />
+      </div>
+    )
+  }
 
   return (
     <div className="bg-cream-50 min-h-screen pb-20">
-      <MobileHeader />
-
-      {/* Filters */}
-      <div className="px-4 mt-4">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center space-x-2">
-            <h2 className="text-xl font-bold">Meal Plans</h2>
-            <ChevronDown className="h-5 w-5" />
-          </div>
-          <button className="flex items-center space-x-1">
-            <Filter className="h-5 w-5" />
-            <span className="text-sm">Filters</span>
-          </button>
-        </div>
-
-        <div className="flex overflow-x-auto pb-4 -mx-4 px-4 space-x-2 hide-scrollbar">
-          {filters.map((filter) => (
-            <button
-              key={filter}
-              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap ${
-                activeFilter === filter ? "bg-green-600 text-white" : "bg-white text-gray-700 border border-gray-200"
-              }`}
-              onClick={() => setActiveFilter(filter)}
-            >
-              {filter}
-            </button>
-          ))}
+      {/* Mobile Header */}
+      <div className="bg-white shadow-sm px-4 py-4">
+        <div className="flex items-center justify-between">
+          <Link href="/mobile" className="flex items-center text-gray-600">
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back
+          </Link>
+          <h1 className="text-lg font-bold">Meal Plans</h1>
+          <div className="w-8"></div>
         </div>
       </div>
 
-      {/* Meal Plans */}
-      <div className="px-4 mt-4 pb-20">
-        <div className="grid grid-cols-1 gap-4">
-          {filteredMealPlans.map((plan) => (
-            <Link href={`/mobile/meal-plans/${plan.id}`} key={plan.id}>
-              <div className="bg-white rounded-lg overflow-hidden shadow-sm">
-                <div className="relative h-48">
-                  <Image src={plan.image || "/placeholder.svg"} alt={plan.name} fill className="object-cover" />
-                  <div className="absolute top-2 right-2 bg-white text-green-600 rounded-full px-2 py-1 text-sm font-bold flex items-center">
-                    <Star className="h-4 w-4 mr-1 fill-green-600 text-green-600" />
-                    {plan.rating}
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-bold">{plan.name}</h3>
-                  <div className="flex justify-between items-center mt-2">
-                    <div className="text-sm text-gray-600">{plan.category}</div>
-                    <div className="text-sm text-gray-600">{plan.price}</div>
-                  </div>
-                  <div className="flex items-center mt-2 text-sm text-gray-600">
-                    <Clock className="h-4 w-4 mr-1" />
-                    {plan.time}
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+      {/* Content */}
+      <div className="px-4 py-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          <p className="text-gray-600 mb-4">Plan your meals for the week and stay on track with your nutrition goals</p>
+          <Button
+            onClick={handleGenerateMealPlan}
+            disabled={isGenerating}
+            className="w-full bg-orange-600 hover:bg-orange-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {isGenerating ? "Generating..." : "Generate Meal Plan"}
+          </Button>
+        </motion.div>
+
+        {/* Meal Plans Grid */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="space-y-4">
+          <AnimatePresence>
+            {mealPlans.map((mealPlan, index) => (
+              <motion.div
+                key={mealPlan.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="hover:shadow-lg transition-all duration-300">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">{mealPlan.name}</CardTitle>
+                        <CardDescription className="mt-1">
+                          {format(new Date(mealPlan.start_date), "MMM d")} -{" "}
+                          {format(new Date(mealPlan.end_date), "MMM d, yyyy")}
+                        </CardDescription>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteMealPlan(mealPlan.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-1" />7 days
+                        </div>
+                        <div className="flex items-center">
+                          <Users className="h-4 w-4 mr-1" />
+                          21 meals
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-sm">This week includes:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          <Badge variant="outline" className="text-xs">
+                            Breakfast
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            Lunch
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            Dinner
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <Link href={`/meal-plans/${mealPlan.id}`}>
+                        <Button className="w-full bg-orange-600 hover:bg-orange-700">View Meal Plan</Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Empty State */}
+        {mealPlans.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-12 bg-white rounded-lg"
+          >
+            <ChefHat className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No meal plans yet</h3>
+            <p className="text-gray-600 mb-6 px-4">
+              Create your first meal plan to start planning your weekly meals and nutrition.
+            </p>
+            <Button
+              onClick={handleGenerateMealPlan}
+              disabled={isGenerating}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {isGenerating ? "Generating..." : "Create Your First Meal Plan"}
+            </Button>
+          </motion.div>
+        )}
+
+        {/* Quick Stats */}
+        {mealPlans.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-8 grid grid-cols-3 gap-4"
+          >
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-orange-600">{mealPlans.length}</div>
+                <div className="text-xs text-gray-600">Total Plans</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-orange-600">{mealPlans.length * 21}</div>
+                <div className="text-xs text-gray-600">Planned Meals</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-orange-600">{mealPlans.length * 7}</div>
+                <div className="text-xs text-gray-600">Days Planned</div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </div>
 
       <MobileNavigation />

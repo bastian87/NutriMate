@@ -98,7 +98,7 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
 
       {/* Recipe Header */}
       <div className="container mx-auto px-4 py-6">
-        <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">{recipe.name}</h1>
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">{recipe.name}</h1>
         <p className="text-xl text-gray-700 mb-6">{recipe.description}</p>
 
         <div className="flex flex-wrap items-center gap-6 mb-8">
@@ -164,7 +164,7 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Left Column - Ingredients */}
           <div>
-            <h2 className="text-2xl font-serif font-bold mb-6">Ingredients</h2>
+            <h2 className="text-2xl font-bold mb-6">Ingredients</h2>
             <p className="text-gray-700 mb-4">For {recipe.servings} servings</p>
 
             {/* Debug info */}
@@ -231,7 +231,7 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
             <Separator className="my-8" />
 
             <div className="space-y-4">
-              <h3 className="font-serif font-bold text-xl">Nutrition Information</h3>
+              <h3 className="font-bold text-xl">Nutrition Information</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-500">Calories</p>
@@ -255,7 +255,7 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
 
           {/* Right Column - Instructions */}
           <div className="lg:col-span-2">
-            <h2 className="text-2xl font-serif font-bold mb-6">Preparation</h2>
+            <h2 className="text-2xl font-bold mb-6">Preparation</h2>
 
             <ol className="space-y-8">
               {recipe.instructions ? (
@@ -287,7 +287,7 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
             <Separator className="my-10" />
 
             <div>
-              <h3 className="font-serif font-bold text-xl mb-4">Notes</h3>
+              <h3 className="font-bold text-xl mb-4">Notes</h3>
               <p className="text-gray-700">
                 This recipe can be prepared ahead of time and refrigerated for up to 3 days. For dietary modifications,
                 feel free to substitute ingredients based on your preferences.

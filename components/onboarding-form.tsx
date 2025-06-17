@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, ArrowRight, AlertCircle } from "lucide-react"
 import { saveUserPreferences } from "@/lib/mock-services"
 import { useLanguage } from "@/lib/i18n/context"
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog"
 
 type HealthGoal = "weight_loss" | "muscle_gain" | "maintenance" | "health_improvement" | "energy_boost"
 type DietaryPreference = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "keto" | "paleo"
@@ -54,6 +55,8 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft">("cm")
   const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg")
+  const [showConfirmation, setShowConfirmation] = useState(false)
+  const [userEmail, setUserEmail] = useState<string>("")
 
   const totalSteps = 4
 
@@ -184,8 +187,8 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
         const dataToSubmit = {
           age: formData.age,
           gender: formData.gender,
-          height: heightUnit === "cm" ? formData.height : formData.height * 30.48, // Store in cm
-          weight: weightUnit === "kg" ? formData.weight : formData.weight * 0.453592, // Store in kg
+          height: heightUnit === "cm" ? formData.height : formData.height * 30.48,
+          weight: weightUnit === "kg" ? formData.weight : formData.weight * 0.453592,
           activityLevel: formData.activityLevel,
           healthGoal: formData.healthGoal,
           calorieTarget: formData.calorieTarget,
@@ -195,11 +198,10 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
 
         await saveUserPreferences(dataToSubmit)
 
-        if (onComplete) {
-          onComplete(dataToSubmit)
-        } else {
-          router.push("/dashboard")
-        }
+        // Get user email for confirmation dialog
+        // You might need to get this from auth context or pass it as prop
+        setUserEmail("user@example.com") // Replace with actual user email
+        setShowConfirmation(true)
       } catch (error) {
         console.error("Error saving preferences:", error)
         setErrors({ general: t("validation.savingError") })
@@ -738,6 +740,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
             {!isSubmitting && currentStep !== totalSteps && <ArrowRight className="ml-2 h-4 w-4" />}
           </Button>
         </div>
+        <ConfirmationDialog open={showConfirmation} onOpenChange={setShowConfirmation} email={userEmail} />
       </CardContent>
     </Card>
   )

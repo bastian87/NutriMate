@@ -89,7 +89,7 @@ export default function MealPlansPage() {
         className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
       >
         <div>
-          <h1 className="text-3xl font-serif font-bold mb-2">My Meal Plans</h1>
+          <h1 className="text-3xl font-bold mb-2">My Meal Plans</h1>
           <p className="text-gray-600 dark:text-gray-400">
             Plan your meals for the week and stay on track with your nutrition goals
           </p>
@@ -127,7 +127,7 @@ export default function MealPlansPage() {
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg font-serif">{mealPlan.name}</CardTitle>
+                      <CardTitle className="text-lg">{mealPlan.name}</CardTitle>
                       <CardDescription className="mt-1">
                         {format(new Date(mealPlan.start_date), "MMM d")} -{" "}
                         {format(new Date(mealPlan.end_date), "MMM d, yyyy")}

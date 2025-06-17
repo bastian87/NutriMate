@@ -18,7 +18,7 @@ export default function SubscriptionPage() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Dashboard
         </Link>
-        <h1 className="text-3xl font-serif font-bold">Subscription Management</h1>
+        <h1 className="text-3xl font-bold">Subscription Management</h1>
         <p className="text-gray-600">Manage your NutriMate subscription and billing</p>
       </div>
 

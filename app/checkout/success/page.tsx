@@ -43,7 +43,7 @@ export default function CheckoutSuccessPage() {
           <div className="mx-auto bg-green-100 rounded-full p-4 w-20 h-20 flex items-center justify-center mb-6">
             <CheckCircle className="h-12 w-12 text-green-600" />
           </div>
-          <CardTitle className="text-3xl font-serif mb-2">Welcome to NutriMate Premium!</CardTitle>
+          <CardTitle className="text-3xl font-bold mb-2">Welcome to NutriMate Premium!</CardTitle>
           <p className="text-gray-600 text-lg">Your 7-day free trial has started successfully</p>
         </CardHeader>
         <CardContent className="space-y-6">

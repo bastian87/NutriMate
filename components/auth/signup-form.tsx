@@ -18,7 +18,6 @@ export default function SignupForm() {
   const [fullName, setFullName] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
   const { signUp } = useAuthContext()
   const router = useRouter()
 
@@ -29,35 +28,13 @@ export default function SignupForm() {
 
     try {
       await signUp(email, password, fullName)
-      setSuccess(true)
-      // Note: User will need to verify email before they can sign in
+      // Redirect to onboarding after successful signup
+      router.push("/onboarding")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to sign up")
     } finally {
       setLoading(false)
     }
-  }
-
-  if (success) {
-    return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle className="text-center">Check Your Email</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Alert>
-            <AlertDescription>
-              We've sent you a confirmation email. Please check your inbox and click the link to verify your account.
-            </AlertDescription>
-          </Alert>
-          <div className="text-center mt-4">
-            <Link href="/login" className="text-orange-600 hover:underline">
-              Back to Sign In
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-    )
   }
 
   return (
