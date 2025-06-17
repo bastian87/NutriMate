@@ -1,4 +1,4 @@
-// Enhanced subscription service without AI features
+// Enhanced subscription service with proper free/premium feature gating
 
 export interface Subscription {
   id: string
@@ -16,16 +16,21 @@ export interface Subscription {
 }
 
 export interface UsageLimit {
+  recipes: {
+    saved: number
+    maxSaved: number
+  }
   mealPlans: {
-    used: number
-    limit: number
+    created: number
+    maxCreated: number
   }
-  groceryLists: {
-    used: number
-    limit: number
+  customRecipes: {
+    created: number
+    maxCreated: number
   }
-  nutritionTracking: {
-    enabled: boolean
+  exports: {
+    used: number
+    maxExports: number
   }
 }
 
@@ -45,19 +50,24 @@ const mockSubscriptions: Record<string, Subscription> = {
   },
 }
 
-// Mock usage data - in production, this would be in your database
+// Mock usage data with strict free tier limits
 const mockUsage: Record<string, UsageLimit> = {
   user1: {
+    recipes: {
+      saved: 0,
+      maxSaved: 10, // Free users can save up to 10 recipes
+    },
     mealPlans: {
-      used: 1,
-      limit: 1, // Free users get 1 week meal planning
+      created: 0,
+      maxCreated: 2, // Free users can create up to 2 meal plans
     },
-    groceryLists: {
+    customRecipes: {
+      created: 0,
+      maxCreated: 3, // Free users can create up to 3 custom recipes
+    },
+    exports: {
       used: 0,
-      limit: 3, // Free users get 3 grocery lists
-    },
-    nutritionTracking: {
-      enabled: false, // Premium feature
+      maxExports: 0, // Free users cannot export (premium only)
     },
   },
 }
@@ -84,16 +94,21 @@ export async function getUserUsage(userId: string): Promise<UsageLimit | null> {
   // In a real app, this would fetch from your database
   return (
     mockUsage[userId] || {
+      recipes: {
+        saved: 0,
+        maxSaved: 10,
+      },
       mealPlans: {
-        used: 0,
-        limit: 1,
+        created: 0,
+        maxCreated: 2,
       },
-      groceryLists: {
-        used: 0,
-        limit: 3,
+      customRecipes: {
+        created: 0,
+        maxCreated: 3,
       },
-      nutritionTracking: {
-        enabled: false,
+      exports: {
+        used: 0,
+        maxExports: 0,
       },
     }
   )
@@ -105,7 +120,7 @@ export async function checkFeatureAccess(userId: string, feature: string): Promi
 
   if (!subscription) return false
 
-  // Premium users have unlimited access
+  // Premium users have unlimited access to all features
   if (subscription.plan === "premium" && (subscription.status === "active" || subscription.status === "trialing")) {
     return true
   }
@@ -113,26 +128,42 @@ export async function checkFeatureAccess(userId: string, feature: string): Promi
   // Free users have limited access
   if (subscription.plan === "free") {
     switch (feature) {
+      // PREMIUM ONLY FEATURES - Free users cannot access these
+      case "export_meal_plans":
+        return false
+      case "priority_support":
+        return false
+      case "advanced_nutrition_analysis":
+        return false
+      case "unlimited_meal_plans":
+        return false
+      case "unlimited_custom_recipes":
+        return false
+      case "unlimited_saved_recipes":
+        return false
       case "advanced_meal_planning":
-        return false // Premium only
-      case "unlimited_grocery_lists":
-        return usage ? usage.groceryLists.used < usage.groceryLists.limit : false
-      case "nutrition_insights":
-        return false // Premium only
-      case "custom_dietary_restrictions":
-        return false // Premium only
-      case "meal_prep_optimization":
-        return false // Premium only
-      case "family_meal_planning":
-        return false // Premium only
-      case "export_features":
-        return false // Premium only
-      case "advanced_search_filters":
-        return false // Premium only
-      case "nutrition_goal_tracking":
-        return false // Premium only
+        return false
+      case "smart_grocery_lists":
+        return false
+
+      // LIMITED FREE FEATURES - Free users have usage limits
+      case "save_recipes":
+        return usage ? usage.recipes.saved < usage.recipes.maxSaved : false
+      case "create_meal_plans":
+        return usage ? usage.mealPlans.created < usage.mealPlans.maxCreated : false
+      case "create_custom_recipes":
+        return usage ? usage.customRecipes.created < usage.customRecipes.maxCreated : false
+
+      // BASIC FREE FEATURES - Always available to free users
+      case "browse_recipes":
+      case "basic_search":
+      case "view_nutrition_info":
+      case "basic_meal_planning":
+      case "basic_grocery_lists":
+        return true
+
       default:
-        return true // Basic features are free
+        return false // Default to restricted for unknown features
     }
   }
 
@@ -145,11 +176,17 @@ export async function incrementUsage(userId: string, feature: string): Promise<v
   if (!usage) return
 
   switch (feature) {
-    case "meal_plans":
-      usage.mealPlans.used += 1
+    case "save_recipes":
+      usage.recipes.saved += 1
       break
-    case "grocery_lists":
-      usage.groceryLists.used += 1
+    case "create_meal_plans":
+      usage.mealPlans.created += 1
+      break
+    case "create_custom_recipes":
+      usage.customRecipes.created += 1
+      break
+    case "exports":
+      usage.exports.used += 1
       break
   }
 
@@ -157,6 +194,76 @@ export async function incrementUsage(userId: string, feature: string): Promise<v
   if (typeof window !== "undefined") {
     localStorage.setItem(`usage_${userId}`, JSON.stringify(usage))
   }
+}
+
+export async function canUserAccessFeature(
+  userId: string,
+  feature: string,
+): Promise<{
+  canAccess: boolean
+  reason?: string
+  upgradeRequired?: boolean
+}> {
+  const subscription = await getUserSubscription(userId)
+  const usage = await getUserUsage(userId)
+
+  if (!subscription) {
+    return { canAccess: false, reason: "No subscription found" }
+  }
+
+  // Premium users have full access
+  if (subscription.plan === "premium" && (subscription.status === "active" || subscription.status === "trialing")) {
+    return { canAccess: true }
+  }
+
+  // Check free tier limitations
+  if (subscription.plan === "free") {
+    switch (feature) {
+      case "export_meal_plans":
+        return {
+          canAccess: false,
+          reason: "Export functionality is available for Premium users only",
+          upgradeRequired: true,
+        }
+      case "priority_support":
+        return {
+          canAccess: false,
+          reason: "Priority support is available for Premium users only",
+          upgradeRequired: true,
+        }
+      case "save_recipes":
+        if (usage && usage.recipes.saved >= usage.recipes.maxSaved) {
+          return {
+            canAccess: false,
+            reason: `You've reached the limit of ${usage.recipes.maxSaved} saved recipes. Upgrade to Premium for unlimited saves.`,
+            upgradeRequired: true,
+          }
+        }
+        return { canAccess: true }
+      case "create_meal_plans":
+        if (usage && usage.mealPlans.created >= usage.mealPlans.maxCreated) {
+          return {
+            canAccess: false,
+            reason: `You've reached the limit of ${usage.mealPlans.maxCreated} meal plans. Upgrade to Premium for unlimited meal plans.`,
+            upgradeRequired: true,
+          }
+        }
+        return { canAccess: true }
+      case "create_custom_recipes":
+        if (usage && usage.customRecipes.created >= usage.customRecipes.maxCreated) {
+          return {
+            canAccess: false,
+            reason: `You've reached the limit of ${usage.customRecipes.maxCreated} custom recipes. Upgrade to Premium for unlimited custom recipes.`,
+            upgradeRequired: true,
+          }
+        }
+        return { canAccess: true }
+      default:
+        return { canAccess: true }
+    }
+  }
+
+  return { canAccess: false, reason: "Access denied" }
 }
 
 export async function createSubscription(

@@ -21,6 +21,13 @@ export interface MealPlanWithMeals extends MealPlan {
   })[]
 }
 
+export interface ExportFormat {
+  format: "pdf" | "csv" | "json"
+  includeNutrition?: boolean
+  includeIngredients?: boolean
+  includeInstructions?: boolean
+}
+
 export class MealPlanService {
   private supabase = createClient()
 
@@ -272,6 +279,119 @@ export class MealPlanService {
       console.error("Error in deleteMealPlan:", error)
       throw error
     }
+  }
+
+  // NEW: Export meal plan functionality
+  async exportMealPlan(id: string, options: ExportFormat): Promise<string | Blob> {
+    try {
+      const mealPlan = await this.getMealPlanById(id)
+      if (!mealPlan) {
+        throw new Error("Meal plan not found")
+      }
+
+      switch (options.format) {
+        case "json":
+          return this.exportAsJSON(mealPlan, options)
+        case "csv":
+          return this.exportAsCSV(mealPlan, options)
+        case "pdf":
+          return this.exportAsPDF(mealPlan, options)
+        default:
+          throw new Error("Unsupported export format")
+      }
+    } catch (error) {
+      console.error("Error in exportMealPlan:", error)
+      throw error
+    }
+  }
+
+  private exportAsJSON(mealPlan: MealPlanWithMeals, options: ExportFormat): string {
+    const exportData = {
+      name: mealPlan.name,
+      startDate: mealPlan.start_date,
+      endDate: mealPlan.end_date,
+      meals: mealPlan.meals.map((meal) => ({
+        day: meal.day_number,
+        mealType: meal.meal_type,
+        recipe: {
+          name: meal.recipe.name,
+          prepTime: meal.recipe.prep_time_minutes,
+          cookTime: meal.recipe.cook_time_minutes,
+          ...(options.includeNutrition && {
+            nutrition: {
+              calories: meal.recipe.calories,
+              protein: meal.recipe.protein,
+              carbs: meal.recipe.carbs,
+              fat: meal.recipe.fat,
+            },
+          }),
+        },
+      })),
+    }
+
+    return JSON.stringify(exportData, null, 2)
+  }
+
+  private exportAsCSV(mealPlan: MealPlanWithMeals, options: ExportFormat): string {
+    const headers = ["Day", "Meal Type", "Recipe Name", "Prep Time (min)", "Cook Time (min)"]
+
+    if (options.includeNutrition) {
+      headers.push("Calories", "Protein (g)", "Carbs (g)", "Fat (g)")
+    }
+
+    const rows = [headers.join(",")]
+
+    mealPlan.meals.forEach((meal) => {
+      const row = [
+        meal.day_number,
+        meal.meal_type,
+        `"${meal.recipe.name}"`,
+        meal.recipe.prep_time_minutes,
+        meal.recipe.cook_time_minutes,
+      ]
+
+      if (options.includeNutrition) {
+        row.push(meal.recipe.calories, meal.recipe.protein, meal.recipe.carbs, meal.recipe.fat)
+      }
+
+      rows.push(row.join(","))
+    })
+
+    return rows.join("\n")
+  }
+
+  private exportAsPDF(mealPlan: MealPlanWithMeals, options: ExportFormat): string {
+    // For now, return a simple text format that could be converted to PDF
+    // In a real implementation, you'd use a PDF library like jsPDF
+    let content = `MEAL PLAN: ${mealPlan.name}\n`
+    content += `Period: ${mealPlan.start_date} to ${mealPlan.end_date}\n\n`
+
+    const groupedMeals = mealPlan.meals.reduce(
+      (acc, meal) => {
+        if (!acc[meal.day_number]) acc[meal.day_number] = []
+        acc[meal.day_number].push(meal)
+        return acc
+      },
+      {} as Record<number, typeof mealPlan.meals>,
+    )
+
+    Object.entries(groupedMeals).forEach(([day, meals]) => {
+      content += `DAY ${day}\n`
+      content += "=".repeat(20) + "\n"
+
+      meals.forEach((meal) => {
+        content += `${meal.meal_type.toUpperCase()}: ${meal.recipe.name}\n`
+        content += `Prep: ${meal.recipe.prep_time_minutes}min | Cook: ${meal.recipe.cook_time_minutes}min\n`
+
+        if (options.includeNutrition) {
+          content += `Calories: ${meal.recipe.calories} | Protein: ${meal.recipe.protein}g | Carbs: ${meal.recipe.carbs}g | Fat: ${meal.recipe.fat}g\n`
+        }
+        content += "\n"
+      })
+      content += "\n"
+    })
+
+    return content
   }
 }
 
