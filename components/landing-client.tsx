@@ -166,14 +166,14 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation Header */}
-      <header className="relative bg-white border-b border-gray-200">
+      <header className="relative bg-orange-50 border-b border-orange-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/landing" className="flex items-center space-x-2">
                 <div className="w-8 h-8 flex items-center justify-center">
-                  <Image src="/logo.png" alt="NutriMate Logo" width={32} height={32} className="rounded-lg" />
+                  <Image src="/logo-new.png" alt="NutriMate Logo" width={32} height={32} className="rounded-lg" />
                 </div>
                 <span className="text-xl font-bold text-gray-900">NutriMate</span>
               </Link>
@@ -518,7 +518,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 flex items-center justify-center">
-                  <Image src="/logo.png" alt="NutriMate Logo" width={32} height={32} className="rounded-lg" />
+                  <Image src="/logo-new.png" alt="NutriMate Logo" width={32} height={32} className="rounded-lg" />
                 </div>
                 <span className="text-xl font-bold">NutriMate</span>
               </div>

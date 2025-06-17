@@ -1,6 +1,7 @@
 "use client"
 import Link from "next/link"
 import { Search } from "lucide-react"
+import Image from "next/image"
 
 export default function MobileHeader() {
   return (
@@ -55,9 +56,7 @@ export default function MobileHeader() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2 mt-5">
-          <div className="w-10 h-10 rounded-full bg-green-800 flex items-center justify-center text-white font-bold text-xl">
-            N
-          </div>
+          <Image src="/logo-new.png" alt="NutriMate Logo" width={40} height={40} className="rounded-lg" />
         </Link>
 
         {/* Greeting */}

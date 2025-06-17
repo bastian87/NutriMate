@@ -21,13 +21,13 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const isLandingPage = pathname === "/landing"
 
   if (isLandingPage) {
-    return <div className="min-h-screen">{children}</div>
+    return <div className="min-h-screen bg-cream-50">{children}</div>
   }
 
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 p-4 lg:p-6 overflow-auto">{children}</main>
+      <main className="flex-1 p-4 lg:p-6 overflow-auto bg-cream-50">{children}</main>
     </div>
   )
 }

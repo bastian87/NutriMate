@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Home, BookOpen, ShoppingCart, User, Sparkles } from "lucide-react"
+import Image from "next/image"
 
 export function Navigation() {
   const pathname = usePathname()
@@ -20,8 +21,9 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold text-orange-600">
-              NutriMate
+            <Link href="/" className="flex items-center space-x-2">
+              <Image src="/logo-new.png" alt="NutriMate Logo" width={32} height={32} className="rounded-lg" />
+              <span className="text-2xl font-bold text-orange-600">NutriMate</span>
             </Link>
           </div>
 

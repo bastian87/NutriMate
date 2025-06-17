@@ -9,6 +9,7 @@ import { LanguageSelector } from "./language-selector"
 import useAuth from "@/hooks/use-auth"
 import { useSubscription } from "@/hooks/use-subscription"
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 
 // Icons
 import {
@@ -107,7 +108,7 @@ export function Sidebar() {
       href={item.href}
       className={cn(
         "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-        pathname === item.href ? "bg-primary text-white" : "hover:bg-gray-100 dark:hover:bg-gray-800",
+        pathname === item.href ? "bg-primary text-white" : "hover:bg-orange-100 dark:hover:bg-orange-200",
       )}
     >
       <item.icon size={20} />
@@ -151,11 +152,11 @@ export function Sidebar() {
         initial={false}
         animate={isCollapsed ? "collapsed" : "expanded"}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="hidden lg:flex flex-col h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden"
+        className="hidden lg:flex flex-col h-screen bg-orange-50 dark:bg-gray-900 border-r border-orange-200 dark:border-gray-800 shadow-sm overflow-hidden"
       >
-        <div className="flex items-center justify-center h-16 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-center h-16 border-b border-orange-200 dark:border-gray-800">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="NutriMate" className="w-8 h-8" />
+            <Image src="/logo-new.png" alt="NutriMate" width={32} height={32} className="rounded-lg" />
             <AnimatePresence>
               {!isCollapsed && (
                 <motion.span
@@ -178,7 +179,7 @@ export function Sidebar() {
 
           {user && accountItems.length > 0 && (
             <>
-              <div className="h-px bg-gray-200 dark:bg-gray-800 my-2"></div>
+              <div className="h-px bg-orange-200 dark:bg-gray-800 my-2"></div>
               {accountItems.map((item) => (
                 <NavItem key={item.href} item={item} isCollapsed={isCollapsed} />
               ))}
@@ -186,11 +187,11 @@ export function Sidebar() {
           )}
         </div>
 
-        <div className="p-2 border-t border-gray-200 dark:border-gray-800">
+        <div className="p-2 border-t border-orange-200 dark:border-gray-800">
           {user ? (
             <button
               onClick={signOut}
-              className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
             >
               <LogOut size={20} />
               <AnimatePresence>
@@ -204,7 +205,7 @@ export function Sidebar() {
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
             >
               <LogIn size={20} />
               <AnimatePresence>
@@ -223,7 +224,7 @@ export function Sidebar() {
 
           <button
             onClick={toggleSidebar}
-            className="flex items-center justify-center w-full mt-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="flex items-center justify-center w-full mt-2 p-2 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
             aria-label={isCollapsed ? t("navigation.expandSidebar") : t("navigation.collapseSidebar")}
           >
             {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -240,16 +241,16 @@ export function Sidebar() {
             exit="closed"
             variants={mobileSidebarVariants}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed top-0 left-0 z-50 w-64 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-lg lg:hidden"
+            className="fixed top-0 left-0 z-50 w-64 h-screen bg-orange-50 dark:bg-gray-900 border-r border-orange-200 dark:border-gray-800 shadow-lg lg:hidden"
           >
-            <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center justify-between h-16 px-4 border-b border-orange-200 dark:border-gray-800">
               <Link href="/" className="flex items-center gap-2">
-                <img src="/logo.png" alt="NutriMate" className="w-8 h-8" />
+                <Image src="/logo-new.png" alt="NutriMate" width={32} height={32} className="rounded-lg" />
                 <span className="font-bold text-xl">NutriMate</span>
               </Link>
               <button
                 onClick={() => setIsMobileOpen(false)}
-                className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="p-1 rounded-full hover:bg-orange-100 dark:hover:bg-orange-200"
               >
                 <X size={20} />
               </button>
@@ -262,7 +263,7 @@ export function Sidebar() {
                   href={item.href}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                    pathname === item.href ? "bg-primary text-white" : "hover:bg-gray-100 dark:hover:bg-gray-800",
+                    pathname === item.href ? "bg-primary text-white" : "hover:bg-orange-100 dark:hover:bg-orange-200",
                   )}
                 >
                   <item.icon size={20} />
@@ -272,14 +273,16 @@ export function Sidebar() {
 
               {user && accountItems.length > 0 && (
                 <>
-                  <div className="h-px bg-gray-200 dark:bg-gray-800 my-2"></div>
+                  <div className="h-px bg-orange-200 dark:bg-gray-800 my-2"></div>
                   {accountItems.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
                       className={cn(
                         "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                        pathname === item.href ? "bg-primary text-white" : "hover:bg-gray-100 dark:hover:bg-gray-800",
+                        pathname === item.href
+                          ? "bg-primary text-white"
+                          : "hover:bg-orange-100 dark:hover:bg-orange-200",
                       )}
                     >
                       <item.icon size={20} />
@@ -290,11 +293,11 @@ export function Sidebar() {
               )}
             </div>
 
-            <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div className="p-4 border-t border-orange-200 dark:border-gray-800">
               {user ? (
                 <button
                   onClick={signOut}
-                  className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
                 >
                   <LogOut size={20} />
                   <span>{t("auth.signOut")}</span>
@@ -302,7 +305,7 @@ export function Sidebar() {
               ) : (
                 <Link
                   href="/login"
-                  className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
                 >
                   <LogIn size={20} />
                   <span>{t("auth.signIn")}</span>
