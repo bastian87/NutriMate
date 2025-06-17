@@ -88,7 +88,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
       description: "Track macros, calories, and nutrients with detailed analytics and insights.",
       color: "text-blue-600",
       bgColor: "bg-blue-50",
-      image: "/images/nutrition-tracking.png",
+      image: "/images/nutrition-tracking-insights.png",
     },
     {
       icon: Sparkles,
@@ -96,7 +96,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
       description: "Discover thousands of healthy recipes with smart filtering and recommendations.",
       color: "text-purple-600",
       bgColor: "bg-purple-50",
-      image: "/images/man-cooking.png",
+      image: "/images/recipe-discovery-smart.png",
     },
     {
       icon: Users,
@@ -104,7 +104,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
       description: "Share recipes, meal plans, and connect with like-minded health enthusiasts.",
       color: "text-green-600",
       bgColor: "bg-green-50",
-      image: "/images/comprehensive-planning.png",
+      image: "/images/community-driven.png",
     },
   ]
 

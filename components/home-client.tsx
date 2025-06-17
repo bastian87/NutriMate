@@ -71,133 +71,6 @@ export default function HomeClient({ isLoggedIn, featuredRecipes }: HomeClientPr
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-orange-50 via-white to-blue-50 py-20 lg:py-32">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-center lg:text-left"
-            >
-              <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-                {t("home.title")}
-              </h1>
-              <p className="mt-6 text-lg text-gray-600 sm:text-xl">{t("home.subtitle")}</p>
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-start">
-                {isLoggedIn ? (
-                  <Link href="/dashboard">
-                    <Button size="lg" className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700">
-                      {t("home.goToDashboard")}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                ) : (
-                  <>
-                    <Link href="/signup">
-                      <Button size="lg" className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700">
-                        {t("home.getStarted")}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Link href="/pricing">
-                      <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                        {t("home.exploreRecipes")}
-                      </Button>
-                    </Link>
-                  </>
-                )}
-              </div>
-              <div className="mt-8 flex items-center justify-center gap-8 lg:justify-start">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">10K+</div>
-                  <div className="text-sm text-gray-600">Active Users</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">50K+</div>
-                  <div className="text-sm text-gray-600">Recipes</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">4.9★</div>
-                  <div className="text-sm text-gray-600">User Rating</div>
-                </div>
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative"
-            >
-              <div className="relative mx-auto max-w-lg">
-                <div className="absolute -inset-4 rounded-2xl bg-gradient-to-r from-orange-400 to-red-400 opacity-20 blur-2xl" />
-                <Image
-                  src="/images/meal-planning-mobile.png"
-                  alt="Meal planning app illustration"
-                  width={500}
-                  height={400}
-                  className="relative rounded-2xl shadow-2xl"
-                  priority
-                />
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center"
-          >
-            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">{t("home.featuresTitle")}</h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Comprehensive tools and features designed to make nutrition planning simple and effective.
-            </p>
-          </motion.div>
-          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {features.map((feature, index) => {
-              const Icon = feature.icon
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  onMouseEnter={() => setHoveredFeature(index)}
-                  onMouseLeave={() => setHoveredFeature(null)}
-                >
-                  <Card
-                    className={`h-full transition-all duration-300 ${hoveredFeature === index ? "shadow-lg scale-105" : ""}`}
-                  >
-                    <CardContent className="p-6 text-center">
-                      <div className="mx-auto mb-4 w-24 h-24 relative">
-                        <Image
-                          src={feature.image || "/placeholder.svg"}
-                          alt={feature.title}
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-900">{feature.title}</h3>
-                      <p className="mt-2 text-sm text-gray-600">{feature.description}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* Featured Recipes Section */}
       {featuredRecipes.length > 0 && (
         <section className="py-20 bg-gray-50">
@@ -226,10 +99,13 @@ export default function HomeClient({ isLoggedIn, featuredRecipes }: HomeClientPr
                   <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105">
                     <div className="relative h-48">
                       <Image
-                        src={recipe.image || "/placeholder.svg?height=200&width=300&query=healthy food"}
+                        src={recipe.image || "/placeholder.svg?height=200&width=300&query=delicious healthy recipe"}
                         alt={recipe.name}
                         fill
                         className="object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "/placeholder.svg?height=200&width=300"
+                        }}
                       />
                       <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-white px-2 py-1 text-xs font-medium">
                         <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
