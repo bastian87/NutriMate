@@ -80,6 +80,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
       description: t("home.planMealsDesc"),
       color: "text-orange-600",
       bgColor: "bg-orange-50",
+      image: "/images/smart-meal-planning.png",
     },
     {
       icon: Target,
@@ -87,6 +88,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
       description: "Track macros, calories, and nutrients with detailed analytics and insights.",
       color: "text-blue-600",
       bgColor: "bg-blue-50",
+      image: "/images/nutrition-tracking.png",
     },
     {
       icon: Sparkles,
@@ -94,6 +96,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
       description: "Discover thousands of healthy recipes with smart filtering and recommendations.",
       color: "text-purple-600",
       bgColor: "bg-purple-50",
+      image: "/images/man-cooking.png",
     },
     {
       icon: Users,
@@ -101,6 +104,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
       description: "Share recipes, meal plans, and connect with like-minded health enthusiasts.",
       color: "text-green-600",
       bgColor: "bg-green-50",
+      image: "/images/comprehensive-planning.png",
     },
   ]
 
@@ -311,8 +315,8 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
               <div className="relative mx-auto max-w-lg">
                 <div className="absolute -inset-4 rounded-2xl bg-gradient-to-r from-orange-400 to-red-400 opacity-20 blur-2xl" />
                 <Image
-                  src="/images/cooking-illustration.png"
-                  alt="Healthy cooking illustration"
+                  src="/images/meal-planning-mobile.png"
+                  alt="Meal planning app illustration"
                   width={500}
                   height={400}
                   className="relative rounded-2xl shadow-2xl"
@@ -356,10 +360,13 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                     className={`h-full transition-all duration-300 ${hoveredFeature === index ? "shadow-lg scale-105" : ""}`}
                   >
                     <CardContent className="p-6 text-center">
-                      <div
-                        className={`mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg ${feature.bgColor}`}
-                      >
-                        <Icon className={`h-6 w-6 ${feature.color}`} />
+                      <div className="mx-auto mb-4 w-24 h-24 relative">
+                        <Image
+                          src={feature.image || "/placeholder.svg"}
+                          alt={feature.title}
+                          fill
+                          className="object-contain"
+                        />
                       </div>
                       <h3 className="text-lg font-bold text-gray-900">{feature.title}</h3>
                       <p className="mt-2 text-sm text-gray-600">{feature.description}</p>
