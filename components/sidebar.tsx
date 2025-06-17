@@ -1,15 +1,15 @@
 "use client"
 
-import { useState, useEffect, useContext } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
+import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSelector } from "./language-selector"
 import useAuth from "@/hooks/use-auth"
 import { useSubscription } from "@/hooks/use-subscription"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
-import { LanguageContext } from "@/lib/i18n/context"
 
 // Icons
 import {
@@ -27,50 +27,13 @@ import {
   User,
 } from "lucide-react"
 
-// Safe language context hook
-function useSafeLanguage() {
-  const context = useContext(LanguageContext)
-
-  if (!context) {
-    // Return fallback function if context is not available
-    return {
-      language: "en",
-      setLanguage: () => {},
-      t: (key: string, fallback?: string) => {
-        const fallbacks = {
-          "navigation.dashboard": "Dashboard",
-          "navigation.recipes": "Recipes",
-          "navigation.groceryList": "Grocery List",
-          "navigation.mealPlans": "Meal Plans",
-          "navigation.savedRecipes": "Saved Recipes",
-          "navigation.account": "Account",
-          "auth.signOut": "Sign Out",
-          "auth.signIn": "Sign In",
-          "navigation.closeMenu": "Close Menu",
-          "navigation.openMenu": "Open Menu",
-          "navigation.expandSidebar": "Expand Sidebar",
-          "navigation.collapseSidebar": "Collapse Sidebar",
-        }
-        return fallbacks[key] || fallback || key
-      },
-    }
-  }
-
-  return context
-}
-
 export function Sidebar() {
-  const { t } = useSafeLanguage()
+  const { t } = useLanguage()
   const pathname = usePathname()
   const { user, signOut } = useAuth()
   const { subscription } = useSubscription()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   // Check if screen is mobile on mount and when resized
   useEffect(() => {
@@ -92,11 +55,6 @@ export function Sidebar() {
   useEffect(() => {
     setIsMobileOpen(false)
   }, [pathname])
-
-  // Don't render until mounted to prevent hydration issues
-  if (!mounted) {
-    return null
-  }
 
   const navigationItems = [
     { name: t("navigation.dashboard"), href: "/dashboard", icon: Home },

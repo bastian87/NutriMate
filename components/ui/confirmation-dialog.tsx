@@ -14,7 +14,7 @@ export function ConfirmationDialog({ open, onOpenChange, email }: ConfirmationDi
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
             <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
           </div>
@@ -24,11 +24,7 @@ export function ConfirmationDialog({ open, onOpenChange, email }: ConfirmationDi
               <Mail className="h-4 w-4" />
               <span>We'll send a confirmation email to:</span>
             </div>
-            {email && (
-              <div className="font-medium text-foreground bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-md border">
-                {email}
-              </div>
-            )}
+            {email && <div className="font-medium text-foreground">{email}</div>}
             <div className="text-sm text-muted-foreground mt-3">
               Please check your inbox and click the confirmation link to activate your account.
             </div>
