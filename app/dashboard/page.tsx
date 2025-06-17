@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, RefreshCw, Heart, History, TrendingUp } from "lucide-react"
+import { Calendar, RefreshCw, Heart, History, TrendingUp, Home } from "lucide-react"
 import Link from "next/link"
 import { mockMealPlan } from "@/lib/mock-data"
 import { generateMealPlan } from "@/lib/mock-services"
@@ -14,6 +14,7 @@ import { useFavorites } from "@/hooks/use-favorites"
 import { useMealPlanHistory } from "@/hooks/use-meal-plan-history"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
+import useAuth from "@/hooks/use-auth"
 
 export default function DashboardPage() {
   const [currentMealPlan, setCurrentMealPlan] = useState(mockMealPlan)
@@ -21,6 +22,49 @@ export default function DashboardPage() {
   const { favorites } = useFavorites()
   const { history, saveMealPlan } = useMealPlanHistory()
   const { t } = useLanguage()
+
+  const { user, loading } = useAuth()
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show sign-in prompt if user is not authenticated
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Card className="w-full max-w-md">
+            <CardContent className="p-8 text-center">
+              <Home className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Dashboard Access Required</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">Please sign in to access your dashboard.</p>
+              <div className="space-y-3">
+                <Link href="/login" className="w-full">
+                  <Button className="w-full">Sign In</Button>
+                </Link>
+                <Link href="/signup" className="w-full">
+                  <Button variant="outline" className="w-full">
+                    Create Account
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
 
   // Calculate today's nutrition from current meal plan
   const todaysMeals = currentMealPlan.meals.filter((meal) => meal.day === 1)

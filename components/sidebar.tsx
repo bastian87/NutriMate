@@ -57,7 +57,7 @@ export function Sidebar() {
   }, [pathname])
 
   const navigationItems = [
-    { name: t("navigation.home"), href: "/", icon: Home },
+    { name: t("navigation.dashboard"), href: "/dashboard", icon: Home },
     { name: t("navigation.recipes"), href: "/recipes", icon: ChefHat },
     { name: t("navigation.groceryList"), href: "/grocery-list", icon: ShoppingCart },
     { name: t("navigation.mealPlans"), href: "/meal-plans", icon: Calendar },

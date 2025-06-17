@@ -16,6 +16,7 @@ export const translations = {
     },
     navigation: {
       home: "Home",
+      dashboard: "Dashboard",
       recipes: "Recipes",
       mealPlans: "Meal Plans",
       groceryList: "Grocery List",
@@ -229,6 +230,7 @@ export const translations = {
     },
     navigation: {
       home: "Inicio",
+      dashboard: "Panel",
       recipes: "Recetas",
       mealPlans: "Planes de comida",
       groceryList: "Lista de compras",
@@ -447,6 +449,7 @@ export const translations = {
     },
     navigation: {
       home: "Accueil",
+      dashboard: "Tableau de Bord",
       recipes: "Recettes",
       mealPlans: "Plans de repas",
       groceryList: "Liste d'épicerie",

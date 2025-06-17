@@ -135,40 +135,6 @@ export default function LoginForm() {
                   Sign up
                 </Link>
               </div>
-
-              {/* Test credentials for development */}
-              <div className="mt-4 p-3 bg-blue-50 rounded-md border border-blue-200">
-                <p className="text-xs text-blue-800 font-medium mb-2">For Testing:</p>
-                <div className="space-y-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-xs"
-                    onClick={createTestUser}
-                    disabled={creatingTestUser}
-                  >
-                    {creatingTestUser ? "Creating Test User..." : "Create Test User"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-xs"
-                    onClick={() => {
-                      setEmail("test@nutrimate.com")
-                      setPassword("testpassword123")
-                    }}
-                  >
-                    Use Test Credentials
-                  </Button>
-                </div>
-                <p className="text-xs text-blue-700 mt-2">
-                  Email: test@nutrimate.com
-                  <br />
-                  Password: testpassword123
-                </p>
-              </div>
             </div>
           </form>
         </CardContent>
