@@ -82,8 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName?: string): Promise<void> => {
     try {
-      setLoading(true)
-      console.log("Attempting to sign up with email:", email)
+      console.log("Starting signUp process for:", email)
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -100,33 +99,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error
       }
 
-      console.log("Sign up successful:", data.user?.email)
+      console.log("Supabase signup successful:", {
+        user: data.user?.email,
+        needsConfirmation: !data.user?.email_confirmed_at,
+      })
 
-      // Create user profile if signup was successful and user is confirmed
-      if (data.user && !data.user.email_confirmed_at) {
-        console.log("User needs to confirm email before profile creation")
-      } else if (data.user) {
-        console.log("Creating user profile...")
-        const { error: profileError } = await supabase.from("users").insert({
-          id: data.user.id,
-          email: data.user.email!,
-          full_name: fullName || "",
-        })
-
-        if (profileError) {
-          console.error("Error creating user profile:", profileError)
-          // Don't throw here, as the auth was successful
-        } else {
-          console.log("User profile created successfully")
-        }
-      }
-
-      setUser(data.user)
+      // Don't set loading or user state here - let the auth state change handle it
+      // Just resolve the promise to indicate success
+      return Promise.resolve()
     } catch (error) {
-      console.error("Error signing up:", error)
+      console.error("Error in signUp:", error)
       throw error
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -144,15 +127,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }
-
-  // Show loading spinner while auth is initializing
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-      </div>
-    )
   }
 
   return <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>{children}</AuthContext.Provider>
