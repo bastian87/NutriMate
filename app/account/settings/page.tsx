@@ -19,13 +19,26 @@ const AccountSettingsPage = () => {
       if (user) {
         try {
           const response = await fetch(`/api/user/preferences?userId=${user.id}`)
+
+          // Check if response is ok and content-type is JSON
           if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`)
+            console.warn(`API returned ${response.status}: ${response.statusText}`)
+            setUserPreferences({})
+            return
           }
+
+          const contentType = response.headers.get("content-type")
+          if (!contentType || !contentType.includes("application/json")) {
+            console.warn("API did not return JSON response")
+            setUserPreferences({})
+            return
+          }
+
           const data = await response.json()
           setUserPreferences(data)
         } catch (error) {
           console.error("Failed to fetch user preferences:", error)
+          // Set empty preferences as fallback
           setUserPreferences({})
         }
       }
@@ -53,7 +66,7 @@ const AccountSettingsPage = () => {
     <div className="bg-gray-100 min-h-screen py-12">
       <div className="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-8">
         <h1 className="text-3xl font-bold mb-6">Account Settings</h1>
-        <Tabs defaultValue="profile" className="w-[400px]">
+        <Tabs defaultValue="profile" className="w-full">
           <TabsList>
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="health">Health</TabsTrigger>
