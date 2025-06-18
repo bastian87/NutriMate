@@ -1,2 +1,1 @@
-```typescriptreact file="lib/mock-data.ts" isDeleted="true"
-...deleted...
+export const mockRecipes = [];

@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createServerSupabaseClient } from "@/lib/supabase/server" // Import fixed to use the correct function name
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient()
+    const supabase = createServerSupabaseClient()
     const {
       data: { user },
       error: authError,
