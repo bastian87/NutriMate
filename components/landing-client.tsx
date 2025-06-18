@@ -124,7 +124,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
       buttonText: "Get Started",
       buttonVariant: "outline" as const,
       popular: false,
-      action: () => (window.location.href = isLoggedIn ? "/recipes" : "/signup"),
+      action: (variantId?: string) => (window.location.href = isLoggedIn ? "/recipes" : "/signup"),
     },
     {
       name: "Premium",
@@ -144,7 +144,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
       buttonVariant: "default" as const,
       popular: true,
       variantId: process.env.NEXT_PUBLIC_LEMONSQUEEZY_MONTHLY_VARIANT_ID!,
-      action: (variantId: string) => handleSubscribe(variantId, "monthly"),
+      action: (variantId?: string) => handleSubscribe(variantId!, "monthly"),
     },
     {
       name: "Premium Annual",
@@ -163,7 +163,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
       buttonVariant: "default" as const,
       popular: false,
       variantId: process.env.NEXT_PUBLIC_LEMONSQUEEZY_ANNUAL_VARIANT_ID!,
-      action: (variantId: string) => handleSubscribe(variantId, "annual"),
+      action: (variantId?: string) => handleSubscribe(variantId!, "annual"),
     },
   ]
 
@@ -443,7 +443,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                         if (plan.variantId) {
                           plan.action(plan.variantId)
                         } else {
-                          plan.action()
+                          plan.action(undefined)
                         }
                       }}
                       disabled={loading === plan.name.toLowerCase()}

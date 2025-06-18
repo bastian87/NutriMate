@@ -1,6 +1,21 @@
 import LandingClient from "@/components/landing-client"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
-import { recipeService } from "@/lib/services/recipe-service"
+import { recipeService, type RecipeWithDetails } from "@/lib/services/recipe-service"
+
+interface Recipe {
+  id: string
+  name: string
+  description: string
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+  time: number
+  difficulty: string
+  image: string
+  rating: number
+  reviews: number
+}
 
 export default async function LandingPage() {
   const supabase = createServerSupabaseClient()
@@ -10,7 +25,7 @@ export default async function LandingPage() {
   const isLoggedIn = !!session
 
   // Get featured recipes using the existing getRecipes function
-  let featuredRecipes = []
+  let featuredRecipes: RecipeWithDetails[] = []
   try {
     featuredRecipes = await recipeService.getRecipes()
   } catch (error) {
@@ -18,5 +33,21 @@ export default async function LandingPage() {
     featuredRecipes = []
   }
 
-  return <LandingClient isLoggedIn={isLoggedIn} featuredRecipes={featuredRecipes} />
+  // Transform RecipeWithDetails to Recipe format
+  const transformedRecipes: Recipe[] = featuredRecipes.map(recipe => ({
+    id: recipe.id,
+    name: recipe.name,
+    description: recipe.description || "",
+    calories: recipe.calories,
+    protein: recipe.protein,
+    carbs: recipe.carbs,
+    fat: recipe.fat,
+    time: recipe.prep_time_minutes + recipe.cook_time_minutes,
+    difficulty: recipe.difficulty_level || "medium",
+    image: recipe.image_url || "/placeholder-recipe.jpg",
+    rating: recipe.average_rating,
+    reviews: recipe.total_ratings || 0
+  }))
+
+  return <LandingClient isLoggedIn={isLoggedIn} featuredRecipes={transformedRecipes} />
 }
