@@ -1,39 +1,57 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Crown, Calendar, CreditCard, Settings } from "lucide-react"
+import { supabase } from "@/lib/supabase/client"
 
 interface SubscriptionStatusProps {
   userId?: string
 }
 
-// Mock subscription data
-const mockSubscription = {
-  plan: "premium",
-  status: "active",
-  currentPeriodEnd: new Date(Date.now() + 23 * 24 * 60 * 60 * 1000), // 23 days from now
-  cancelAtPeriodEnd: false,
-  trialEnd: null,
-  billingCycle: "monthly" as "monthly" | "annual",
-  amount: 4.99,
-}
-
 export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) {
-  const [subscription, setSubscription] = useState(mockSubscription)
+  const [subscription, setSubscription] = useState<any | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!userId) return
+    const fetchSubscription = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const { data, error } = await supabase
+          .from("user_subscriptions")
+          .select("*")
+          .eq("user_id", userId)
+          .maybeSingle()
+        if (error) throw error
+        setSubscription(data)
+      } catch (err: any) {
+        setError("No se pudo obtener la información de la suscripción.")
+        setSubscription(null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchSubscription()
+  }, [userId])
 
   const handleCancelSubscription = async () => {
     setIsLoading(true)
+    setError(null)
+    setMessage(null)
     try {
-      // In a real app, this would call your API to cancel the subscription
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      setSubscription((prev) => ({ ...prev, cancelAtPeriodEnd: true }))
-      alert("Subscription will be cancelled at the end of the current billing period.")
-    } catch (error) {
-      alert("Failed to cancel subscription. Please try again.")
+      const res = await fetch("/api/user/subscription", { method: "POST" })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Error desconocido")
+      setSubscription((prev: any) => ({ ...prev, cancelAtPeriodEnd: true }))
+      setMessage("La suscripción se cancelará al final del período de facturación actual.")
+    } catch (error: any) {
+      setError(error.message || "No se pudo cancelar la suscripción. Intenta nuevamente.")
     } finally {
       setIsLoading(false)
     }
@@ -41,30 +59,92 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
 
   const handleReactivateSubscription = async () => {
     setIsLoading(true)
+    setError(null)
+    setMessage(null)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      setSubscription((prev) => ({ ...prev, cancelAtPeriodEnd: false }))
-      alert("Subscription reactivated successfully!")
-    } catch (error) {
-      alert("Failed to reactivate subscription. Please try again.")
+      const res = await fetch("/api/user/subscription", { method: "PATCH" })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Error desconocido")
+      setSubscription((prev: any) => ({ ...prev, cancelAtPeriodEnd: false }))
+      setMessage("¡Suscripción reactivada exitosamente!")
+    } catch (error: any) {
+      setError(error.message || "No se pudo reactivar la suscripción. Intenta nuevamente.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleManageBilling = async () => {
+    setIsLoading(true)
+    setError(null)
+    setMessage(null)
+    try {
+      const res = await fetch("/api/user/subscription", { method: "GET" })
+      const data = await res.json()
+      if (!res.ok || !data.url) throw new Error(data.error || "No se pudo obtener el portal de facturación.")
+      window.open(data.url, "_blank")
+    } catch (error: any) {
+      setError(error.message || "No se pudo abrir el portal de facturación.")
     } finally {
       setIsLoading(false)
     }
   }
 
   const getStatusBadge = () => {
-    if (subscription.cancelAtPeriodEnd) {
+    if (subscription?.cancelAtPeriodEnd) {
       return (
         <Badge variant="destructive" className="bg-yellow-100 text-yellow-800">
           Cancelling
         </Badge>
       )
     }
-    if (subscription.status === "active") {
+    if (subscription?.status === "active") {
       return <Badge className="bg-green-100 text-green-800">Active</Badge>
     }
-    return <Badge variant="secondary">{subscription.status}</Badge>
+    return <Badge variant="secondary">{subscription?.status}</Badge>
   }
+
+  if (isLoading && !subscription) {
+    return (
+      <Card><CardContent className="py-8 text-center">Cargando suscripción...</CardContent></Card>
+    )
+  }
+
+  if (!subscription) {
+    // Usuario sin suscripción activa
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Crown className="h-5 w-5 text-orange-600" />
+            Subscription Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold capitalize">Free Plan</h3>
+              <p className="text-sm text-gray-600">$0/month</p>
+            </div>
+            <Badge className="bg-gray-100 text-gray-800">Free</Badge>
+          </div>
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700">
+            Disfruta de las funciones básicas de NutriMate. ¡Actualiza a Premium para desbloquear todo el potencial!
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Mapear los campos de la suscripción real
+  const {
+    plan_name = "Premium",
+    status = "active",
+    current_period_end,
+    cancel_at_period_end = false,
+    billing_cycle = "monthly",
+    amount = 4.99,
+  } = subscription || {}
 
   return (
     <Card>
@@ -77,9 +157,9 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold capitalize">{subscription.plan} Plan</h3>
+            <h3 className="font-semibold capitalize">{plan_name} Plan</h3>
             <p className="text-sm text-gray-600">
-              ${subscription.amount}/{subscription.billingCycle === "monthly" ? "month" : "year"}
+              ${amount}/{billing_cycle === "monthly" ? "month" : "year"}
             </p>
           </div>
           {getStatusBadge()}
@@ -89,25 +169,27 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
           <div className="flex items-center gap-2 text-sm">
             <Calendar className="h-4 w-4 text-gray-500" />
             <span>
-              {subscription.cancelAtPeriodEnd
-                ? `Expires on ${subscription.currentPeriodEnd.toLocaleDateString()}`
-                : `Renews on ${subscription.currentPeriodEnd.toLocaleDateString()}`}
+              {cancel_at_period_end
+                ? `Expires on ${current_period_end ? new Date(current_period_end).toLocaleDateString() : "-"}`
+                : `Renews on ${current_period_end ? new Date(current_period_end).toLocaleDateString() : "-"}`}
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <CreditCard className="h-4 w-4 text-gray-500" />
-            <span>Billing cycle: {subscription.billingCycle}</span>
+            <span>Billing cycle: {billing_cycle}</span>
           </div>
         </div>
 
-        {subscription.cancelAtPeriodEnd ? (
+        {cancel_at_period_end ? (
           <div className="space-y-3">
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
               <p className="text-sm text-yellow-800">
-                Your subscription will end on {subscription.currentPeriodEnd.toLocaleDateString()}. You'll lose access
+                Your subscription will end on {current_period_end} ? new Date(current_period_end).toLocaleDateString() : "-". You'll lose access
                 to Premium features after this date.
               </p>
             </div>
+            {message && <div className="text-green-700 bg-green-50 border border-green-200 rounded p-2 text-sm">{message}</div>}
+            {error && <div className="text-red-700 bg-red-50 border border-red-200 rounded p-2 text-sm">{error}</div>}
             <Button
               onClick={handleReactivateSubscription}
               disabled={isLoading}
@@ -118,7 +200,7 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
           </div>
         ) : (
           <div className="space-y-2">
-            <Button variant="outline" className="w-full" disabled={isLoading}>
+            <Button variant="outline" className="w-full" disabled={isLoading} onClick={handleManageBilling}>
               <Settings className="h-4 w-4 mr-2" />
               Manage Billing
             </Button>
@@ -130,6 +212,8 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
             >
               {isLoading ? "Processing..." : "Cancel Subscription"}
             </Button>
+            {message && <div className="text-green-700 bg-green-50 border border-green-200 rounded p-2 text-sm mt-2">{message}</div>}
+            {error && <div className="text-red-700 bg-red-50 border border-red-200 rounded p-2 text-sm mt-2">{error}</div>}
           </div>
         )}
 

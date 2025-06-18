@@ -13,6 +13,7 @@ import { useLanguage } from "@/lib/i18n/context"
 import { Settings, Target, Heart } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
+import SubscriptionStatus from "@/components/subscription-status"
 
 interface UserPreferences {
   age?: number
@@ -153,6 +154,9 @@ export default function AccountPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <SubscriptionStatus userId={user.id} />
+      </div>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <div className="flex justify-between items-center mb-8">
           <div>

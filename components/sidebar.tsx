@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSelector } from "./language-selector"
@@ -30,6 +30,7 @@ import {
 export function Sidebar() {
   const { t } = useLanguage()
   const pathname = usePathname()
+  const router = useRouter()
   const { user, signOut } = useAuth()
   const { subscription } = useSubscription()
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -103,7 +104,7 @@ export function Sidebar() {
     closed: { x: "-100%" },
   }
 
-  const NavItem = ({ item, isCollapsed }) => (
+  const NavItem = ({ item, isCollapsed }: { item: any; isCollapsed: boolean }) => (
     <Link
       href={item.href}
       className={cn(
@@ -190,7 +191,10 @@ export function Sidebar() {
         <div className="p-2 border-t border-orange-200 dark:border-gray-800">
           {user ? (
             <button
-              onClick={signOut}
+              onClick={async () => {
+                await signOut()
+                router.push("/landing")
+              }}
               className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
             >
               <LogOut size={20} />
@@ -296,7 +300,10 @@ export function Sidebar() {
             <div className="p-4 border-t border-orange-200 dark:border-gray-800">
               {user ? (
                 <button
-                  onClick={signOut}
+                  onClick={async () => {
+                    await signOut()
+                    router.push("/landing")
+                  }}
                   className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
                 >
                   <LogOut size={20} />
