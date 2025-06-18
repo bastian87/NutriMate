@@ -122,6 +122,11 @@ export default function LoginForm() {
                 disabled={loading}
                 placeholder="Enter your password"
               />
+              <div className="text-right">
+                <Link href="/forgot-password" className="text-sm text-orange-600 hover:underline">
+                  Forgot your password?
+                </Link>
+              </div>
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>

@@ -1,20 +1,13 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { recipeService, type RecipeWithDetails, type RecipeFilters } from "@/lib/services/recipe-service"
 
-// Helper to compare filter objects
+// Helper to compare filter objects to prevent unnecessary refetches
 const areFiltersEqual = (a?: RecipeFilters, b?: RecipeFilters) => {
   if (!a && !b) return true
   if (!a || !b) return false
-
-  return (
-    a.search === b.search &&
-    a.maxCookTime === b.maxCookTime &&
-    a.userId === b.userId &&
-    JSON.stringify(a.calorieRange) === JSON.stringify(b.calorieRange) &&
-    JSON.stringify(a.tags) === JSON.stringify(b.tags)
-  )
+  return JSON.stringify(a) === JSON.stringify(b)
 }
 
 export function useRecipes(filters?: RecipeFilters) {
@@ -22,84 +15,51 @@ export function useRecipes(filters?: RecipeFilters) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Use ref to track previous filters to avoid unnecessary fetches
-  const prevFiltersRef = useRef<RecipeFilters | undefined>()
+  const prevFiltersRef = useRef<RecipeFilters>()
 
-  // Store current filters in a ref to avoid dependency issues
-  const filtersRef = useRef(filters)
-  filtersRef.current = filters
-
-  useEffect(() => {
+  const fetchRecipes = useCallback(async (currentFilters?: RecipeFilters) => {
     // Only fetch if filters have actually changed
-    if (areFiltersEqual(prevFiltersRef.current, filters)) {
+    if (areFiltersEqual(prevFiltersRef.current, currentFilters)) {
       return
     }
+    prevFiltersRef.current = currentFilters
 
-    // Update previous filters
-    prevFiltersRef.current = { ...filters }
-
-    // Define async function inside useEffect
-    const fetchRecipes = async () => {
-      try {
-        console.log("Fetching recipes with filters:", filters)
-        setLoading(true)
-        setError(null)
-        const data = await recipeService.getRecipes(filters)
-        console.log("Recipes fetched successfully:", data.length)
-        setRecipes(data || [])
-      } catch (err) {
-        console.error("Error fetching recipes:", err)
-        setError(err instanceof Error ? err.message : "Failed to fetch recipes")
-        setRecipes([])
-      } finally {
-        setLoading(false)
-      }
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await recipeService.getRecipes(currentFilters)
+      setRecipes(data || [])
+    } catch (err) {
+      console.error("Error fetching recipes:", err)
+      setError(err instanceof Error ? err.message : "Failed to fetch recipes")
+      setRecipes([]) // Clear recipes on error
+    } finally {
+      setLoading(false)
     }
+  }, [])
 
-    // Execute the fetch
-    fetchRecipes()
-  }, [
-    filters?.search,
-    filters?.maxCookTime,
-    filters?.userId,
-    // Convert arrays to strings for stable comparison
-    filters?.calorieRange ? `${filters.calorieRange[0]}-${filters.calorieRange[1]}` : null,
-    filters?.tags ? filters.tags.join(",") : null,
-  ])
+  useEffect(() => {
+    fetchRecipes(filters)
+  }, [filters, fetchRecipes])
 
-  const toggleFavorite = async (recipeId: string) => {
-    if (!filtersRef.current?.userId) {
+  const toggleFavorite = async (recipeId: string, userId?: string) => {
+    if (!userId) {
       console.warn("Cannot toggle favorite: no user ID provided")
       return
     }
 
     try {
-      const isFavorited = await recipeService.toggleFavorite(recipeId, filtersRef.current.userId)
-
-      // Update the local state
+      const isFavorited = await recipeService.toggleFavorite(recipeId, userId)
       setRecipes((prev) =>
         prev.map((recipe) => (recipe.id === recipeId ? { ...recipe, is_favorited: isFavorited } : recipe)),
       )
     } catch (err) {
       console.error("Failed to toggle favorite:", err)
+      // Optionally show a toast notification
     }
   }
 
-  const refetch = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const data = await recipeService.getRecipes(filtersRef.current)
-      setRecipes(data || [])
-    } catch (err) {
-      console.error("Error refetching recipes:", err)
-      setError(err instanceof Error ? err.message : "Failed to fetch recipes")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return { recipes, loading, error, toggleFavorite, refetch }
+  return { recipes, loading, error, toggleFavorite, refetch: () => fetchRecipes(filters) }
 }
 
 export function useRecipe(slugOrId: string, userId?: string) {
@@ -108,15 +68,16 @@ export function useRecipe(slugOrId: string, userId?: string) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!slugOrId) return
+    if (!slugOrId) {
+      setLoading(false)
+      return
+    }
 
     const fetchRecipe = async () => {
+      setLoading(true)
+      setError(null)
       try {
-        setLoading(true)
-        setError(null)
-        console.log("Fetching recipe:", slugOrId)
         const data = await recipeService.getRecipeById(slugOrId, userId)
-        console.log("Recipe fetched:", data?.name)
         setRecipe(data)
       } catch (err) {
         console.error("Error fetching recipe:", err)
@@ -145,7 +106,9 @@ export function useRecipe(slugOrId: string, userId?: string) {
 
     try {
       await recipeService.rateRecipe(recipe.id, userId, rating, review)
-      setRecipe((prev) => (prev ? { ...prev, user_rating: rating } : null))
+      // Refetch recipe to get updated average rating
+      const updatedRecipe = await recipeService.getRecipeById(recipe.id, userId)
+      setRecipe(updatedRecipe)
     } catch (err) {
       console.error("Failed to rate recipe:", err)
     }

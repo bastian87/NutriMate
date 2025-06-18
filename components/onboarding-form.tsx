@@ -10,10 +10,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, ArrowRight, AlertCircle } from "lucide-react"
-import { saveUserPreferences } from "@/lib/mock-services"
 import { useLanguage } from "@/lib/i18n/context"
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog"
 import { useAuthContext } from "@/components/auth/auth-provider"
+import { userService } from "@/lib/services/user-service"
 
 type HealthGoal = "weight_loss" | "muscle_gain" | "maintenance" | "health_improvement" | "energy_boost"
 type DietaryPreference = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "keto" | "paleo"
@@ -27,11 +27,7 @@ interface ValidationErrors {
   general?: string
 }
 
-interface OnboardingFormProps {
-  onComplete?: (data: any) => void
-}
-
-export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
+export default function OnboardingForm() {
   const router = useRouter()
   const { t } = useLanguage()
   const { user } = useAuthContext()
@@ -43,15 +39,15 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
     gender: "male",
     height: 175, // in cm
     weight: 70, // in kg
-    activityLevel: "moderate" as ActivityLevel,
+    activity_level: "moderate" as ActivityLevel,
 
     // Health goals
-    healthGoal: "" as HealthGoal,
-    calorieTarget: 0, // Will be calculated based on other inputs
+    health_goal: "" as HealthGoal,
+    calorie_target: 0, // Will be calculated based on other inputs
 
     // Dietary preferences
-    dietaryPreferences: [] as DietaryPreference[],
-    excludedIngredients: [] as string[],
+    dietary_preferences: [] as DietaryPreference[],
+    excluded_ingredients: [] as string[],
     customExcludedIngredient: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -98,7 +94,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
   const validateStep2 = (): boolean => {
     const newErrors: ValidationErrors = {}
 
-    if (!formData.healthGoal) {
+    if (!formData.health_goal) {
       newErrors.healthGoal = t("validation.healthGoalRequired")
     }
 
@@ -129,14 +125,14 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
       very_active: 1.9, // Very hard exercise & physical job or 2x training
     }
 
-    return Math.round(bmr * activityMultipliers[formData.activityLevel])
+    return Math.round(bmr * activityMultipliers[formData.activity_level])
   }
 
   // Calculate calorie target based on health goal and TDEE
   const calculateCalorieTarget = () => {
     const tdee = calculateTDEE()
 
-    switch (formData.healthGoal) {
+    switch (formData.health_goal) {
       case "weight_loss":
         return Math.round(tdee * 0.8) // 20% deficit
       case "muscle_gain":
@@ -153,6 +149,10 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
   }
 
   const handleNext = async () => {
+    if (!user) {
+      setErrors({ general: "You must be logged in to continue." })
+      return
+    }
     // Clear previous errors
     setErrors({})
 
@@ -174,7 +174,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
         const calorieTarget = calculateCalorieTarget()
         setFormData((prev) => ({
           ...prev,
-          calorieTarget,
+          calorie_target: calorieTarget,
         }))
       }
 
@@ -190,14 +190,14 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
           gender: formData.gender,
           height: heightUnit === "cm" ? formData.height : formData.height * 30.48,
           weight: weightUnit === "kg" ? formData.weight : formData.weight * 0.453592,
-          activityLevel: formData.activityLevel,
-          healthGoal: formData.healthGoal,
-          calorieTarget: formData.calorieTarget,
-          dietaryPreferences: formData.dietaryPreferences,
-          excludedIngredients: formData.excludedIngredients,
+          activity_level: formData.activity_level,
+          health_goal: formData.health_goal,
+          calorie_target: formData.calorie_target,
+          dietary_preferences: formData.dietary_preferences,
+          excluded_ingredients: formData.excluded_ingredients,
         }
 
-        await saveUserPreferences(dataToSubmit)
+        await userService.saveUserPreferences(user.id, dataToSubmit)
 
         // Show confirmation dialog with actual user email
         setShowConfirmation(true)
@@ -226,15 +226,15 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
 
   const toggleDietaryPreference = (preference: DietaryPreference) => {
     setFormData((prev) => {
-      if (prev.dietaryPreferences.includes(preference)) {
+      if (prev.dietary_preferences.includes(preference)) {
         return {
           ...prev,
-          dietaryPreferences: prev.dietaryPreferences.filter((p) => p !== preference),
+          dietary_preferences: prev.dietary_preferences.filter((p) => p !== preference),
         }
       } else {
         return {
           ...prev,
-          dietaryPreferences: [...prev.dietaryPreferences, preference],
+          dietary_preferences: [...prev.dietary_preferences, preference],
         }
       }
     })
@@ -244,7 +244,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
     if (formData.customExcludedIngredient.trim()) {
       setFormData((prev) => ({
         ...prev,
-        excludedIngredients: [...prev.excludedIngredients, prev.customExcludedIngredient.trim().toLowerCase()],
+        excluded_ingredients: [...prev.excluded_ingredients, prev.customExcludedIngredient.trim().toLowerCase()],
         customExcludedIngredient: "",
       }))
     }
@@ -253,7 +253,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
   const removeExcludedIngredient = (ingredient: string) => {
     setFormData((prev) => ({
       ...prev,
-      excludedIngredients: prev.excludedIngredients.filter((i) => i !== ingredient),
+      excluded_ingredients: prev.excluded_ingredients.filter((i) => i !== ingredient),
     }))
   }
 
@@ -453,8 +453,10 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
                 <div>
                   <Label htmlFor="activity">Activity Level</Label>
                   <Select
-                    value={formData.activityLevel}
-                    onValueChange={(value: ActivityLevel) => setFormData((prev) => ({ ...prev, activityLevel: value }))}
+                    value={formData.activity_level}
+                    onValueChange={(value: ActivityLevel) =>
+                      setFormData((prev) => ({ ...prev, activity_level: value }))
+                    }
                   >
                     <SelectTrigger id="activity">
                       <SelectValue placeholder="Select activity level" />
@@ -481,9 +483,9 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
               </p>
 
               <RadioGroup
-                value={formData.healthGoal}
+                value={formData.health_goal}
                 onValueChange={(value) => {
-                  setFormData((prev) => ({ ...prev, healthGoal: value as HealthGoal }))
+                  setFormData((prev) => ({ ...prev, health_goal: value as HealthGoal }))
                   if (errors.healthGoal) {
                     setErrors((prev) => ({ ...prev, healthGoal: undefined }))
                   }
@@ -555,7 +557,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div
                   className={`border p-4 rounded-md cursor-pointer ${
-                    formData.dietaryPreferences.includes("vegetarian")
+                    formData.dietary_preferences.includes("vegetarian")
                       ? "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-900"
                       : "hover:bg-gray-50 dark:hover:bg-gray-900"
                   }`}
@@ -563,7 +565,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
                 >
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      checked={formData.dietaryPreferences.includes("vegetarian")}
+                      checked={formData.dietary_preferences.includes("vegetarian")}
                       onCheckedChange={() => toggleDietaryPreference("vegetarian")}
                     />
                     <Label className="font-medium cursor-pointer">Vegetarian</Label>
@@ -573,7 +575,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
 
                 <div
                   className={`border p-4 rounded-md cursor-pointer ${
-                    formData.dietaryPreferences.includes("vegan")
+                    formData.dietary_preferences.includes("vegan")
                       ? "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-900"
                       : "hover:bg-gray-50 dark:hover:bg-gray-900"
                   }`}
@@ -581,7 +583,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
                 >
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      checked={formData.dietaryPreferences.includes("vegan")}
+                      checked={formData.dietary_preferences.includes("vegan")}
                       onCheckedChange={() => toggleDietaryPreference("vegan")}
                     />
                     <Label className="font-medium cursor-pointer">Vegan</Label>
@@ -591,7 +593,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
 
                 <div
                   className={`border p-4 rounded-md cursor-pointer ${
-                    formData.dietaryPreferences.includes("gluten_free")
+                    formData.dietary_preferences.includes("gluten_free")
                       ? "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-900"
                       : "hover:bg-gray-50 dark:hover:bg-gray-900"
                   }`}
@@ -599,7 +601,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
                 >
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      checked={formData.dietaryPreferences.includes("gluten_free")}
+                      checked={formData.dietary_preferences.includes("gluten_free")}
                       onCheckedChange={() => toggleDietaryPreference("gluten_free")}
                     />
                     <Label className="font-medium cursor-pointer">Gluten-Free</Label>
@@ -609,7 +611,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
 
                 <div
                   className={`border p-4 rounded-md cursor-pointer ${
-                    formData.dietaryPreferences.includes("dairy_free")
+                    formData.dietary_preferences.includes("dairy_free")
                       ? "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-900"
                       : "hover:bg-gray-50 dark:hover:bg-gray-900"
                   }`}
@@ -617,7 +619,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
                 >
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      checked={formData.dietaryPreferences.includes("dairy_free")}
+                      checked={formData.dietary_preferences.includes("dairy_free")}
                       onCheckedChange={() => toggleDietaryPreference("dairy_free")}
                     />
                     <Label className="font-medium cursor-pointer">Dairy-Free</Label>
@@ -629,7 +631,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
 
                 <div
                   className={`border p-4 rounded-md cursor-pointer ${
-                    formData.dietaryPreferences.includes("keto")
+                    formData.dietary_preferences.includes("keto")
                       ? "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-900"
                       : "hover:bg-gray-50 dark:hover:bg-gray-900"
                   }`}
@@ -637,7 +639,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
                 >
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      checked={formData.dietaryPreferences.includes("keto")}
+                      checked={formData.dietary_preferences.includes("keto")}
                       onCheckedChange={() => toggleDietaryPreference("keto")}
                     />
                     <Label className="font-medium cursor-pointer">Keto</Label>
@@ -647,7 +649,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
 
                 <div
                   className={`border p-4 rounded-md cursor-pointer ${
-                    formData.dietaryPreferences.includes("paleo")
+                    formData.dietary_preferences.includes("paleo")
                       ? "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-900"
                       : "hover:bg-gray-50 dark:hover:bg-gray-900"
                   }`}
@@ -655,7 +657,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
                 >
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      checked={formData.dietaryPreferences.includes("paleo")}
+                      checked={formData.dietary_preferences.includes("paleo")}
                       onCheckedChange={() => toggleDietaryPreference("paleo")}
                     />
                     <Label className="font-medium cursor-pointer">Paleo</Label>
@@ -693,11 +695,11 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
                 </Button>
               </div>
 
-              {formData.excludedIngredients.length > 0 && (
+              {formData.excluded_ingredients.length > 0 && (
                 <div className="mt-4">
                   <p className="text-sm font-medium mb-2">Excluded ingredients:</p>
                   <div className="flex flex-wrap gap-2">
-                    {formData.excludedIngredients.map((ingredient) => (
+                    {formData.excluded_ingredients.map((ingredient) => (
                       <div
                         key={ingredient}
                         className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full text-sm flex items-center"
@@ -726,7 +728,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
               <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-md border border-orange-100 dark:border-orange-900">
                 <h3 className="font-medium text-orange-800 dark:text-orange-300 mb-2">Your Daily Calorie Target</h3>
                 <p className="text-orange-800 dark:text-orange-300 text-2xl font-bold">
-                  {formData.calorieTarget} calories
+                  {formData.calorie_target} calories
                 </p>
                 <p className="text-sm text-orange-700 dark:text-orange-400 mt-1">
                   Based on your age, gender, height, weight, activity level, and health goal

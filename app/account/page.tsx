@@ -59,16 +59,13 @@ export default function AccountPage() {
     try {
       setLoading(true)
 
-      // Load profile
-      const userProfile = await userService.getUserProfile(user.id)
-      if (userProfile) {
-        setProfile({
-          full_name: userProfile.full_name || "",
-          email: userProfile.email,
-        })
-      }
+      // Load user profile from auth
+      setProfile({
+        full_name: user.user_metadata?.full_name || "",
+        email: user.email || "",
+      })
 
-      // Load preferences
+      // Load preferences from API
       const userPrefs = await userService.getUserPreferences(user.id)
       if (userPrefs) {
         setPreferences({
@@ -87,21 +84,6 @@ export default function AccountPage() {
       console.error("Error loading user data:", error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleSaveProfile = async () => {
-    if (!user) return
-
-    try {
-      setSaving(true)
-      await userService.updateUserProfile(user.id, profile)
-      alert("Profile updated successfully!")
-    } catch (error) {
-      console.error("Error saving profile:", error)
-      alert("Failed to update profile")
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -192,9 +174,6 @@ export default function AccountPage() {
                 <Input id="email" type="email" value={profile.email} disabled className="bg-gray-50" />
                 <p className="text-sm text-gray-500 mt-1">Email cannot be changed</p>
               </div>
-              <Button onClick={handleSaveProfile} disabled={saving} className="bg-orange-600 hover:bg-orange-700">
-                {saving ? "Saving..." : "Save Profile"}
-              </Button>
             </CardContent>
           </Card>
         </motion.div>

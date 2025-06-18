@@ -9,9 +9,13 @@ export class UserService {
 
   async getUserProfile(userId: string): Promise<UserProfile | null> {
     try {
-      const { data, error } = await this.supabase.from("users").select("*").eq("id", userId).single()
+      const { data, error } = await this.supabase.from("users").select("*").eq("id", userId).maybeSingle() // Use maybeSingle() instead of single()
 
-      if (error) throw error
+      if (error) {
+        console.error("Supabase error in getUserProfile:", error)
+        return null
+      }
+
       return data
     } catch (error) {
       console.error("Error fetching user profile:", error)
@@ -33,9 +37,17 @@ export class UserService {
 
   async getUserPreferences(userId: string): Promise<UserPreferences | null> {
     try {
-      const { data, error } = await this.supabase.from("user_preferences").select("*").eq("user_id", userId).single()
+      const { data, error } = await this.supabase
+        .from("user_preferences")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle() // Use maybeSingle() instead of single()
 
-      if (error && error.code !== "PGRST116") throw error
+      if (error && error.code !== "PGRST116") {
+        console.error("Supabase error in getUserPreferences:", error)
+        return null
+      }
+
       return data
     } catch (error) {
       console.error("Error fetching user preferences:", error)

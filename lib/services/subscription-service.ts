@@ -5,22 +5,13 @@ class SubscriptionService {
 
   async getSubscription(userId: string) {
     try {
-      // First check if user_subscriptions table exists by trying to query it
-      const { data, error } = await this.supabase.from("user_subscriptions").select("*").eq("user_id", userId).single()
+      const { data, error } = await this.supabase
+        .from("user_subscriptions")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle()
 
       if (error) {
-        // If table doesn't exist, return null (free user)
-        if (error.message.includes("does not exist")) {
-          console.log("Subscriptions table doesn't exist, treating as free user")
-          return null
-        }
-
-        // If no subscription found, return null (free user)
-        if (error.code === "PGRST116") {
-          console.log("No subscription found for user, treating as free user")
-          return null
-        }
-
         console.error("Error fetching subscription:", error)
         return null
       }
@@ -89,21 +80,19 @@ class SubscriptionService {
     }
   }
 
-  // Helper method to check if user has premium access
   async hasPremiumAccess(userId: string): Promise<boolean> {
     try {
       const subscription = await this.getSubscription(userId)
 
-      // If no subscription table or no subscription, user is free
+      // If no subscription record exists, user is free
       if (!subscription) {
         return false
       }
 
-      // Check if subscription is active (you can add more logic here)
-      return subscription.status === "active"
+      // Check if subscription is active and premium
+      return subscription.status === "active" && subscription.plan_name?.toLowerCase().includes("premium")
     } catch (error) {
       console.error("Error checking premium access:", error)
-      // Default to free access on error
       return false
     }
   }

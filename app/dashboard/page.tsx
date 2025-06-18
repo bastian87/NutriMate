@@ -1,13 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, RefreshCw, Heart, History, TrendingUp, Home } from "lucide-react"
+import { Calendar, RefreshCw, Heart, History, TrendingUp, Home, AlertCircle } from "lucide-react"
 import Link from "next/link"
-import { mockMealPlan } from "@/lib/mock-data"
-import { generateMealPlan } from "@/lib/mock-services"
 import MealPlanDisplay from "@/components/meal-plan-display"
 import { NutritionSummary } from "@/components/nutrition-summary"
 import { useFavorites } from "@/hooks/use-favorites"
@@ -15,31 +13,59 @@ import { useMealPlanHistory } from "@/hooks/use-meal-plan-history"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
 import useAuth from "@/hooks/use-auth"
+import { useMealPlans } from "@/hooks/use-meal-plans"
+import { useToast } from "@/hooks/use-toast"
 
 export default function DashboardPage() {
-  const [currentMealPlan, setCurrentMealPlan] = useState(mockMealPlan)
-  const [isGenerating, setIsGenerating] = useState(false)
-  const { favorites } = useFavorites()
-  const { history, saveMealPlan } = useMealPlanHistory()
   const { t } = useLanguage()
+  const { toast } = useToast()
+  const { favorites } = useFavorites()
+  const { history } = useMealPlanHistory()
+  const { user, loading: authLoading } = useAuth()
+  const { mealPlans, loading: mealPlansLoading, error: mealPlansError, generateMealPlan } = useMealPlans()
 
-  const { user, loading } = useAuth()
+  const [currentMealPlan, setCurrentMealPlan] = useState(null)
+  const [isGenerating, setIsGenerating] = useState(false)
 
-  // Show loading state while checking authentication
-  if (loading) {
+  useEffect(() => {
+    if (mealPlans && mealPlans.length > 0) {
+      setCurrentMealPlan(mealPlans[0])
+    } else {
+      setCurrentMealPlan(null)
+    }
+  }, [mealPlans])
+
+  const handleGenerateNewPlan = async () => {
+    setIsGenerating(true)
+    try {
+      await generateMealPlan()
+      toast({
+        title: "Success!",
+        description: "A new meal plan has been generated for you.",
+      })
+    } catch (error) {
+      console.error("Error generating meal plan:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not generate a new meal plan. Please try again.",
+      })
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  if (authLoading || mealPlansLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-          </div>
+      <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[calc(100vh-200px)]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading your dashboard...</p>
         </div>
       </div>
     )
   }
 
-  // Show sign-in prompt if user is not authenticated
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -66,34 +92,19 @@ export default function DashboardPage() {
     )
   }
 
-  // Calculate today's nutrition from current meal plan
-  const todaysMeals = currentMealPlan.meals.filter((meal) => meal.day === 1)
+  const todaysMeals = currentMealPlan?.meals?.filter((meal) => meal.day_number === 1) || []
   const todaysNutrition = todaysMeals.reduce(
     (acc, meal) => ({
-      calories: acc.calories + meal.recipe.calories,
-      protein: acc.protein + meal.recipe.protein,
-      carbs: acc.carbs + meal.recipe.carbs,
-      fat: acc.fat + meal.recipe.fat,
+      calories: acc.calories + (meal.recipe?.calories || 0),
+      protein: acc.protein + (meal.recipe?.protein || 0),
+      carbs: acc.carbs + (meal.recipe?.carbs || 0),
+      fat: acc.fat + (meal.recipe?.fat || 0),
     }),
     { calories: 0, protein: 0, carbs: 0, fat: 0 },
   )
 
-  const handleGenerateNewPlan = async () => {
-    setIsGenerating(true)
-    try {
-      const newMealPlan = await generateMealPlan()
-      setCurrentMealPlan(newMealPlan)
-      saveMealPlan(newMealPlan)
-    } catch (error) {
-      console.error("Error generating meal plan:", error)
-    } finally {
-      setIsGenerating(false)
-    }
-  }
-
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -115,7 +126,13 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* Quick Stats */}
+      {mealPlansError && (
+        <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-md flex items-center gap-2">
+          <AlertCircle className="h-5 w-5" />
+          <p>Could not load meal plans: {mealPlansError}</p>
+        </div>
+      )}
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -132,24 +149,23 @@ export default function DashboardPage() {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-blue-600">{todaysNutrition.protein}g</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">{t("common.protein")}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t("recipes.protein")}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-green-600">{todaysNutrition.carbs}g</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">{t("common.carbs")}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t("recipes.carbs")}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-purple-600">{todaysNutrition.fat}g</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">{t("common.fat")}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t("recipes.fat")}</div>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Nutrition Summary */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <NutritionSummary
           data={todaysNutrition}
@@ -158,7 +174,6 @@ export default function DashboardPage() {
         />
       </motion.div>
 
-      {/* Current Meal Plan */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
         <Card>
           <CardHeader>
@@ -184,107 +199,21 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <MealPlanDisplay mealPlan={currentMealPlan} />
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Recent Activity */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="grid grid-cols-1 md:grid-cols-2 gap-6"
-      >
-        {/* Meal Plan History */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-bold flex items-center gap-2">
-              <History className="h-5 w-5" />
-              {t("dashboard.recentMealPlans")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {history.length > 0 ? (
-              <div className="space-y-3">
-                {history.slice(0, 3).map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                  >
-                    <div>
-                      <div className="font-medium">{item.name}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
-                        {new Date(item.createdAt).toLocaleDateString()}
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      View
-                    </Button>
-                  </div>
-                ))}
-                {history.length > 3 && (
-                  <div className="text-center pt-2">
-                    <Link href="/meal-plans/history">
-                      <Button variant="ghost" size="sm">
-                        View All ({history.length})
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </div>
+            {currentMealPlan ? (
+              <MealPlanDisplay mealPlan={currentMealPlan} />
             ) : (
-              <div className="text-center py-6 text-gray-500 dark:text-gray-400">
-                <History className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>No meal plans saved yet</p>
-                <p className="text-sm">Generate your first meal plan to get started!</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Favorite Recipes */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-bold flex items-center gap-2">
-              <Heart className="h-5 w-5" />
-              {t("dashboard.favoriteRecipes")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {favorites.length > 0 ? (
-              <div className="space-y-3">
-                {favorites.slice(0, 3).map((recipeId) => (
-                  <div
-                    key={recipeId}
-                    className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                  >
-                    <div>
-                      <div className="font-medium">Recipe #{recipeId}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Saved to favorites</div>
-                    </div>
-                    <Link href={`/recipes`}>
-                      <Button variant="ghost" size="sm">
-                        View
-                      </Button>
-                    </Link>
-                  </div>
-                ))}
-                {favorites.length > 3 && (
-                  <div className="text-center pt-2">
-                    <Link href="/recipes?filter=favorites">
-                      <Button variant="ghost" size="sm">
-                        View All ({favorites.length})
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-6 text-gray-500 dark:text-gray-400">
-                <Heart className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>No favorite recipes yet</p>
-                <p className="text-sm">Heart recipes you love to save them here!</p>
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No meal plan yet</p>
+                <p className="text-sm mb-4">Generate your first meal plan to get started!</p>
+                <Button
+                  onClick={handleGenerateNewPlan}
+                  disabled={isGenerating}
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isGenerating ? "animate-spin" : ""}`} />
+                  {isGenerating ? "Generating..." : "Generate Meal Plan"}
+                </Button>
               </div>
             )}
           </CardContent>

@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -27,11 +26,32 @@ export default function SignupForm() {
     setError(null)
 
     try {
-      await signUp(email, password, fullName)
-      // Redirect to onboarding after successful signup
-      router.push("/onboarding")
+      const { data, error: signUpError } = await signUp(email, password, fullName)
+
+      console.log("Signup attempt result:", { data, signUpError }) // DEBUG LOG
+
+      if (signUpError) {
+        throw signUpError
+      }
+
+      if (data?.session) {
+        console.log("Session found, redirecting to /onboarding") // DEBUG LOG
+        router.push("/onboarding")
+      } else if (data?.user && !data?.session) {
+        console.warn(
+          // DEBUG LOG
+          "Signup successful, user created, but no active session. Email confirmation might still be ON in Supabase, or there's a session propagation delay.",
+        )
+        setError(
+          "Account created, but failed to start a session. Please ensure email confirmation is OFF in Supabase and try logging in.",
+        )
+      } else {
+        console.error("Signup response unclear:", { data }) // DEBUG LOG
+        throw new Error("Signup failed or user session is unclear.")
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to sign up")
+      console.error("Signup handleSubmit catch block error:", err) // DEBUG LOG
+      setError(err instanceof Error ? err.message : "Failed to sign up. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -40,10 +60,10 @@ export default function SignupForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className="text-center">Create Your NutriMate Account</CardTitle>
+        <CardTitle className="text-center text-2xl font-bold">Create Your NutriMate Account</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
@@ -59,6 +79,7 @@ export default function SignupForm() {
               onChange={(e) => setFullName(e.target.value)}
               required
               disabled={loading}
+              placeholder="Enter your full name"
             />
           </div>
 
@@ -71,6 +92,7 @@ export default function SignupForm() {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
+              placeholder="Enter your email address"
             />
           </div>
 
@@ -84,6 +106,7 @@ export default function SignupForm() {
               required
               disabled={loading}
               minLength={6}
+              placeholder="Create a password (min. 6 characters)"
             />
           </div>
 
@@ -91,9 +114,9 @@ export default function SignupForm() {
             {loading ? "Creating account..." : "Create Account"}
           </Button>
 
-          <div className="text-center text-sm">
+          <div className="text-center text-sm text-gray-600">
             Already have an account?{" "}
-            <Link href="/login" className="text-orange-600 hover:underline">
+            <Link href="/login" className="font-medium text-orange-600 hover:text-orange-500 hover:underline">
               Sign in
             </Link>
           </div>

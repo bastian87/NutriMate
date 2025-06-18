@@ -3,13 +3,23 @@
 import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase/client"
-import type { User } from "@supabase/supabase-js"
+import type { User, Session, AuthError } from "@supabase/supabase-js"
+import { authService } from "@/lib/services/auth-service" // Import the service
+
+// Define a more specific type for the signup/signin response
+interface AuthResponse {
+  data: {
+    user: User | null
+    session: Session | null
+  } | null // data can be null if there's a major issue before Supabase call
+  error: AuthError | Error | null // Allow for general errors too
+}
 
 interface AuthContextType {
   user: User | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, fullName?: string) => Promise<void>
+  signIn: (email: string, password: string) => Promise<AuthResponse>
+  signUp: (email: string, password: string, fullName?: string) => Promise<AuthResponse>
   signOut: () => Promise<void>
 }
 
@@ -20,7 +30,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session
     const getInitialSession = async () => {
       try {
         const {
@@ -28,10 +37,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           error,
         } = await supabase.auth.getSession()
         if (error) {
-          console.error("Error getting session:", error)
-        } else {
-          setUser(session?.user ?? null)
+          console.error("Error getting initial session:", error)
         }
+        setUser(session?.user ?? null)
       } catch (error) {
         console.error("Error in getInitialSession:", error)
       } finally {
@@ -41,13 +49,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getInitialSession()
 
-    // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session?.user?.email)
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null)
-      setLoading(false)
+      setLoading(false) // Also set loading to false here
     })
 
     return () => {
@@ -55,99 +61,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const signIn = async (email: string, password: string): Promise<void> => {
+  const signIn = async (email: string, password: string): Promise<AuthResponse> => {
+    setLoading(true)
     try {
-      setLoading(true)
-      console.log("Attempting to sign in with email:", email)
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (error) {
-        console.error("Supabase auth error:", error)
-        throw error
-      }
-
-      console.log("Sign in successful:", data.user?.email)
-      setUser(data.user)
+      // Use the authService for consistency
+      const response = await authService.signIn(email, password)
+      // onAuthStateChange should handle setting the user if successful
+      return response as AuthResponse // Cast to ensure type compatibility
     } catch (error) {
-      console.error("Error signing in:", error)
-      throw error
+      console.error("Error signing in (AuthProvider):", error)
+      return { data: null, error: error instanceof Error ? error : new Error("Sign in failed") }
     } finally {
       setLoading(false)
     }
   }
 
-  const signUp = async (email: string, password: string, fullName?: string): Promise<void> => {
+  const signUp = async (email: string, password: string, fullName?: string): Promise<AuthResponse> => {
+    setLoading(true)
     try {
-      setLoading(true)
-      console.log("Attempting to sign up with email:", email)
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-        },
-      })
-
-      if (error) {
-        console.error("Supabase signup error:", error)
-        throw error
-      }
-
-      console.log("Sign up successful:", data.user?.email)
-
-      // Create user profile if signup was successful and user is confirmed
-      if (data.user && !data.user.email_confirmed_at) {
-        console.log("User needs to confirm email before profile creation")
-      } else if (data.user) {
-        console.log("Creating user profile...")
-        const { error: profileError } = await supabase.from("users").insert({
-          id: data.user.id,
-          email: data.user.email!,
-          full_name: fullName || "",
-        })
-
-        if (profileError) {
-          console.error("Error creating user profile:", profileError)
-          // Don't throw here, as the auth was successful
-        } else {
-          console.log("User profile created successfully")
-        }
-      }
-
-      setUser(data.user)
+      // Delegate to authService.signUp and return its response
+      const response = await authService.signUp(email, password, fullName)
+      // onAuthStateChange should handle setting the user if successful and email confirmation is off
+      return response as AuthResponse // Cast to ensure type compatibility
     } catch (error) {
-      console.error("Error signing up:", error)
-      throw error
+      // This catch might be redundant if authService.signUp already catches and returns an error structure
+      console.error("Error signing up (AuthProvider):", error)
+      return { data: null, error: error instanceof Error ? error : new Error("Sign up failed") }
     } finally {
       setLoading(false)
     }
   }
 
   const signOut = async (): Promise<void> => {
+    setLoading(true)
     try {
-      setLoading(true)
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        throw error
-      }
-      setUser(null)
+      await authService.signOut()
+      setUser(null) // Explicitly set user to null
     } catch (error) {
-      console.error("Error signing out:", error)
-      throw error
+      console.error("Error signing out (AuthProvider):", error)
+      // Optionally rethrow or handle
     } finally {
       setLoading(false)
     }
   }
 
-  // Show loading spinner while auth is initializing
-  if (loading) {
+  if (loading && user === null) {
+    // Show loading spinner only on initial load when user is not yet determined
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
@@ -166,5 +125,4 @@ export function useAuthContext() {
   return context
 }
 
-// Also export as default for compatibility
 export default AuthProvider

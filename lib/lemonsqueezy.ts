@@ -2,8 +2,8 @@ const LEMONSQUEEZY_API_URL = "https://api.lemonsqueezy.com/v1"
 
 interface CreateCheckoutData {
   variantId: string
-  userId: string
-  userEmail: string
+  userId?: string
+  userEmail?: string
   redirectUrl?: string
 }
 
@@ -19,6 +19,8 @@ async function makeRequest(endpoint: string, options: RequestInit = {}) {
   })
 
   if (!response.ok) {
+    const errorText = await response.text()
+    console.error(`Lemon Squeezy API error: ${response.status} - ${errorText}`)
     throw new Error(`Lemon Squeezy API error: ${response.status}`)
   }
 
@@ -37,10 +39,12 @@ export async function createCheckout(data: CreateCheckoutData) {
             logo: true,
           },
           checkout_data: {
-            email: data.userEmail,
-            custom: {
-              user_id: data.userId,
-            },
+            ...(data.userEmail && { email: data.userEmail }),
+            ...(data.userId && {
+              custom: {
+                user_id: data.userId,
+              },
+            }),
           },
           expires_at: null,
           preview: false,

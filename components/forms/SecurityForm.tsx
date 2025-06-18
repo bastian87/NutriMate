@@ -1,18 +1,17 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
-import { Shield, Key, Smartphone } from "lucide-react"
+import { Key, Loader2 } from "lucide-react"
+import { authService } from "@/lib/services/auth-service"
 
 interface SecurityFormProps {
-  user: any
+  user: any // Replace 'any' with a proper user type if available
 }
 
 export default function SecurityForm({ user }: SecurityFormProps) {
@@ -22,11 +21,11 @@ export default function SecurityForm({ user }: SecurityFormProps) {
     newPassword: "",
     confirmPassword: "",
   })
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
   const { toast } = useToast()
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast({
@@ -34,16 +33,29 @@ export default function SecurityForm({ user }: SecurityFormProps) {
         description: "New passwords don't match.",
         variant: "destructive",
       })
+      setLoading(false)
       return
     }
 
-    setLoading(true)
+    if (!passwordData.currentPassword || !passwordData.newPassword) {
+      toast({
+        title: "Error",
+        description: "All password fields are required.",
+        variant: "destructive",
+      })
+      setLoading(false)
+      return
+    }
+
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const { error } = await authService.updateUserPassword(passwordData.newPassword) // Supabase handles current password verification implicitly if needed by RLS or specific function logic
+
+      if (error) {
+        throw error
+      }
 
       toast({
-        title: "Password updated",
+        title: "Password Updated",
         description: "Your password has been successfully updated.",
       })
 
@@ -52,34 +64,11 @@ export default function SecurityForm({ user }: SecurityFormProps) {
         newPassword: "",
         confirmPassword: "",
       })
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Password update error:", error)
       toast({
         title: "Error",
-        description: "Failed to update password. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleTwoFactorToggle = async (enabled: boolean) => {
-    setLoading(true)
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      setTwoFactorEnabled(enabled)
-      toast({
-        title: enabled ? "2FA Enabled" : "2FA Disabled",
-        description: enabled
-          ? "Two-factor authentication has been enabled for your account."
-          : "Two-factor authentication has been disabled for your account.",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update two-factor authentication. Please try again.",
+        description: error.message || "Failed to update password. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -95,110 +84,67 @@ export default function SecurityForm({ user }: SecurityFormProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Key className="h-5 w-5" />
-            Change Password
-          </CardTitle>
-          <CardDescription>Update your password to keep your account secure.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handlePasswordChange} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
-              <Input
-                id="currentPassword"
-                name="currentPassword"
-                type="password"
-                value={passwordData.currentPassword}
-                onChange={handlePasswordInputChange}
-                placeholder="Enter your current password"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New Password</Label>
-              <Input
-                id="newPassword"
-                name="newPassword"
-                type="password"
-                value={passwordData.newPassword}
-                onChange={handlePasswordInputChange}
-                placeholder="Enter your new password"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                value={passwordData.confirmPassword}
-                onChange={handlePasswordInputChange}
-                placeholder="Confirm your new password"
-                required
-              />
-            </div>
-
-            <Button type="submit" disabled={loading}>
-              {loading ? "Updating..." : "Update Password"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Smartphone className="h-5 w-5" />
-            Two-Factor Authentication
-          </CardTitle>
-          <CardDescription>Add an extra layer of security to your account.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h3 className="font-medium">Enable 2FA</h3>
-              <p className="text-sm text-muted-foreground">Secure your account with two-factor authentication</p>
-            </div>
-            <Switch checked={twoFactorEnabled} onCheckedChange={handleTwoFactorToggle} disabled={loading} />
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Key className="h-5 w-5" />
+          Change Password
+        </CardTitle>
+        <CardDescription>
+          Update your password to keep your account secure. For the new password to take effect, you might need to log
+          out and log back in.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handlePasswordChange} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="currentPassword">Current Password</Label>
+            <Input
+              id="currentPassword"
+              name="currentPassword"
+              type="password"
+              value={passwordData.currentPassword}
+              onChange={handlePasswordInputChange}
+              placeholder="Enter your current password"
+              required
+              autoComplete="current-password"
+            />
           </div>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Account Security
-          </CardTitle>
-          <CardDescription>Monitor your account security and recent activity.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">Last Login</h3>
-                <p className="text-sm text-muted-foreground">Today at 2:30 PM</p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">Login Location</h3>
-                <p className="text-sm text-muted-foreground">New York, NY</p>
-              </div>
-            </div>
-
-            <Button variant="outline">View Login History</Button>
+          <div className="space-y-2">
+            <Label htmlFor="newPassword">New Password</Label>
+            <Input
+              id="newPassword"
+              name="newPassword"
+              type="password"
+              value={passwordData.newPassword}
+              onChange={handlePasswordInputChange}
+              placeholder="Enter your new password (min. 6 characters)"
+              required
+              autoComplete="new-password"
+            />
           </div>
-        </CardContent>
-      </Card>
-    </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm New Password</Label>
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              value={passwordData.confirmPassword}
+              onChange={handlePasswordInputChange}
+              placeholder="Confirm your new password"
+              required
+              autoComplete="new-password"
+            />
+          </div>
+
+          <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {loading ? "Updating..." : "Update Password"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   )
 }

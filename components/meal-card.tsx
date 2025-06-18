@@ -50,11 +50,9 @@ export default function MealCard({ title, recipe, calories, protein, carbs, fat,
           </div>
         </div>
         <div className="flex space-x-2">
-          <Link href={`/recipes/${encodeURIComponent(recipe)}`} className="flex-1">
-            <Button variant="default" className="w-full">
-              View Recipe
-            </Button>
-          </Link>
+          <Button asChild variant="default" className="w-full flex-1">
+            <Link href={`/recipes/${encodeURIComponent(recipe)}`}>View Recipe</Link>
+          </Button>
           <Button variant="outline" size="icon">
             <RefreshCw className="h-4 w-4" />
           </Button>

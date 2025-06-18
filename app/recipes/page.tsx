@@ -3,27 +3,24 @@
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, Filter, Clock, Star, Heart, X, ChefHat, Utensils, Plus } from "lucide-react"
+import { Search, Filter, Clock, Star, Heart, X, ChefHat, Utensils, Plus, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Slider } from "@/components/ui/slider"
-import { useLanguage } from "@/lib/i18n/context"
 import { useRecipes } from "@/hooks/use-recipes"
 import { useAuthContext } from "@/components/auth/auth-provider"
 import { motion, AnimatePresence } from "framer-motion"
+import type { RecipeWithDetails } from "@/lib/services/recipe-service"
 
 export default function RecipesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [showFilters, setShowFilters] = useState(false)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [maxCookTime, setMaxCookTime] = useState([60])
-  const [calorieRange, setCalorieRange] = useState([0, 800])
-  const [sortBy, setSortBy] = useState("name")
-  const { t } = useLanguage()
+  const [maxCookTime, setMaxCookTime] = useState([120])
+  const [calorieRange, setCalorieRange] = useState([0, 1000])
   const { user } = useAuthContext()
 
-  // Memoize filters to prevent recreation on every render
   const filters = useMemo(
     () => ({
       search: searchQuery,
@@ -32,25 +29,20 @@ export default function RecipesPage() {
       calorieRange: calorieRange as [number, number],
       userId: user?.id,
     }),
-    [searchQuery, selectedTags, maxCookTime[0], calorieRange[0], calorieRange[1], user?.id],
+    [searchQuery, selectedTags, maxCookTime, calorieRange, user?.id],
   )
 
-  // Use real recipes from database
   const { recipes, loading, error, toggleFavorite } = useRecipes(filters)
 
-  console.log("Recipes page render:", { recipesCount: recipes?.length, loading, error })
-
-  // Get all unique tags from recipes
   const allTags = useMemo(() => {
     if (!recipes || recipes.length === 0) return []
-
     const tags = new Set<string>()
     recipes.forEach((recipe) => {
       if (recipe.tags && Array.isArray(recipe.tags)) {
         recipe.tags.forEach((tag) => tags.add(tag.name))
       }
     })
-    return Array.from(tags)
+    return Array.from(tags).sort()
   }, [recipes])
 
   const toggleTag = (tag: string) => {
@@ -58,56 +50,48 @@ export default function RecipesPage() {
   }
 
   const clearFilters = () => {
-    setSelectedTags([])
-    setMaxCookTime([60])
-    setCalorieRange([0, 800])
-    setSortBy("name")
     setSearchQuery("")
+    setSelectedTags([])
+    setMaxCookTime([120])
+    setCalorieRange([0, 1000])
   }
 
   const activeFiltersCount =
-    selectedTags.length + (maxCookTime[0] !== 60 ? 1 : 0) + (calorieRange[0] !== 0 || calorieRange[1] !== 800 ? 1 : 0)
+    (searchQuery ? 1 : 0) +
+    selectedTags.length +
+    (maxCookTime[0] !== 120 ? 1 : 0) +
+    (calorieRange[0] !== 0 || calorieRange[1] !== 1000 ? 1 : 0)
 
   const favoriteCount = recipes ? recipes.filter((recipe) => recipe.is_favorited).length : 0
 
-  if (loading) {
+  if (loading && recipes.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">{t("common.loading")}</p>
-        </div>
+      <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[calc(100vh-200px)]">
+        <Loader2 className="h-12 w-12 animate-spin text-orange-600" />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-12">
-          <p className="text-red-600 dark:text-red-400">
-            {t("common.error")}: {error}
-          </p>
-          <Button onClick={() => window.location.reload()} className="mt-4">
-            {t("common.tryAgain")}
-          </Button>
-          <div className="mt-4 text-sm text-gray-500">
-            <p>Debug info: Check browser console for more details</p>
-          </div>
-        </div>
+      <div className="container mx-auto px-4 py-8 text-center">
+        <p className="text-red-600 dark:text-red-400 mb-4">Error fetching recipes: {error}</p>
+        <Button onClick={() => window.location.reload()} className="bg-orange-600 hover:bg-orange-700">
+          Try Again
+        </Button>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 font-sans">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
       >
         <div>
-          <h1 className="text-3xl font-bold mb-2">{t("recipes.title")}</h1>
+          <h1 className="text-3xl font-bold mb-2">Recipes</h1>
           <p className="text-gray-600 dark:text-gray-400">
             {recipes.length > 0 ? `Discover ${recipes.length} delicious recipes` : "Discover delicious recipes"}
           </p>
@@ -117,18 +101,17 @@ export default function RecipesPage() {
             <Link href="/recipes/new">
               <Button className="bg-orange-600 hover:bg-orange-700">
                 <Plus className="h-4 w-4 mr-2" />
-                {t("recipes.addRecipe")}
+                Add Recipe
               </Button>
             </Link>
           )}
           <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
             <Heart className="h-3 w-3 mr-1" />
-            {favoriteCount} {t("recipes.favorites")}
+            {favoriteCount} Favorites
           </Badge>
         </div>
       </motion.div>
 
-      {/* Search and Filters */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -140,28 +123,25 @@ export default function RecipesPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               type="search"
-              placeholder={t("recipes.search")}
-              className="pl-10 pr-4 py-2 w-full transition-all duration-200 focus:ring-2 focus:ring-orange-500"
+              placeholder="Search recipes..."
+              className="pl-10 pr-4 py-2 w-full transition-all duration-200 focus:ring-2 focus:ring-orange-500 border-gray-300 dark:border-gray-600"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 relative transition-all duration-200 hover:bg-orange-50 dark:hover:bg-orange-950"
-            >
-              <Filter className="h-4 w-4" />
-              {t("recipes.filter")}
-              {activeFiltersCount > 0 && (
-                <Badge className="ml-1 bg-orange-600 text-white text-xs px-1.5 py-0.5">{activeFiltersCount}</Badge>
-              )}
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 relative transition-all duration-200 hover:bg-orange-50 dark:hover:bg-orange-950 border-gray-300 dark:border-gray-600"
+          >
+            <Filter className="h-4 w-4" />
+            Filter
+            {activeFiltersCount > 0 && (
+              <Badge className="ml-1 bg-orange-600 text-white text-xs px-1.5 py-0.5">{activeFiltersCount}</Badge>
+            )}
+          </Button>
         </div>
 
-        {/* Advanced Filters */}
         <AnimatePresence>
           {showFilters && (
             <motion.div
@@ -169,33 +149,42 @@ export default function RecipesPage() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 space-y-6"
+              className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 space-y-6 border border-gray-200 dark:border-gray-700"
             >
               <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-lg">{t("recipes.advancedFilters")}</h3>
+                <h3 className="font-semibold text-lg">Advanced Filters</h3>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" onClick={clearFilters}>
-                    {t("recipes.clearAll")}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="hover:bg-gray-200 dark:hover:bg-gray-700"
+                  >
+                    Clear All
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setShowFilters(false)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowFilters(false)}
+                    className="hover:bg-gray-200 dark:hover:bg-gray-700"
+                  >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
 
-              {/* Tags Filter */}
               {allTags.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium mb-3">{t("recipes.dietaryPreferences")}</label>
+                  <label className="block text-sm font-medium mb-3">Dietary Preferences & Tags</label>
                   <div className="flex flex-wrap gap-2">
                     {allTags.map((tag) => (
                       <motion.div key={tag} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         <Badge
                           variant={selectedTags.includes(tag) ? "default" : "outline"}
-                          className={`cursor-pointer transition-all duration-200 ${
+                          className={`cursor-pointer transition-all duration-200 text-xs px-2 py-1 rounded-full ${
                             selectedTags.includes(tag)
-                              ? "bg-orange-600 hover:bg-orange-700"
-                              : "hover:bg-orange-50 dark:hover:bg-orange-950"
+                              ? "bg-orange-600 text-white hover:bg-orange-700"
+                              : "border-gray-300 hover:bg-orange-50 dark:border-gray-600 dark:hover:bg-orange-950"
                           }`}
                           onClick={() => toggleTag(tag)}
                         >
@@ -207,94 +196,70 @@ export default function RecipesPage() {
                 </div>
               )}
 
-              {/* Cook Time Filter */}
               <div>
-                <label className="block text-sm font-medium mb-3">
-                  {t("recipes.maxCookTime")}: {maxCookTime[0]} {t("recipes.minutes")}
-                </label>
+                <label className="block text-sm font-medium mb-3">Max Cook Time: {maxCookTime[0]} minutes</label>
                 <Slider
                   value={maxCookTime}
                   onValueChange={setMaxCookTime}
                   max={120}
                   min={5}
                   step={5}
-                  className="w-full"
+                  className="w-full [&>span:first-child]:h-1 [&>span:first-child]:bg-orange-300 [&_[role=slider]]:bg-orange-600 [&_[role=slider]]:border-orange-600"
                 />
               </div>
 
-              {/* Calorie Range Filter */}
               <div>
                 <label className="block text-sm font-medium mb-3">
-                  {t("recipes.calorieRange")}: {calorieRange[0]} - {calorieRange[1]} {t("recipes.calories")}
+                  Calorie Range: {calorieRange[0]} - {calorieRange[1]} calories
                 </label>
                 <Slider
                   value={calorieRange}
                   onValueChange={setCalorieRange}
-                  max={800}
+                  max={1000}
                   min={0}
                   step={50}
-                  className="w-full"
+                  className="w-full [&>span:first-child]:h-1 [&>span:first-child]:bg-orange-300 [&_[role=slider]]:bg-orange-600 [&_[role=slider]]:border-orange-600"
                 />
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Active Filters Display */}
-        {(selectedTags.length > 0 || searchQuery) && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-wrap gap-2 items-center"
-          >
-            <span className="text-sm text-gray-600 dark:text-gray-400">{t("recipes.activeFilters")}:</span>
-            {searchQuery && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                {t("recipes.searchLabel")}: "{searchQuery}"
-                <X className="h-3 w-3 cursor-pointer" onClick={() => setSearchQuery("")} />
-              </Badge>
-            )}
-            {selectedTags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                {tag}
-                <X className="h-3 w-3 cursor-pointer" onClick={() => toggleTag(tag)} />
-              </Badge>
-            ))}
-          </motion.div>
-        )}
       </motion.div>
 
-      {/* Results Summary */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mb-6">
-        <p className="text-gray-600 dark:text-gray-400">Showing {recipes ? recipes.length : 0} recipes</p>
+        <p className="text-gray-600 dark:text-gray-400">Showing {recipes?.length || 0} recipes</p>
       </motion.div>
 
-      {/* Recipe Grid */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
       >
         <AnimatePresence>
           {recipes &&
-            recipes.map((recipe, index) => (
+            recipes.map((recipe: RecipeWithDetails, index: number) => (
               <motion.div
                 key={recipe.id}
+                layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: index * 0.05, duration: 0.3 }}
                 whileHover={{ y: -5 }}
-                className="group"
+                className="group flex flex-col"
               >
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col flex-grow">
                   <div className="relative h-48 overflow-hidden">
-                    <Link href={`/recipes/${recipe.id}`}>
+                    <Link href={`/recipes/${recipe.id}`} className="block w-full h-full">
                       <Image
-                        src={recipe.image_url || "/placeholder.svg?height=200&width=300&query=food"}
+                        src={
+                          recipe.image_url ||
+                          `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(recipe.name) || "/placeholder.svg"}`
+                        }
                         alt={recipe.name}
                         fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     </Link>
@@ -303,81 +268,83 @@ export default function RecipesPage() {
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          onClick={() => toggleFavorite(recipe.id)}
-                          className={`p-2 rounded-full backdrop-blur-sm transition-all duration-200 ${
+                          onClick={() => toggleFavorite(recipe.id, user.id)}
+                          className={`p-1.5 rounded-full backdrop-blur-sm transition-all duration-200 ${
                             recipe.is_favorited ? "bg-red-500 text-white" : "bg-white/80 text-gray-600 hover:bg-white"
                           }`}
+                          aria-label={recipe.is_favorited ? "Remove from favorites" : "Add to favorites"}
                         >
                           <Heart className={`h-4 w-4 ${recipe.is_favorited ? "fill-current" : ""}`} />
                         </motion.button>
                       )}
-                      <div className="bg-white/90 backdrop-blur-sm text-orange-600 rounded-full px-2 py-1 text-sm font-bold flex items-center">
+                      <div className="bg-white/90 backdrop-blur-sm text-orange-600 rounded-full px-2 py-1 text-xs font-semibold flex items-center">
                         <Star className="h-3 w-3 mr-1 fill-orange-600 text-orange-600" />
-                        {recipe.average_rating ? recipe.average_rating.toFixed(1) : "0.0"}
+                        {recipe.average_rating ? recipe.average_rating.toFixed(1) : "N/A"}
                       </div>
                     </div>
                     <div className="absolute bottom-2 left-2">
-                      <Badge className="bg-black/70 text-white text-xs">
-                        {recipe.calories || 0} {t("recipes.cal")}
-                      </Badge>
+                      <Badge className="bg-black/70 text-white text-xs">{recipe.calories || 0} kcal</Badge>
                     </div>
                   </div>
-
-                  <div className="p-4">
-                    <Link href={`/recipes/${recipe.id}`}>
-                      <h3 className="font-bold text-lg group-hover:text-orange-600 transition-colors duration-200 mb-2 line-clamp-2">
+                  <div className="p-4 flex flex-col flex-grow">
+                    <Link href={`/recipes/${recipe.id}`} className="block">
+                      <h3 className="font-bold text-lg group-hover:text-orange-600 transition-colors duration-200 mb-1 line-clamp-2">
                         {recipe.name}
                       </h3>
                     </Link>
-
-                    <div className="flex justify-between items-center mb-3">
-                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {(recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0)} {t("recipes.min")}
+                    <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 mb-2">
+                      <div className="flex items-center">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {(recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0)} min
                       </div>
-                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                        <Utensils className="h-4 w-4 mr-1" />
-                        {recipe.servings || 1} {t("recipes.servings")}
+                      <div className="flex items-center">
+                        <Utensils className="h-3 w-3 mr-1" />
+                        {recipe.servings || 1} servings
                       </div>
                     </div>
-
-                    {/* Nutrition Summary */}
-                    <div className="grid grid-cols-3 gap-2 mb-3">
-                      <div className="text-center">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("recipes.protein")}</p>
+                    <div className="grid grid-cols-3 gap-x-2 mb-3 text-center">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Protein</p>
                         <p className="font-semibold text-sm">{recipe.protein || 0}g</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("recipes.carbs")}</p>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Carbs</p>
                         <p className="font-semibold text-sm">{recipe.carbs || 0}g</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("recipes.fat")}</p>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Fat</p>
                         <p className="font-semibold text-sm">{recipe.fat || 0}g</p>
                       </div>
                     </div>
-
-                    {/* Tags */}
                     {recipe.tags && recipe.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-3">
-                        {recipe.tags.slice(0, 2).map((tag) => (
-                          <Badge key={tag.id} variant="outline" className="text-xs">
+                        {recipe.tags.slice(0, 3).map((tag) => (
+                          <Badge
+                            key={tag.id}
+                            variant="outline"
+                            className="text-xs px-1.5 py-0.5 border-gray-300 dark:border-gray-600"
+                          >
                             {tag.name}
                           </Badge>
                         ))}
-                        {recipe.tags.length > 2 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{recipe.tags.length - 2}
+                        {recipe.tags.length > 3 && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs px-1.5 py-0.5 border-gray-300 dark:border-gray-600"
+                          >
+                            +{recipe.tags.length - 3}
                           </Badge>
                         )}
                       </div>
                     )}
-
-                    <Link href={`/recipes/${recipe.id}`}>
-                      <Button className="w-full bg-orange-600 hover:bg-orange-700 transition-colors duration-200">
-                        {t("recipes.viewRecipe")}
+                    <div className="mt-auto">
+                      <Button
+                        asChild
+                        className="w-full bg-orange-600 hover:bg-orange-700 transition-colors duration-200 text-sm py-2"
+                      >
+                        <Link href={`/recipes/${recipe.id}`}>View Recipe</Link>
                       </Button>
-                    </Link>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -385,24 +352,26 @@ export default function RecipesPage() {
         </AnimatePresence>
       </motion.div>
 
-      {/* No Results */}
-      {recipes && recipes.length === 0 && (
+      {recipes && recipes.length === 0 && !loading && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg"
+          className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg mt-8"
         >
           <ChefHat className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <div className="text-gray-500 dark:text-gray-400 mb-4">{t("recipes.noResults")}</div>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">No recipes match your criteria.</p>
           <div className="space-x-2">
             <Button onClick={clearFilters} className="bg-orange-600 hover:bg-orange-700">
-              {t("recipes.clearAll")}
+              Clear All Filters
             </Button>
             {user && (
               <Link href="/recipes/new">
-                <Button variant="outline">
+                <Button
+                  variant="outline"
+                  className="border-orange-600 text-orange-600 hover:bg-orange-50 dark:border-orange-500 dark:text-orange-500 dark:hover:bg-orange-950"
+                >
                   <Plus className="h-4 w-4 mr-2" />
-                  {t("recipes.addFirstRecipe")}
+                  Add Your First Recipe
                 </Button>
               </Link>
             )}

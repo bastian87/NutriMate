@@ -1,8 +1,9 @@
 "use client"
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog" // Added DialogFooter
 import { Button } from "@/components/ui/button"
-import { CheckCircle, Mail } from "lucide-react"
+import { CheckCircle } from "lucide-react"
+import { useRouter } from "next/navigation" // For redirecting to login
 
 interface ConfirmationDialogProps {
   open: boolean
@@ -11,30 +12,27 @@ interface ConfirmationDialogProps {
 }
 
 export function ConfirmationDialog({ open, onOpenChange, email }: ConfirmationDialogProps) {
+  const router = useRouter()
+
+  const handleGotIt = () => {
+    onOpenChange(false)
+    router.push("/login") // Redirect to login page after closing dialog
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
-            <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+        <DialogHeader className="text-center pt-6">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
+            <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
           </div>
-          <DialogTitle className="text-xl text-center">Account Created Successfully!</DialogTitle>
-          <DialogDescription className="text-center space-y-2">
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Mail className="h-4 w-4" />
-              <span>We'll send a confirmation email to:</span>
-            </div>
-            {email && <div className="font-medium text-foreground">{email}</div>}
-            <div className="text-sm text-muted-foreground mt-3">
-              Please check your inbox and click the confirmation link to activate your account.
-            </div>
-          </DialogDescription>
+          <DialogTitle className="text-2xl font-semibold text-center">Account Created!</DialogTitle>
         </DialogHeader>
-        <div className="flex justify-center mt-6">
-          <Button onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
+        <DialogFooter className="flex justify-center mt-6">
+          <Button onClick={handleGotIt} className="w-full sm:w-auto">
             Got it!
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

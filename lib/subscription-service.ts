@@ -34,25 +34,16 @@ export interface UsageLimit {
   }
 }
 
-// Mock subscription data - in production, this would be in your database
-const mockSubscriptions: Record<string, Subscription> = {
-  user1: {
-    id: "sub_1",
-    userId: "user1",
-    plan: "free",
-    status: "active",
-    currentPeriodStart: new Date(),
-    currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    cancelAtPeriodEnd: false,
-    trialEnd: null,
-    billingCycle: "monthly",
-    amount: 0,
-  },
+export async function getUserSubscription(userId: string): Promise<Subscription | null> {
+  // In production, this would fetch from your database
+  // For now, return null which means user is on free plan
+  return null
 }
 
-// Mock usage data with strict free tier limits
-const mockUsage: Record<string, UsageLimit> = {
-  user1: {
+export async function getUserUsage(userId: string): Promise<UsageLimit | null> {
+  // In production, this would fetch from your database
+  // Return default free tier limits
+  return {
     recipes: {
       saved: 0,
       maxSaved: 10, // Free users can save up to 10 recipes
@@ -69,131 +60,60 @@ const mockUsage: Record<string, UsageLimit> = {
       used: 0,
       maxExports: 0, // Free users cannot export (premium only)
     },
-  },
-}
-
-export async function getUserSubscription(userId: string): Promise<Subscription | null> {
-  // In a real app, this would fetch from your database
-  return (
-    mockSubscriptions[userId] || {
-      id: `sub_${userId}`,
-      userId,
-      plan: "free",
-      status: "active",
-      currentPeriodStart: new Date(),
-      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      cancelAtPeriodEnd: false,
-      trialEnd: null,
-      billingCycle: "monthly",
-      amount: 0,
-    }
-  )
-}
-
-export async function getUserUsage(userId: string): Promise<UsageLimit | null> {
-  // In a real app, this would fetch from your database
-  return (
-    mockUsage[userId] || {
-      recipes: {
-        saved: 0,
-        maxSaved: 10,
-      },
-      mealPlans: {
-        created: 0,
-        maxCreated: 2,
-      },
-      customRecipes: {
-        created: 0,
-        maxCreated: 3,
-      },
-      exports: {
-        used: 0,
-        maxExports: 0,
-      },
-    }
-  )
+  }
 }
 
 export async function checkFeatureAccess(userId: string, feature: string): Promise<boolean> {
   const subscription = await getUserSubscription(userId)
   const usage = await getUserUsage(userId)
 
-  if (!subscription) return false
-
-  // Premium users have unlimited access to all features
-  if (subscription.plan === "premium" && (subscription.status === "active" || subscription.status === "trialing")) {
+  // If user has premium subscription and it's active, give full access
+  if (
+    subscription &&
+    subscription.plan === "premium" &&
+    (subscription.status === "active" || subscription.status === "trialing")
+  ) {
     return true
   }
 
-  // Free users have limited access
-  if (subscription.plan === "free") {
-    switch (feature) {
-      // PREMIUM ONLY FEATURES - Free users cannot access these
-      case "export_meal_plans":
-        return false
-      case "priority_support":
-        return false
-      case "advanced_nutrition_analysis":
-        return false
-      case "unlimited_meal_plans":
-        return false
-      case "unlimited_custom_recipes":
-        return false
-      case "unlimited_saved_recipes":
-        return false
-      case "advanced_meal_planning":
-        return false
-      case "smart_grocery_lists":
-        return false
+  // For free users (no subscription or free plan), check feature limitations
+  switch (feature) {
+    // PREMIUM ONLY FEATURES - Free users cannot access these
+    case "export_meal_plans":
+    case "priority_support":
+    case "advanced_nutrition_analysis":
+    case "unlimited_meal_plans":
+    case "unlimited_custom_recipes":
+    case "unlimited_saved_recipes":
+    case "advanced_meal_planning":
+    case "smart_grocery_lists":
+      return false
 
-      // LIMITED FREE FEATURES - Free users have usage limits
-      case "save_recipes":
-        return usage ? usage.recipes.saved < usage.recipes.maxSaved : false
-      case "create_meal_plans":
-        return usage ? usage.mealPlans.created < usage.mealPlans.maxCreated : false
-      case "create_custom_recipes":
-        return usage ? usage.customRecipes.created < usage.customRecipes.maxCreated : false
+    // LIMITED FREE FEATURES - Free users have usage limits
+    case "save_recipes":
+      return usage ? usage.recipes.saved < usage.recipes.maxSaved : false
+    case "create_meal_plans":
+      return usage ? usage.mealPlans.created < usage.mealPlans.maxCreated : false
+    case "create_custom_recipes":
+      return usage ? usage.customRecipes.created < usage.customRecipes.maxCreated : false
 
-      // BASIC FREE FEATURES - Always available to free users
-      case "browse_recipes":
-      case "basic_search":
-      case "view_nutrition_info":
-      case "basic_meal_planning":
-      case "basic_grocery_lists":
-        return true
+    // BASIC FREE FEATURES - Always available to free users
+    case "browse_recipes":
+    case "basic_search":
+    case "view_nutrition_info":
+    case "basic_meal_planning":
+    case "basic_grocery_lists":
+      return true
 
-      default:
-        return false // Default to restricted for unknown features
-    }
+    default:
+      return false // Default to restricted for unknown features
   }
-
-  return false
 }
 
 export async function incrementUsage(userId: string, feature: string): Promise<void> {
-  // In a real app, this would update your database
-  const usage = mockUsage[userId]
-  if (!usage) return
-
-  switch (feature) {
-    case "save_recipes":
-      usage.recipes.saved += 1
-      break
-    case "create_meal_plans":
-      usage.mealPlans.created += 1
-      break
-    case "create_custom_recipes":
-      usage.customRecipes.created += 1
-      break
-    case "exports":
-      usage.exports.used += 1
-      break
-  }
-
-  // Save to localStorage for demo purposes
-  if (typeof window !== "undefined") {
-    localStorage.setItem(`usage_${userId}`, JSON.stringify(usage))
-  }
+  // In production, this would update your database
+  // For now, this is a no-op but the structure is ready
+  return
 }
 
 export async function canUserAccessFeature(
@@ -207,63 +127,59 @@ export async function canUserAccessFeature(
   const subscription = await getUserSubscription(userId)
   const usage = await getUserUsage(userId)
 
-  if (!subscription) {
-    return { canAccess: false, reason: "No subscription found" }
-  }
-
   // Premium users have full access
-  if (subscription.plan === "premium" && (subscription.status === "active" || subscription.status === "trialing")) {
+  if (
+    subscription &&
+    subscription.plan === "premium" &&
+    (subscription.status === "active" || subscription.status === "trialing")
+  ) {
     return { canAccess: true }
   }
 
   // Check free tier limitations
-  if (subscription.plan === "free") {
-    switch (feature) {
-      case "export_meal_plans":
+  switch (feature) {
+    case "export_meal_plans":
+      return {
+        canAccess: false,
+        reason: "Export functionality is available for Premium users only",
+        upgradeRequired: true,
+      }
+    case "priority_support":
+      return {
+        canAccess: false,
+        reason: "Priority support is available for Premium users only",
+        upgradeRequired: true,
+      }
+    case "save_recipes":
+      if (usage && usage.recipes.saved >= usage.recipes.maxSaved) {
         return {
           canAccess: false,
-          reason: "Export functionality is available for Premium users only",
+          reason: `You've reached the limit of ${usage.recipes.maxSaved} saved recipes. Upgrade to Premium for unlimited saves.`,
           upgradeRequired: true,
         }
-      case "priority_support":
+      }
+      return { canAccess: true }
+    case "create_meal_plans":
+      if (usage && usage.mealPlans.created >= usage.mealPlans.maxCreated) {
         return {
           canAccess: false,
-          reason: "Priority support is available for Premium users only",
+          reason: `You've reached the limit of ${usage.mealPlans.maxCreated} meal plans. Upgrade to Premium for unlimited meal plans.`,
           upgradeRequired: true,
         }
-      case "save_recipes":
-        if (usage && usage.recipes.saved >= usage.recipes.maxSaved) {
-          return {
-            canAccess: false,
-            reason: `You've reached the limit of ${usage.recipes.maxSaved} saved recipes. Upgrade to Premium for unlimited saves.`,
-            upgradeRequired: true,
-          }
+      }
+      return { canAccess: true }
+    case "create_custom_recipes":
+      if (usage && usage.customRecipes.created >= usage.customRecipes.maxCreated) {
+        return {
+          canAccess: false,
+          reason: `You've reached the limit of ${usage.customRecipes.maxCreated} custom recipes. Upgrade to Premium for unlimited custom recipes.`,
+          upgradeRequired: true,
         }
-        return { canAccess: true }
-      case "create_meal_plans":
-        if (usage && usage.mealPlans.created >= usage.mealPlans.maxCreated) {
-          return {
-            canAccess: false,
-            reason: `You've reached the limit of ${usage.mealPlans.maxCreated} meal plans. Upgrade to Premium for unlimited meal plans.`,
-            upgradeRequired: true,
-          }
-        }
-        return { canAccess: true }
-      case "create_custom_recipes":
-        if (usage && usage.customRecipes.created >= usage.customRecipes.maxCreated) {
-          return {
-            canAccess: false,
-            reason: `You've reached the limit of ${usage.customRecipes.maxCreated} custom recipes. Upgrade to Premium for unlimited custom recipes.`,
-            upgradeRequired: true,
-          }
-        }
-        return { canAccess: true }
-      default:
-        return { canAccess: true }
-    }
+      }
+      return { canAccess: true }
+    default:
+      return { canAccess: true }
   }
-
-  return { canAccess: false, reason: "Access denied" }
 }
 
 export async function createSubscription(
@@ -273,40 +189,33 @@ export async function createSubscription(
   stripeCustomerId?: string,
   stripeSubscriptionId?: string,
 ): Promise<Subscription> {
-  // In a real app, this would create a subscription in your database
+  // In production, this would create a subscription in your database
   const subscription: Subscription = {
     id: `sub_${Date.now()}`,
     userId,
     plan,
-    status: "trialing", // Start with trial
+    status: "active",
     currentPeriodStart: new Date(),
-    currentPeriodEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days trial
+    currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     cancelAtPeriodEnd: false,
-    trialEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    trialEnd: null,
     billingCycle,
     amount: billingCycle === "monthly" ? 4.99 : 49.99,
     stripeCustomerId,
     stripeSubscriptionId,
   }
 
-  mockSubscriptions[userId] = subscription
   return subscription
 }
 
 export async function cancelSubscription(userId: string): Promise<void> {
-  // In a real app, this would cancel via Stripe and update your database
-  const subscription = mockSubscriptions[userId]
-  if (subscription) {
-    subscription.cancelAtPeriodEnd = true
-  }
+  // In production, this would cancel via payment provider and update your database
+  return
 }
 
 export async function reactivateSubscription(userId: string): Promise<void> {
-  // In a real app, this would reactivate via Stripe and update your database
-  const subscription = mockSubscriptions[userId]
-  if (subscription) {
-    subscription.cancelAtPeriodEnd = false
-  }
+  // In production, this would reactivate via payment provider and update your database
+  return
 }
 
 export async function updateSubscriptionStatus(
@@ -314,13 +223,6 @@ export async function updateSubscriptionStatus(
   status: Subscription["status"],
   stripeData?: any,
 ): Promise<void> {
-  // In a real app, this would update your database
-  const subscription = mockSubscriptions[userId]
-  if (subscription) {
-    subscription.status = status
-    if (stripeData) {
-      subscription.stripeCustomerId = stripeData.customer
-      subscription.stripeSubscriptionId = stripeData.subscription
-    }
-  }
+  // In production, this would update your database
+  return
 }
