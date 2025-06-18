@@ -83,7 +83,7 @@ export default function MobileOnboarding() {
   }
 
   return (
-    <div className="bg-cream-50 min-h-screen flex flex-col items-center justify-center px-2 py-6">
+    <div className="bg-white min-h-screen flex flex-col items-center justify-center px-2 py-6">
       <Card className="w-full max-w-md mx-auto">
         <CardContent className="pt-6">
           <div className="mb-6">
@@ -93,7 +93,7 @@ export default function MobileOnboarding() {
                 style={{ width: `${(currentStep / totalSteps) * 100}%` }}
               ></div>
             </div>
-            <div className="flex justify-between mt-2 text-sm text-gray-600">
+            <div className="flex justify-between mt-2 text-sm text-gray-600 dark:text-gray-400">
               <span>Paso {currentStep} de {totalSteps}</span>
               <span>{Math.round((currentStep / totalSteps) * 100)}% Completo</span>
             </div>
@@ -102,7 +102,8 @@ export default function MobileOnboarding() {
           {/* Step 1: Datos personales */}
           {currentStep === 1 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold mb-2">Datos personales</h2>
+              <h2 className="text-xl font-semibold mb-2">Datos personales</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">Esta información nos ayuda a calcular tus necesidades calóricas diarias y personalizar tu plan de comidas.</p>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="age">Edad</Label>
@@ -153,7 +154,8 @@ export default function MobileOnboarding() {
           {/* Step 2: Objetivo */}
           {currentStep === 2 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold mb-2">Objetivo de salud</h2>
+              <h2 className="text-xl font-semibold mb-2">Objetivo de salud</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">Esto nos ayuda a adaptar tu plan de comidas a tus objetivos específicos.</p>
               <Select value={formData.health_goal} onValueChange={value => setFormData(prev => ({ ...prev, health_goal: value }))}>
                 <SelectTrigger id="health_goal">
                   <SelectValue placeholder="Selecciona objetivo" />
@@ -172,7 +174,8 @@ export default function MobileOnboarding() {
           {/* Step 3: Preferencias dietarias */}
           {currentStep === 3 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold mb-2">Preferencias dietarias</h2>
+              <h2 className="text-xl font-semibold mb-2">Preferencias dietarias</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">Selecciona todas las que apliquen. Esto nos ayuda a filtrar recetas que se adapten a tus preferencias.</p>
               <div className="grid grid-cols-2 gap-2 mt-2">
                 {dietTypes.map((diet) => (
                   <div key={diet} className="flex items-center space-x-2">
@@ -191,7 +194,7 @@ export default function MobileOnboarding() {
           {/* Step 4: Preferencias avanzadas */}
           {currentStep === 4 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold mb-2">Preferencias avanzadas</h2>
+              <h2 className="text-xl font-semibold mb-2">Preferencias avanzadas</h2>
               <div>
                 <Label htmlFor="include_snacks">¿Incluir snacks?</Label>
                 <Checkbox
