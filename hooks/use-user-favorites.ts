@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { recipeService, type RecipeWithDetails } from "@/lib/services/recipe-service"
-import { useAuth } from "@/hooks/use-auth" // Corrected import path
+import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
 
 export function useUserFavorites() {
-  const { user, loading: authLoading } = useAuth() // This should now work
+  const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const [favorites, setFavorites] = useState<RecipeWithDetails[]>([])
   const [loading, setLoading] = useState(true)
@@ -16,7 +16,6 @@ export function useUserFavorites() {
     if (!user) {
       setFavorites([])
       setLoading(false)
-      // setError("You must be logged in to see your saved recipes."); // Optional: show error or just empty state
       return
     }
     setLoading(true)
@@ -39,7 +38,6 @@ export function useUserFavorites() {
   }, [user, toast])
 
   useEffect(() => {
-    // Wait for auth loading to complete before fetching favorites
     if (!authLoading) {
       fetchFavorites()
     }
@@ -51,12 +49,12 @@ export function useUserFavorites() {
         toast({ title: "Error", description: "You must be logged in.", variant: "destructive" })
         return
       }
-      // Optimistic update
+
       const originalFavorites = [...favorites]
       setFavorites((prevFavorites) => prevFavorites.filter((fav) => fav.id !== recipeId))
 
       try {
-        await recipeService.toggleFavorite(recipeId, user.id) // This should handle removing from DB
+        await recipeService.toggleFavorite(recipeId, user.id)
         toast({
           title: "Recipe Unsaved",
           description: "The recipe has been removed from your favorites.",
@@ -64,7 +62,6 @@ export function useUserFavorites() {
       } catch (e) {
         console.error("Failed to remove favorite:", e)
         const errorMessage = e instanceof Error ? e.message : "Could not remove favorite."
-        // Revert optimistic update on error
         setFavorites(originalFavorites)
         toast({
           title: "Error",
@@ -73,7 +70,7 @@ export function useUserFavorites() {
         })
       }
     },
-    [user, toast, favorites], // Added favorites to dependency array for optimistic update rollback
+    [user, toast, favorites],
   )
 
   return { favorites, loading: loading || authLoading, error, fetchFavorites, removeFavorite }

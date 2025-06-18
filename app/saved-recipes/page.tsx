@@ -8,17 +8,16 @@ import Link from "next/link"
 import { RecipeCardSkeleton } from "@/components/recipe-card-skeleton"
 import type { RecipeWithDetails } from "@/lib/services/recipe-service"
 
-// Re-using categories from your mock for filtering
+// Categories for filtering
 const categories = [
   { id: "all", label: "All Recipes", icon: "🍽️" },
   { id: "breakfast", label: "Breakfasts", icon: "🥞" },
   { id: "lunch", label: "Lunches", icon: "🥗" },
-  { id: "dinner", label: "Dinner", icon: "🍽️" }, // Corrected icon for Dinner
+  { id: "dinner", label: "Dinner", icon: "🍽️" },
   { id: "dessert", label: "Desserts", icon: "🧁" },
-  { id: "snack", label: "Snacks", icon: "🥨" }, // Corrected label for Snacks
-  { id: "side dish", label: "Sides", icon: "🥖" }, // Changed from 'sides' to 'side dish' to match potential meal_type values
-  { id: "soup", label: "Soups", icon: "🍲" }, // Changed from 'soups' to 'soup'
-  // { id: "vegan", label: "Vegan", icon: "🌱" }, // Example, if you have vegan as a meal_type
+  { id: "snack", label: "Snacks", icon: "🥨" },
+  { id: "side dish", label: "Sides", icon: "🥖" },
+  { id: "soup", label: "Soups", icon: "🍲" },
 ]
 
 export default function SavedRecipesPage() {
@@ -29,7 +28,6 @@ export default function SavedRecipesPage() {
     if (selectedCategory === "all") {
       return favorites
     }
-    // Ensure meal_type comparison is case-insensitive and handles potential undefined
     return favorites.filter((recipe) => recipe.meal_type?.toLowerCase() === selectedCategory.toLowerCase())
   }, [favorites, selectedCategory])
 
@@ -109,7 +107,6 @@ export default function SavedRecipesPage() {
                 onClick={() => removeFavorite(recipe.id)}
                 aria-label="Remove from saved recipes"
               >
-                {/* Since these are saved recipes, the bookmark should be filled */}
                 <Bookmark className="h-4 w-4 fill-orange-600 text-orange-600" />
               </Button>
             </div>
@@ -137,7 +134,6 @@ export default function SavedRecipesPage() {
             {loading ? <Loader2 className="h-4 w-4 animate-spin inline-block" /> : `${favorites.length} recipes`}
           </p>
         </div>
-        {/* Removed non-functional Filter, Sort, Share buttons */}
       </div>
 
       {/* Category Filters */}
@@ -149,7 +145,7 @@ export default function SavedRecipesPage() {
             size="sm"
             onClick={() => setSelectedCategory(category.id)}
             className="flex items-center gap-2 whitespace-nowrap"
-            disabled={loading || favorites.length === 0} // Disable if loading or no favorites at all
+            disabled={loading || favorites.length === 0}
           >
             <span>{category.icon}</span>
             {category.label}
