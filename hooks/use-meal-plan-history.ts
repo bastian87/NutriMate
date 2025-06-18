@@ -1,7 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { MealPlan } from "@/lib/mock-data"
+
+// Minimal MealPlan type used for history storage
+interface MealPlan {
+  id: string
+  name: string
+  start_date: string
+  end_date: string
+  user_id: string
+  created_at: string
+}
 
 interface MealPlanHistoryItem {
   id: string
