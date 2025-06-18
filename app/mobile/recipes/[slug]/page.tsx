@@ -4,22 +4,21 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ChevronLeft, Bookmark, Share2, Clock } from "lucide-react"
-import { mockRecipes } from "@/lib/mock-data"
+import { useRecipe } from "@/hooks/use-recipes"
 import MobileNavigation from "@/components/mobile-navigation"
 
-// This would be fetched from a database in a real application
-const getRecipeData = (slug: string) => {
-  // Find the recipe by slug (using name as slug for simplicity)
-  const recipe = mockRecipes.find((r) => r.name.toLowerCase().replace(/\s+/g, "-") === slug)
-
-  // If recipe not found, return the first recipe as a fallback
-  return recipe || mockRecipes[0]
-}
-
 export default function MobileRecipePage({ params }: { params: { slug: string } }) {
-  const recipe = getRecipeData(params.slug)
+  const { recipe } = useRecipe(params.slug)
   const [saved, setSaved] = useState(false)
   const [activeTab, setActiveTab] = useState<"recipe" | "reviews">("recipe")
+
+  if (!recipe) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        Loading...
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white min-h-screen pb-20">
@@ -90,7 +89,7 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
       <div className="relative">
         <div className="aspect-w-16 aspect-h-9 w-full">
           <Image
-            src={recipe.imageUrl || "/placeholder.svg?height=400&width=600"}
+            src={recipe.image_url || "/placeholder.svg?height=400&width=600"}
             alt={recipe.name}
             width={600}
             height={400}
@@ -134,7 +133,7 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
         <div className="mt-4">
           <div className="flex items-center">
             <Clock className="h-5 w-5 text-gray-500 mr-2" />
-            <span className="text-gray-700">{recipe.prepTimeMinutes + recipe.cookTimeMinutes} minutes</span>
+            <span className="text-gray-700">{recipe.prep_time_minutes + recipe.cook_time_minutes} minutes</span>
           </div>
         </div>
 
