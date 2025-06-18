@@ -99,6 +99,27 @@ export class UserService {
       } as any)
     }
   }
+
+  async deleteUserAccount(): Promise<{ error?: any }> {
+    try {
+      const { data } = await this.supabase.auth.getSession();
+      const accessToken = data.session?.access_token || "";
+      const res = await fetch("/api/user/delete-account", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        return { error: data.error || "Failed to delete account" }
+      }
+      return {}
+    } catch (error) {
+      return { error }
+    }
+  }
 }
 
 export const userService = new UserService()

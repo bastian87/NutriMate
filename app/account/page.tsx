@@ -24,7 +24,26 @@ interface UserPreferences {
   calorie_target?: number
   dietary_preferences?: string[]
   excluded_ingredients?: string[]
+  include_snacks?: boolean
+  allergies?: string[]
+  intolerances?: string[]
+  max_prep_time?: number
+  macro_priority?: string
 }
+
+// Lista unificada de preferencias dietarias (igual que en el onboarding)
+const dietTypes = [
+  "No Restrictions",
+  "Vegetarian",
+  "Vegan",
+  "Pescatarian",
+  "Keto",
+  "Paleo",
+  "Mediterranean",
+  "Low Carb",
+  "Low Fat",
+  "Gluten Free",
+]
 
 export default function AccountPage() {
   const { user } = useAuthContext()
@@ -41,6 +60,11 @@ export default function AccountPage() {
     calorie_target: 2000,
     dietary_preferences: [],
     excluded_ingredients: [],
+    include_snacks: false,
+    allergies: [],
+    intolerances: [],
+    max_prep_time: 60,
+    macro_priority: "balanced",
   })
 
   useEffect(() => {
@@ -68,6 +92,11 @@ export default function AccountPage() {
           calorie_target: userPrefs.calorie_target || 2000,
           dietary_preferences: userPrefs.dietary_preferences || [],
           excluded_ingredients: userPrefs.excluded_ingredients || [],
+          include_snacks: userPrefs.include_snacks ?? false,
+          allergies: userPrefs.allergies || [],
+          intolerances: userPrefs.intolerances || [],
+          max_prep_time: userPrefs.max_prep_time || 60,
+          macro_priority: userPrefs.macro_priority || "balanced",
         })
       }
     } catch (error) {
@@ -255,15 +284,15 @@ export default function AccountPage() {
               <div>
                 <Label className="text-base font-medium">Dietary Preferences</Label>
                 <div className="grid grid-cols-2 gap-2 mt-2">
-                  {["vegetarian", "vegan", "gluten-free", "dairy-free", "keto", "paleo", "mediterranean"].map((preference) => (
-                    <div key={preference} className="flex items-center space-x-2">
+                  {dietTypes.map((diet) => (
+                    <div key={diet} className="flex items-center space-x-2">
                       <Checkbox
-                        id={preference}
-                        checked={preferences.dietary_preferences?.includes(preference)}
-                        onCheckedChange={() => toggleDietaryPreference(preference)}
+                        id={`diet-${diet}`}
+                        checked={preferences.dietary_preferences?.includes(diet)}
+                        onCheckedChange={() => toggleDietaryPreference(diet)}
                       />
-                      <Label htmlFor={preference} className="text-sm capitalize">
-                        {preference.replace("-", " ")}
+                      <Label htmlFor={`diet-${diet}`} className="text-sm font-normal">
+                        {diet}
                       </Label>
                     </div>
                   ))}
@@ -288,6 +317,79 @@ export default function AccountPage() {
 
               <Button onClick={handleSavePreferences} disabled={saving} className="w-full">
                 {saving ? "Saving..." : "Save Preferences"}
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Advanced Preferences */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Preferencias avanzadas
+              </CardTitle>
+              <CardDescription>Personaliza aún más tu experiencia</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="include_snacks">¿Incluir snacks?</Label>
+                <Checkbox
+                  id="include_snacks"
+                  checked={preferences.include_snacks}
+                  onCheckedChange={(checked) => setPreferences((prev) => ({ ...prev, include_snacks: checked as boolean }))}
+                  className="ml-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="allergies">Alergias (separadas por coma)</Label>
+                <Input
+                  id="allergies"
+                  placeholder="ej: nueces, mariscos, huevo"
+                  value={preferences.allergies?.join(", ") || ""}
+                  onChange={(e) => setPreferences((prev) => ({ ...prev, allergies: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="intolerances">Intolerancias (separadas por coma)</Label>
+                <Input
+                  id="intolerances"
+                  placeholder="ej: lactosa, gluten"
+                  value={preferences.intolerances?.join(", ") || ""}
+                  onChange={(e) => setPreferences((prev) => ({ ...prev, intolerances: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="max_prep_time">Tiempo máximo de preparación (minutos)</Label>
+                <Input
+                  id="max_prep_time"
+                  type="number"
+                  min={5}
+                  max={180}
+                  value={preferences.max_prep_time || 60}
+                  onChange={(e) => setPreferences((prev) => ({ ...prev, max_prep_time: Number.parseInt(e.target.value) }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="macro_priority">Prioridad de macronutrientes</Label>
+                <Select
+                  value={preferences.macro_priority || "balanced"}
+                  onValueChange={(value) => setPreferences((prev) => ({ ...prev, macro_priority: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona prioridad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="balanced">Balanceado</SelectItem>
+                    <SelectItem value="protein">Alta proteína</SelectItem>
+                    <SelectItem value="carbs">Altos carbohidratos</SelectItem>
+                    <SelectItem value="fat">Altas grasas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={handleSavePreferences} disabled={saving} className="w-full">
+                {saving ? "Saving..." : "Guardar preferencias avanzadas"}
               </Button>
             </CardContent>
           </Card>

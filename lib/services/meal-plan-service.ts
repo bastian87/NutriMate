@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/client"
 import type { Database } from "@/lib/types/database"
 import { recipeService } from "./recipe-service"
+import { userService } from "./user-service"
 
 type MealPlan = Database["public"]["Tables"]["meal_plans"]["Row"]
 type MealPlanMeal = Database["public"]["Tables"]["meal_plan_meals"]["Row"]
@@ -161,6 +162,11 @@ export class MealPlanService {
       dietaryPreferences?: string[]
       excludedIngredients?: string[]
       calorieTarget?: number
+      includeSnacks?: boolean
+      allergies?: string[]
+      intolerances?: string[]
+      maxPrepTime?: number
+      macroPriority?: string
     },
   ): Promise<MealPlanWithMeals> {
     try {
@@ -175,35 +181,106 @@ export class MealPlanService {
         userId = user.id
       }
 
+      // Obtener preferencias del usuario si no se pasan explícitamente
+      let prefs = preferences
+      if (!prefs) {
+        const userPrefs = await userService.getUserPreferences(userId)
+        prefs = {
+          dietaryPreferences: userPrefs?.dietary_preferences || [],
+          excludedIngredients: userPrefs?.excluded_ingredients || [],
+          calorieTarget: userPrefs?.calorie_target || 2000,
+          includeSnacks: userPrefs?.include_snacks ?? false,
+          allergies: userPrefs?.allergies || [],
+          intolerances: userPrefs?.intolerances || [],
+          maxPrepTime: userPrefs?.max_prep_time || undefined,
+          macroPriority: userPrefs?.macro_priority || "balanced",
+        }
+      }
+
       console.log("Generating meal plan for user:", userId)
 
       // Get available recipes based on preferences
-      const recipes = await recipeService.getRecipes({
-        tags: preferences?.dietaryPreferences,
+      let recipes = await recipeService.getRecipes({
+        tags: prefs?.dietaryPreferences,
         userId,
       })
+      // Filtrar recetas que no contengan ingredientes excluidos
+      if (prefs?.excludedIngredients && prefs.excludedIngredients.length > 0) {
+        recipes = recipes.filter(recipe => {
+          const ingredients = (recipe.ingredients || []).map(i => i.name?.toLowerCase())
+          return !prefs!.excludedIngredients!.some(ex => ingredients.includes(ex.toLowerCase()))
+        })
+      }
+      // Filtrar recetas por alergias e intolerancias
+      if (prefs?.allergies && prefs.allergies.length > 0) {
+        recipes = recipes.filter(recipe => {
+          const ingredients = (recipe.ingredients || []).map(i => i.name?.toLowerCase())
+          return !prefs.allergies!.some(allergy => ingredients.includes(allergy.toLowerCase()))
+        })
+      }
+      if (prefs?.intolerances && prefs.intolerances.length > 0) {
+        recipes = recipes.filter(recipe => {
+          const ingredients = (recipe.ingredients || []).map(i => i.name?.toLowerCase())
+          return !prefs.intolerances!.some(intol => ingredients.includes(intol.toLowerCase()))
+        })
+      }
+      // Filtrar por tiempo máximo de preparación
+      if (prefs?.maxPrepTime) {
+        recipes = recipes.filter(recipe => (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0) <= prefs.maxPrepTime!)
+      }
 
       if (recipes.length === 0) {
         throw new Error("No recipes available for your preferences")
       }
 
-      // Simple meal plan generation logic
-      const mealTypes: ("breakfast" | "lunch" | "dinner")[] = ["breakfast", "lunch", "dinner"]
+      // Meal types según snacks
+      const mealTypes: ("breakfast" | "lunch" | "dinner" | "snack")[] = prefs.includeSnacks
+        ? ["breakfast", "lunch", "dinner", "snack"]
+        : ["breakfast", "lunch", "dinner"]
       const meals: {
         recipeId: string
         dayNumber: number
         mealType: "breakfast" | "lunch" | "dinner" | "snack"
       }[] = []
 
+      // Evitar repeticiones y aproximar objetivo calórico diario
+      const usedRecipeIds = new Set<string>()
       for (let day = 1; day <= 7; day++) {
+        let dailyCalories = 0
         for (const mealType of mealTypes) {
-          // Simple random selection - in production, you'd want more sophisticated logic
-          const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)]
+          // Seleccionar receta que no se haya usado y que no exceda mucho el objetivo calórico
+          let candidates = recipes.filter(r => !usedRecipeIds.has(r.id))
+          if (candidates.length === 0) candidates = recipes // Si se acaban, permitir repeticiones
+          // Macro prioridad: balanceado, proteína, carbos, grasas
+          let selected = candidates[0]
+          let minDiff = Math.abs((dailyCalories + (selected.calories || 0)) - (prefs?.calorieTarget || 2000) / mealTypes.length)
+          for (const r of candidates) {
+            let macroScore = 0
+            if (prefs.macroPriority === "protein") macroScore = r.protein || 0
+            else if (prefs.macroPriority === "carbs") macroScore = r.carbs || 0
+            else if (prefs.macroPriority === "fat") macroScore = r.fat || 0
+            else macroScore = (r.protein || 0) + (r.carbs || 0) + (r.fat || 0)
+            const diff = Math.abs((dailyCalories + (r.calories || 0)) - (prefs?.calorieTarget || 2000) / mealTypes.length)
+            // Si la macro prioridad es relevante, priorizar recetas con mayor macroScore
+            if (prefs.macroPriority !== "balanced") {
+              if (macroScore > (selected[prefs.macroPriority as "protein" | "carbs" | "fat"] || 0)) {
+                selected = r
+                minDiff = diff
+              }
+            } else {
+              if (diff < minDiff) {
+                selected = r
+                minDiff = diff
+              }
+            }
+          }
           meals.push({
-            recipeId: randomRecipe.id,
+            recipeId: selected.id,
             dayNumber: day,
             mealType,
           })
+          usedRecipeIds.add(selected.id)
+          dailyCalories += selected.calories || 0
         }
       }
 

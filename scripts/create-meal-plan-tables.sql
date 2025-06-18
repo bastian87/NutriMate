@@ -30,6 +30,17 @@ CREATE TABLE IF NOT EXISTS public.user_subscriptions (
   expires_at TIMESTAMP WITH TIME ZONE
 );
 
+-- Create user_preferences table
+CREATE TABLE IF NOT EXISTS public.user_preferences (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  include_snacks BOOLEAN,
+  allergies TEXT[] DEFAULT ARRAY[]::TEXT[],
+  intolerances TEXT[] DEFAULT ARRAY[]::TEXT[],
+  max_prep_time INTEGER,
+  macro_priority TEXT
+);
+
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_meal_plans_user_id ON public.meal_plans(user_id);
 CREATE INDEX IF NOT EXISTS idx_meal_plans_created_at ON public.meal_plans(created_at);
@@ -119,3 +130,11 @@ CREATE POLICY "Users can update their own subscriptions" ON public.user_subscrip
 
 -- No test data insertion - tables are ready for real user data
 SELECT 'Meal plan tables created successfully! Ready for user data.' as message;
+
+-- Add new columns to user_preferences table
+ALTER TABLE public.user_preferences
+  ADD COLUMN IF NOT EXISTS include_snacks BOOLEAN,
+  ADD COLUMN IF NOT EXISTS allergies TEXT[] DEFAULT ARRAY[]::TEXT[],
+  ADD COLUMN IF NOT EXISTS intolerances TEXT[] DEFAULT ARRAY[]::TEXT[],
+  ADD COLUMN IF NOT EXISTS max_prep_time INTEGER,
+  ADD COLUMN IF NOT EXISTS macro_priority TEXT;

@@ -16,7 +16,6 @@ import { useAuthContext } from "@/components/auth/auth-provider"
 import { userService } from "@/lib/services/user-service"
 
 type HealthGoal = "weight_loss" | "muscle_gain" | "maintenance" | "health_improvement" | "energy_boost"
-type DietaryPreference = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "keto" | "paleo"
 type ActivityLevel = "sedentary" | "light" | "moderate" | "active" | "very_active"
 
 interface ValidationErrors {
@@ -26,6 +25,20 @@ interface ValidationErrors {
   healthGoal?: string
   general?: string
 }
+
+// Lista unificada de preferencias dietarias (igual que en /account)
+const dietTypes = [
+  "No Restrictions",
+  "Vegetarian",
+  "Vegan",
+  "Pescatarian",
+  "Keto",
+  "Paleo",
+  "Mediterranean",
+  "Low Carb",
+  "Low Fat",
+  "Gluten Free",
+]
 
 export default function OnboardingForm() {
   const router = useRouter()
@@ -46,9 +59,15 @@ export default function OnboardingForm() {
     calorie_target: 0, // Will be calculated based on other inputs
 
     // Dietary preferences
-    dietary_preferences: [] as DietaryPreference[],
+    dietary_preferences: [] as string[],
     excluded_ingredients: [] as string[],
     customExcludedIngredient: "",
+    // Advanced
+    include_snacks: false,
+    allergies: [] as string[],
+    intolerances: [] as string[],
+    max_prep_time: 60,
+    macro_priority: "balanced",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft">("cm")
@@ -195,9 +214,14 @@ export default function OnboardingForm() {
           calorie_target: formData.calorie_target,
           dietary_preferences: formData.dietary_preferences,
           excluded_ingredients: formData.excluded_ingredients,
+          include_snacks: formData.include_snacks,
+          allergies: formData.allergies,
+          intolerances: formData.intolerances,
+          max_prep_time: formData.max_prep_time,
+          macro_priority: formData.macro_priority,
         }
 
-        await userService.saveUserPreferences(user.id, dataToSubmit)
+        await userService.saveUserPreferences(user.id, { user_id: user.id, ...dataToSubmit })
 
         // Show confirmation dialog with actual user email
         setShowConfirmation(true)
@@ -224,7 +248,7 @@ export default function OnboardingForm() {
     router.push("/dashboard")
   }
 
-  const toggleDietaryPreference = (preference: DietaryPreference) => {
+  const toggleDietaryPreference = (preference: string) => {
     setFormData((prev) => {
       if (prev.dietary_preferences.includes(preference)) {
         return {
@@ -549,190 +573,82 @@ export default function OnboardingForm() {
           {/* Step 3: Dietary Preferences */}
           {currentStep === 3 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold mb-4">Do you have any dietary preferences?</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Select all that apply. This helps us filter recipes to match your preferences.
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div
-                  className={`border p-4 rounded-md cursor-pointer ${
-                    formData.dietary_preferences.includes("vegetarian")
-                      ? "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-900"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-900"
-                  }`}
-                  onClick={() => toggleDietaryPreference("vegetarian")}
-                >
-                  <div className="flex items-center space-x-2">
+              <h2 className="text-xl font-semibold mb-4">Dietary Preferences</h2>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {dietTypes.map((diet) => (
+                  <div key={diet} className="flex items-center space-x-2">
                     <Checkbox
-                      checked={formData.dietary_preferences.includes("vegetarian")}
-                      onCheckedChange={() => toggleDietaryPreference("vegetarian")}
+                      id={`diet-${diet}`}
+                      checked={formData.dietary_preferences.includes(diet)}
+                      onCheckedChange={() => {
+                        toggleDietaryPreference(diet)
+                      }}
                     />
-                    <Label className="font-medium cursor-pointer">Vegetarian</Label>
+                    <Label htmlFor={`diet-${diet}`}>{diet}</Label>
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-6">No meat, poultry, or seafood</p>
-                </div>
-
-                <div
-                  className={`border p-4 rounded-md cursor-pointer ${
-                    formData.dietary_preferences.includes("vegan")
-                      ? "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-900"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-900"
-                  }`}
-                  onClick={() => toggleDietaryPreference("vegan")}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={formData.dietary_preferences.includes("vegan")}
-                      onCheckedChange={() => toggleDietaryPreference("vegan")}
-                    />
-                    <Label className="font-medium cursor-pointer">Vegan</Label>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-6">No animal products</p>
-                </div>
-
-                <div
-                  className={`border p-4 rounded-md cursor-pointer ${
-                    formData.dietary_preferences.includes("gluten_free")
-                      ? "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-900"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-900"
-                  }`}
-                  onClick={() => toggleDietaryPreference("gluten_free")}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={formData.dietary_preferences.includes("gluten_free")}
-                      onCheckedChange={() => toggleDietaryPreference("gluten_free")}
-                    />
-                    <Label className="font-medium cursor-pointer">Gluten-Free</Label>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-6">No wheat, barley, or rye</p>
-                </div>
-
-                <div
-                  className={`border p-4 rounded-md cursor-pointer ${
-                    formData.dietary_preferences.includes("dairy_free")
-                      ? "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-900"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-900"
-                  }`}
-                  onClick={() => toggleDietaryPreference("dairy_free")}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={formData.dietary_preferences.includes("dairy_free")}
-                      onCheckedChange={() => toggleDietaryPreference("dairy_free")}
-                    />
-                    <Label className="font-medium cursor-pointer">Dairy-Free</Label>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-6">
-                    No milk, cheese, or dairy products
-                  </p>
-                </div>
-
-                <div
-                  className={`border p-4 rounded-md cursor-pointer ${
-                    formData.dietary_preferences.includes("keto")
-                      ? "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-900"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-900"
-                  }`}
-                  onClick={() => toggleDietaryPreference("keto")}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={formData.dietary_preferences.includes("keto")}
-                      onCheckedChange={() => toggleDietaryPreference("keto")}
-                    />
-                    <Label className="font-medium cursor-pointer">Keto</Label>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-6">Low-carb, high-fat meals</p>
-                </div>
-
-                <div
-                  className={`border p-4 rounded-md cursor-pointer ${
-                    formData.dietary_preferences.includes("paleo")
-                      ? "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-900"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-900"
-                  }`}
-                  onClick={() => toggleDietaryPreference("paleo")}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={formData.dietary_preferences.includes("paleo")}
-                      onCheckedChange={() => toggleDietaryPreference("paleo")}
-                    />
-                    <Label className="font-medium cursor-pointer">Paleo</Label>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-6">
-                    Whole foods, no grains or processed items
-                  </p>
-                </div>
+                ))}
               </div>
             </div>
           )}
 
-          {/* Step 4: Excluded Ingredients */}
+          {/* Step 4: Advanced Preferences */}
           {currentStep === 4 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold mb-4">Any ingredients you want to avoid?</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Add any ingredients you're allergic to or simply don't like.
-              </p>
-
-              <div className="flex space-x-2">
-                <Input
-                  placeholder="Enter an ingredient (e.g., mushrooms)"
-                  value={formData.customExcludedIngredient}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, customExcludedIngredient: e.target.value }))}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault()
-                      addExcludedIngredient()
-                    }
-                  }}
+              <h2 className="text-xl font-semibold mb-4">Preferencias avanzadas</h2>
+              <div>
+                <Label htmlFor="include_snacks">¿Incluir snacks?</Label>
+                <Checkbox
+                  id="include_snacks"
+                  checked={formData.include_snacks}
+                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, include_snacks: checked as boolean }))}
+                  className="ml-2"
                 />
-                <Button type="button" onClick={addExcludedIngredient}>
-                  Add
-                </Button>
               </div>
-
-              {formData.excluded_ingredients.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm font-medium mb-2">Excluded ingredients:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.excluded_ingredients.map((ingredient) => (
-                      <div
-                        key={ingredient}
-                        className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full text-sm flex items-center"
-                      >
-                        {ingredient}
-                        <button
-                          onClick={() => removeExcludedIngredient(ingredient)}
-                          className="ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                        >
-                          &times;
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md border border-blue-100 dark:border-blue-900">
-                <p className="text-sm text-blue-800 dark:text-blue-300">
-                  <span className="font-medium">Tip:</span> Adding ingredients you want to avoid helps us create a meal
-                  plan you'll truly enjoy. Don't forget common allergens if they apply to you!
-                </p>
+              <div>
+                <Label htmlFor="allergies">Alergias (separadas por coma)</Label>
+                <Input
+                  id="allergies"
+                  placeholder="ej: nueces, mariscos, huevo"
+                  value={formData.allergies?.join(", ") || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, allergies: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) }))}
+                />
               </div>
-
-              {/* Show calculated calorie target */}
-              <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-md border border-orange-100 dark:border-orange-900">
-                <h3 className="font-medium text-orange-800 dark:text-orange-300 mb-2">Your Daily Calorie Target</h3>
-                <p className="text-orange-800 dark:text-orange-300 text-2xl font-bold">
-                  {formData.calorie_target} calories
-                </p>
-                <p className="text-sm text-orange-700 dark:text-orange-400 mt-1">
-                  Based on your age, gender, height, weight, activity level, and health goal
-                </p>
+              <div>
+                <Label htmlFor="intolerances">Intolerancias (separadas por coma)</Label>
+                <Input
+                  id="intolerances"
+                  placeholder="ej: lactosa, gluten"
+                  value={formData.intolerances?.join(", ") || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, intolerances: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="max_prep_time">Tiempo máximo de preparación (minutos)</Label>
+                <Input
+                  id="max_prep_time"
+                  type="number"
+                  min={5}
+                  max={180}
+                  value={formData.max_prep_time || 60}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, max_prep_time: Number.parseInt(e.target.value) }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="macro_priority">Prioridad de macronutrientes</Label>
+                <Select
+                  value={formData.macro_priority || "balanced"}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, macro_priority: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona prioridad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="balanced">Balanceado</SelectItem>
+                    <SelectItem value="protein">Alta proteína</SelectItem>
+                    <SelectItem value="carbs">Altos carbohidratos</SelectItem>
+                    <SelectItem value="fat">Altas grasas</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           )}

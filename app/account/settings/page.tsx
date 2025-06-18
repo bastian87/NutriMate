@@ -84,7 +84,8 @@ const AccountSettingsPage = () => {
         title: "Account Deleted",
         description: "Your account has been permanently deleted.",
       })
-      // The auth provider should handle redirecting on sign out
+      // Redirigir al landing page
+      router.push("/")
     } catch (error) {
       console.error("Error deleting account:", error)
       toast({
