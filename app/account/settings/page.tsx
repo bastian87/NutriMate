@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { Trash2, Loader2 } from "lucide-react"
+import { Trash2, Loader2, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
 import { useToast } from "@/components/ui/use-toast"
 import { Button } from "@/components/ui/button"
@@ -107,6 +108,14 @@ const AccountSettingsPage = () => {
 
   return (
     <div className="container mx-auto py-10 font-sans">
+      {/* Back Button */}
+      <div className="mb-6">
+        <Link href="/account" className="inline-flex items-center text-gray-600 hover:text-orange-600">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Account
+        </Link>
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

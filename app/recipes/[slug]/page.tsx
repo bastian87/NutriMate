@@ -6,17 +6,39 @@ import { ArrowLeft, Clock, Users, Bookmark, Share2, Star, ShoppingCart } from "l
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRecipe } from "@/hooks/use-recipes"
 import { useGroceryList } from "@/hooks/use-grocery-list"
 import { useAuthContext } from "@/components/auth/auth-provider"
 
 export default function RecipePage({ params }: { params: { slug: string } }) {
-  const { recipe, loading, error, toggleFavorite, rateRecipe } = useRecipe(params.slug)
-  const { addRecipeIngredients } = useGroceryList()
   const { user } = useAuthContext()
+  const { recipe, loading, error, toggleFavorite, rateRecipe } = useRecipe(params.slug, user?.id)
+  const { addRecipeIngredients } = useGroceryList()
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([])
   const [isAddingToList, setIsAddingToList] = useState(false)
+  const [userRating, setUserRating] = useState<number>(recipe?.user_rating || 0)
+  const [userReview, setUserReview] = useState<string>("")
+  const [savingRating, setSavingRating] = useState(false)
+  const [showSavedMsg, setShowSavedMsg] = useState(false)
+  const [showShareMenu, setShowShareMenu] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const shareMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setUserRating(recipe?.user_rating || 0)
+  }, [recipe?.user_rating])
+
+  useEffect(() => {
+    // Si el usuario ya tiene review, mostrarlo
+    if (recipe && user && recipe.id && recipe.user_rating) {
+      // Buscar el review del usuario en la lista de ratings si está disponible
+      // (esto depende de cómo se obtienen los datos, aquí solo inicializamos vacío)
+      // Si quieres mostrar el review guardado, deberías modificar getRecipeById para incluirlo
+      // Por ahora, lo dejamos vacío para que el usuario pueda escribirlo
+      setUserReview("")
+    }
+  }, [recipe, user])
 
   console.log("Recipe data:", recipe)
   console.log("User:", user)
@@ -61,6 +83,52 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
     const totalIngredients = recipe?.ingredients?.length || 0
     return `Add All to Grocery List (${totalIngredients})`
   }
+
+  const handleStarClick = (star: number) => {
+    setUserRating(star)
+  }
+
+  const handleSaveRating = async () => {
+    if (!user || !recipe) return
+    setSavingRating(true)
+    try {
+      await rateRecipe(userRating, userReview)
+      setShowSavedMsg(true)
+    } catch (e) {
+      alert("Error saving rating: " + (e instanceof Error ? e.message : e))
+    } finally {
+      setSavingRating(false)
+    }
+  }
+
+  const shareUrl = typeof window !== "undefined"
+    ? window.location.href
+    : `https://nutrimate.com/recipes/${params.slug}`
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch (e) {
+      alert("No se pudo copiar el enlace")
+    }
+  }
+
+  // Cerrar menú si se hace click fuera
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (shareMenuRef.current && !shareMenuRef.current.contains(event.target as Node)) {
+        setShowShareMenu(false)
+      }
+    }
+    if (showShareMenu) {
+      document.addEventListener("mousedown", handleClickOutside)
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [showShareMenu])
 
   if (loading) {
     return (
@@ -122,28 +190,70 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
           <div className="flex items-center">
             <div className="flex">
               {[1, 2, 3, 4, 5].map((star) => (
-                <Star
+                <button
                   key={star}
-                  className={`h-5 w-5 ${star <= recipe.average_rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
-                />
+                  type="button"
+                  disabled={!user}
+                  onClick={() => handleStarClick(star)}
+                  className={`h-5 w-5 focus:outline-none ${star <= userRating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+                  aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                >
+                  <Star className="h-5 w-5" />
+                </button>
               ))}
             </div>
             <span className="ml-2">({recipe.rating_count})</span>
           </div>
         </div>
 
-        <div className="flex space-x-4">
-          <Button
-            onClick={toggleFavorite}
-            className={`${recipe.is_favorited ? "bg-red-600 hover:bg-red-700" : "bg-orange-600 hover:bg-orange-700"}`}
-          >
-            <Bookmark className="mr-2 h-4 w-4" />
-            {recipe.is_favorited ? "Saved" : "Save to Recipe Box"}
-          </Button>
-          <Button variant="outline">
+        {user && (
+          <div className="mb-6">
+            <textarea
+              className="w-full border rounded p-2 mb-2"
+              rows={2}
+              placeholder="Deja un comentario sobre la receta (opcional)"
+              value={userReview}
+              onChange={e => setUserReview(e.target.value)}
+              disabled={savingRating}
+            />
+            <Button onClick={handleSaveRating} disabled={savingRating || userRating === 0}>
+              {savingRating ? "Guardando..." : "Guardar calificación"}
+            </Button>
+            {showSavedMsg && <span className="ml-4 text-green-600">¡Guardado!</span>}
+          </div>
+        )}
+
+        <div className="flex space-x-4 relative">
+          <Button variant="outline" onClick={() => setShowShareMenu((v) => !v)}>
             <Share2 className="mr-2 h-4 w-4" />
-            Share
+            Compartir
           </Button>
+          {showShareMenu && (
+            <div ref={shareMenuRef} className="absolute z-10 top-12 left-0 bg-white border rounded shadow-lg p-3 min-w-[220px]">
+              <div className="flex flex-col gap-2">
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`¡Mira esta receta en NutriMate! ${shareUrl}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:bg-orange-50 rounded px-2 py-1"
+                >
+                  Compartir por WhatsApp
+                </a>
+                <a
+                  href={`mailto:?subject=${encodeURIComponent(`Receta: ${recipe.name}`)}&body=${encodeURIComponent(`¡Mira esta receta en NutriMate!\n${shareUrl}`)}`}
+                  className="hover:bg-orange-50 rounded px-2 py-1"
+                >
+                  Compartir por Email
+                </a>
+                <button
+                  onClick={handleCopy}
+                  className="hover:bg-orange-50 rounded px-2 py-1 text-left"
+                >
+                  {copied ? "¡Enlace copiado!" : "Copiar enlace"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

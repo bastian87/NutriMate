@@ -16,6 +16,7 @@ export function useRecipes(filters?: RecipeFilters) {
   const [error, setError] = useState<string | null>(null)
 
   const prevFiltersRef = useRef<RecipeFilters>()
+  const isInitialLoadRef = useRef(true)
 
   const fetchRecipes = useCallback(async (currentFilters?: RecipeFilters) => {
     // Only fetch if filters have actually changed
@@ -35,11 +36,15 @@ export function useRecipes(filters?: RecipeFilters) {
       setRecipes([]) // Clear recipes on error
     } finally {
       setLoading(false)
+      isInitialLoadRef.current = false
     }
   }, [])
 
   useEffect(() => {
-    fetchRecipes(filters)
+    // Only fetch on initial load or when filters actually change
+    if (isInitialLoadRef.current || !areFiltersEqual(prevFiltersRef.current, filters)) {
+      fetchRecipes(filters)
+    }
   }, [filters, fetchRecipes])
 
   const toggleFavorite = async (recipeId: string, userId?: string) => {
@@ -50,9 +55,10 @@ export function useRecipes(filters?: RecipeFilters) {
 
     try {
       const isFavorited = await recipeService.toggleFavorite(recipeId, userId)
-      setRecipes((prev) =>
-        prev.map((recipe) => (recipe.id === recipeId ? { ...recipe, is_favorited: isFavorited } : recipe)),
-      )
+      setRecipes((prev) => {
+        const updated = prev.map((recipe) => (recipe.id === recipeId ? { ...recipe, is_favorited: isFavorited } : recipe))
+        return updated
+      })
     } catch (err) {
       console.error("Failed to toggle favorite:", err)
       // Optionally show a toast notification
@@ -66,12 +72,22 @@ export function useRecipe(slugOrId: string, userId?: string) {
   const [recipe, setRecipe] = useState<RecipeWithDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const prevSlugOrIdRef = useRef<string>()
+  const prevUserIdRef = useRef<string>()
 
   useEffect(() => {
     if (!slugOrId) {
       setLoading(false)
       return
     }
+
+    // Only fetch if slugOrId or userId actually changed
+    if (prevSlugOrIdRef.current === slugOrId && prevUserIdRef.current === userId) {
+      return
+    }
+
+    prevSlugOrIdRef.current = slugOrId
+    prevUserIdRef.current = userId
 
     const fetchRecipe = async () => {
       setLoading(true)
@@ -91,11 +107,16 @@ export function useRecipe(slugOrId: string, userId?: string) {
   }, [slugOrId, userId])
 
   const toggleFavorite = async () => {
-    if (!recipe || !userId) return
+    if (!recipe || !userId) {
+      return
+    }
 
     try {
       const isFavorited = await recipeService.toggleFavorite(recipe.id, userId)
-      setRecipe((prev) => (prev ? { ...prev, is_favorited: isFavorited } : null))
+      setRecipe((prev) => {
+        const updated = prev ? { ...prev, is_favorited: isFavorited } : null
+        return updated
+      })
     } catch (err) {
       console.error("Failed to toggle favorite:", err)
     }

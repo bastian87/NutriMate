@@ -3,36 +3,85 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, RefreshCw, Heart, History, TrendingUp, Home, AlertCircle } from "lucide-react"
+import { Calendar, RefreshCw, TrendingUp, Home, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import MealPlanDisplay from "@/components/meal-plan-display"
 import { NutritionSummary } from "@/components/nutrition-summary"
-import { useFavorites } from "@/hooks/use-favorites"
-import { useMealPlanHistory } from "@/hooks/use-meal-plan-history"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
 import useAuth from "@/hooks/use-auth"
 import { useMealPlans } from "@/hooks/use-meal-plans"
 import { useToast } from "@/hooks/use-toast"
+import { mealPlanService } from "@/lib/services/meal-plan-service"
+
+interface MappedMealPlan {
+  id: string
+  name: string
+  startDate: string
+  endDate: string
+  meals: Array<{
+    id: string
+    day: number
+    mealType: "breakfast" | "lunch" | "dinner" | "snack"
+    recipe: {
+      id: string
+      name: string
+      calories: number
+      protein: number
+      carbs: number
+      fat: number
+      imageUrl: string | undefined
+      prepTimeMinutes: number
+      cookTimeMinutes: number
+    }
+  }>
+}
 
 export default function DashboardPage() {
   const { t } = useLanguage()
   const { toast } = useToast()
-  const { favorites } = useFavorites()
-  const { history } = useMealPlanHistory()
   const { user, loading: authLoading } = useAuth()
   const { mealPlans, loading: mealPlansLoading, error: mealPlansError, generateMealPlan } = useMealPlans()
 
-  const [currentMealPlan, setCurrentMealPlan] = useState(null)
+  const [currentMealPlan, setCurrentMealPlan] = useState<MappedMealPlan | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
 
   useEffect(() => {
-    if (mealPlans && mealPlans.length > 0) {
-      setCurrentMealPlan(mealPlans[0])
-    } else {
-      setCurrentMealPlan(null)
+    const fetchFullMealPlan = async () => {
+      if (mealPlans && mealPlans.length > 0) {
+        const fullPlan = await mealPlanService.getMealPlanById(mealPlans[0].id) as any
+        if (fullPlan) {
+          const mappedPlan = {
+            id: fullPlan.id,
+            name: fullPlan.name,
+            startDate: fullPlan.start_date as string,
+            endDate: fullPlan.end_date as string,
+            meals: (fullPlan.meals || []).map((meal: any) => ({
+              id: meal.id,
+              day: meal.day_number,
+              mealType: meal.meal_type,
+              recipe: {
+                id: meal.recipe.id,
+                name: meal.recipe.name,
+                calories: meal.recipe.calories,
+                protein: meal.recipe.protein,
+                carbs: meal.recipe.carbs,
+                fat: meal.recipe.fat,
+                imageUrl: meal.recipe.image_url,
+                prepTimeMinutes: meal.recipe.prep_time_minutes,
+                cookTimeMinutes: meal.recipe.cook_time_minutes,
+              },
+            })),
+          }
+          setCurrentMealPlan(mappedPlan)
+        } else {
+          setCurrentMealPlan(null)
+        }
+      } else {
+        setCurrentMealPlan(null)
+      }
     }
+    fetchFullMealPlan()
   }, [mealPlans])
 
   const handleGenerateNewPlan = async () => {
@@ -92,7 +141,7 @@ export default function DashboardPage() {
     )
   }
 
-  const todaysMeals = currentMealPlan?.meals?.filter((meal) => meal.day_number === 1) || []
+  const todaysMeals = currentMealPlan?.meals?.filter((meal) => meal.day === 1) || []
   const todaysNutrition = todaysMeals.reduce(
     (acc, meal) => ({
       calories: acc.calories + (meal.recipe?.calories || 0),
@@ -113,16 +162,6 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-3xl font-bold mb-2">{t("dashboard.welcome")}</h1>
           <p className="text-gray-600 dark:text-gray-400">{t("dashboard.subtitle")}</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-            <Heart className="h-3 w-3 mr-1" />
-            {favorites.length} {t("recipes.favorites")}
-          </Badge>
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-            <History className="h-3 w-3 mr-1" />
-            {history.length} {t("dashboard.savedPlans")}
-          </Badge>
         </div>
       </motion.div>
 

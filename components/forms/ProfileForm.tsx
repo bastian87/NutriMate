@@ -2,13 +2,14 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import { userService } from "@/lib/services/user-service"
 
 interface ProfileFormProps {
   user: any
@@ -17,27 +18,54 @@ interface ProfileFormProps {
 export default function ProfileForm({ user }: ProfileFormProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
-    bio: user?.bio || "",
-    location: user?.location || "",
-    phone: user?.phone || "",
+    full_name: "",
+    email: "",
   })
   const { toast } = useToast()
 
+  // Load user data when component mounts
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!user?.id) return
+      
+      try {
+        const profile = await userService.getUserProfile(user.id)
+        if (profile) {
+          setFormData({
+            full_name: profile.full_name || "",
+            email: profile.email || "",
+          })
+        }
+      } catch (error) {
+        console.error("Error loading user profile:", error)
+      }
+    }
+
+    loadUserProfile()
+  }, [user?.id])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!user?.id) return
+    
     setLoading(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
+      const updatedProfile = await userService.updateUserProfile(user.id, {
+        full_name: formData.full_name,
+        email: formData.email,
       })
+
+      if (updatedProfile) {
+        toast({
+          title: "Profile updated",
+          description: "Your profile has been successfully updated.",
+        })
+      } else {
+        throw new Error("Failed to update profile")
+      }
     } catch (error) {
+      console.error("Error updating profile:", error)
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
@@ -65,11 +93,11 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="full_name">Full Name</Label>
               <Input
-                id="name"
-                name="name"
-                value={formData.name}
+                id="full_name"
+                name="full_name"
+                value={formData.full_name}
                 onChange={handleChange}
                 placeholder="Enter your full name"
               />
@@ -85,41 +113,6 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 placeholder="Enter your email"
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="Enter your phone number"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="Enter your location"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="bio">Bio</Label>
-            <Textarea
-              id="bio"
-              name="bio"
-              value={formData.bio}
-              onChange={handleChange}
-              placeholder="Tell us about yourself"
-              rows={3}
-            />
           </div>
 
           <Button type="submit" disabled={loading}>

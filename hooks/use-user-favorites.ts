@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { recipeService, type RecipeWithDetails } from "@/lib/services/recipe-service"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
@@ -11,6 +11,7 @@ export function useUserFavorites() {
   const [favorites, setFavorites] = useState<RecipeWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const prevUserIdRef = useRef<string>()
 
   const fetchFavorites = useCallback(async () => {
     if (!user) {
@@ -39,9 +40,13 @@ export function useUserFavorites() {
 
   useEffect(() => {
     if (!authLoading) {
-      fetchFavorites()
+      // Only fetch if userId actually changed
+      if (prevUserIdRef.current !== user?.id) {
+        prevUserIdRef.current = user?.id
+        fetchFavorites()
+      }
     }
-  }, [authLoading, fetchFavorites])
+  }, [authLoading, user?.id, fetchFavorites])
 
   const removeFavorite = useCallback(
     async (recipeId: string) => {

@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useAuthContext } from "@/components/auth/auth-provider"
 import { userService } from "@/lib/services/user-service"
 import { useLanguage } from "@/lib/i18n/context"
-import { User, Settings, Target, Heart } from "lucide-react"
+import { Settings, Target, Heart } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 
@@ -31,10 +31,6 @@ export default function AccountPage() {
   const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [profile, setProfile] = useState({
-    full_name: "",
-    email: "",
-  })
   const [preferences, setPreferences] = useState<UserPreferences>({
     age: 30,
     gender: "male",
@@ -58,12 +54,6 @@ export default function AccountPage() {
 
     try {
       setLoading(true)
-
-      // Load user profile from auth
-      setProfile({
-        full_name: user.user_metadata?.full_name || "",
-        email: user.email || "",
-      })
 
       // Load preferences from API
       const userPrefs = await userService.getUserPreferences(user.id)
@@ -138,48 +128,20 @@ export default function AccountPage() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-serif font-bold mb-2">Account Settings</h1>
-            <p className="text-gray-600">Manage your profile and preferences</p>
+            <p className="text-gray-600">Manage your health preferences and profile settings</p>
           </div>
           <Link href="/account/settings">
             <Button className="bg-orange-600 hover:bg-orange-700">
               <Settings className="h-4 w-4 mr-2" />
-              Advanced Settings
+              Profile & Advanced Settings
             </Button>
           </Link>
         </div>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Profile Information */}
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Profile Information
-              </CardTitle>
-              <CardDescription>Update your basic profile information</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="full_name">Full Name</Label>
-                <Input
-                  id="full_name"
-                  value={profile.full_name}
-                  onChange={(e) => setProfile((prev) => ({ ...prev, full_name: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={profile.email} disabled className="bg-gray-50" />
-                <p className="text-sm text-gray-500 mt-1">Email cannot be changed</p>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
         {/* Health Information */}
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -201,12 +163,9 @@ export default function AccountPage() {
                 </div>
                 <div>
                   <Label htmlFor="gender">Gender</Label>
-                  <Select
-                    value={preferences.gender}
-                    onValueChange={(value) => setPreferences((prev) => ({ ...prev, gender: value }))}
-                  >
+                  <Select value={preferences.gender} onValueChange={(value) => setPreferences((prev) => ({ ...prev, gender: value }))}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="male">Male</SelectItem>
@@ -216,6 +175,7 @@ export default function AccountPage() {
                   </Select>
                 </div>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="height">Height (cm)</Label>
@@ -236,65 +196,45 @@ export default function AccountPage() {
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
 
-        {/* Activity & Goals */}
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Activity & Goals
-              </CardTitle>
-              <CardDescription>Set your activity level and health goals</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="activity_level">Activity Level</Label>
-                <Select
-                  value={preferences.activity_level}
-                  onValueChange={(value) => setPreferences((prev) => ({ ...prev, activity_level: value }))}
-                >
+                <Select value={preferences.activity_level} onValueChange={(value) => setPreferences((prev) => ({ ...prev, activity_level: value }))}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select activity level" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sedentary">Sedentary</SelectItem>
-                    <SelectItem value="light">Lightly Active</SelectItem>
-                    <SelectItem value="moderate">Moderately Active</SelectItem>
-                    <SelectItem value="active">Very Active</SelectItem>
-                    <SelectItem value="very_active">Extra Active</SelectItem>
+                    <SelectItem value="sedentary">Sedentary (little or no exercise)</SelectItem>
+                    <SelectItem value="light">Lightly active (light exercise/sports 1-3 days/week)</SelectItem>
+                    <SelectItem value="moderate">Moderately active (moderate exercise/sports 3-5 days/week)</SelectItem>
+                    <SelectItem value="active">Very active (hard exercise/sports 6-7 days a week)</SelectItem>
+                    <SelectItem value="very_active">Extra active (very hard exercise/sports & physical job)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
               <div>
                 <Label htmlFor="health_goal">Health Goal</Label>
-                <Select
-                  value={preferences.health_goal}
-                  onValueChange={(value) => setPreferences((prev) => ({ ...prev, health_goal: value }))}
-                >
+                <Select value={preferences.health_goal} onValueChange={(value) => setPreferences((prev) => ({ ...prev, health_goal: value }))}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select health goal" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="weight_loss">Weight Loss</SelectItem>
+                    <SelectItem value="maintenance">Weight Maintenance</SelectItem>
                     <SelectItem value="muscle_gain">Muscle Gain</SelectItem>
-                    <SelectItem value="maintenance">Maintenance</SelectItem>
-                    <SelectItem value="health_improvement">Health Improvement</SelectItem>
+                    <SelectItem value="general_health">General Health</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
               <div>
                 <Label htmlFor="calorie_target">Daily Calorie Target</Label>
                 <Input
                   id="calorie_target"
                   type="number"
                   value={preferences.calorie_target}
-                  onChange={(e) =>
-                    setPreferences((prev) => ({ ...prev, calorie_target: Number.parseInt(e.target.value) }))
-                  }
+                  onChange={(e) => setPreferences((prev) => ({ ...prev, calorie_target: Number.parseInt(e.target.value) }))}
                 />
               </div>
             </CardContent>
@@ -302,40 +242,51 @@ export default function AccountPage() {
         </motion.div>
 
         {/* Dietary Preferences */}
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
+        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
+                <Target className="h-5 w-5" />
                 Dietary Preferences
               </CardTitle>
-              <CardDescription>Select your dietary preferences and restrictions</CardDescription>
+              <CardDescription>Customize your dietary preferences and restrictions</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-3">
-                {[
-                  { id: "vegetarian", label: "Vegetarian" },
-                  { id: "vegan", label: "Vegan" },
-                  { id: "gluten_free", label: "Gluten-Free" },
-                  { id: "dairy_free", label: "Dairy-Free" },
-                  { id: "keto", label: "Keto" },
-                  { id: "paleo", label: "Paleo" },
-                ].map((pref) => (
-                  <div key={pref.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={pref.id}
-                      checked={preferences.dietary_preferences?.includes(pref.id)}
-                      onCheckedChange={() => toggleDietaryPreference(pref.id)}
-                    />
-                    <Label htmlFor={pref.id}>{pref.label}</Label>
-                  </div>
-                ))}
+              <div>
+                <Label className="text-base font-medium">Dietary Preferences</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {["vegetarian", "vegan", "gluten-free", "dairy-free", "keto", "paleo", "mediterranean"].map((preference) => (
+                    <div key={preference} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={preference}
+                        checked={preferences.dietary_preferences?.includes(preference)}
+                        onCheckedChange={() => toggleDietaryPreference(preference)}
+                      />
+                      <Label htmlFor={preference} className="text-sm capitalize">
+                        {preference.replace("-", " ")}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <Button
-                onClick={handleSavePreferences}
-                disabled={saving}
-                className="w-full bg-orange-600 hover:bg-orange-700"
-              >
+
+              <div>
+                <Label htmlFor="excluded_ingredients">Excluded Ingredients</Label>
+                <Input
+                  id="excluded_ingredients"
+                  placeholder="e.g., nuts, shellfish, soy (comma separated)"
+                  value={preferences.excluded_ingredients?.join(", ") || ""}
+                  onChange={(e) =>
+                    setPreferences((prev) => ({
+                      ...prev,
+                      excluded_ingredients: e.target.value.split(",").map((item) => item.trim()).filter(Boolean),
+                    }))
+                  }
+                />
+                <p className="text-sm text-gray-500 mt-1">Separate ingredients with commas</p>
+              </div>
+
+              <Button onClick={handleSavePreferences} disabled={saving} className="w-full">
                 {saving ? "Saving..." : "Save Preferences"}
               </Button>
             </CardContent>

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, Filter, Clock, Star, Heart, X, ChefHat, Utensils, Plus, Loader2 } from "lucide-react"
+import { Search, Filter, Clock, Star, Heart, X, ChefHat, Utensils, Plus, Loader2, Bookmark } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -270,11 +270,11 @@ export default function RecipesPage() {
                           whileTap={{ scale: 0.9 }}
                           onClick={() => toggleFavorite(recipe.id, user.id)}
                           className={`p-1.5 rounded-full backdrop-blur-sm transition-all duration-200 ${
-                            recipe.is_favorited ? "bg-red-500 text-white" : "bg-white/80 text-gray-600 hover:bg-white"
+                            recipe.is_favorited ? "bg-orange-500 text-white" : "bg-white/80 text-gray-600 hover:bg-white"
                           }`}
                           aria-label={recipe.is_favorited ? "Remove from favorites" : "Add to favorites"}
                         >
-                          <Heart className={`h-4 w-4 ${recipe.is_favorited ? "fill-current" : ""}`} />
+                          <Bookmark className={`h-4 w-4 ${recipe.is_favorited ? "fill-current" : ""}`} />
                         </motion.button>
                       )}
                       <div className="bg-white/90 backdrop-blur-sm text-orange-600 rounded-full px-2 py-1 text-xs font-semibold flex items-center">

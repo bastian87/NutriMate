@@ -51,7 +51,7 @@ export default function MealPlanDisplay({ mealPlan }: MealPlanDisplayProps) {
   const dateRange = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
 
   // Group meals by day
-  const mealsByDay = mealPlan.meals.reduce(
+  const mealsByDay = (mealPlan.meals || []).reduce(
     (acc, meal) => {
       if (!acc[meal.day]) {
         acc[meal.day] = []

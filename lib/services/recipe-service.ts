@@ -155,7 +155,7 @@ export const getRecipeById = async (id: string, userId?: string): Promise<Recipe
         supabase.from("recipe_ingredients").select("*").eq("recipe_id", recipe.id),
         supabase.from("recipe_ratings").select("*").eq("recipe_id", recipe.id),
         userId
-          ? supabase.from("user_favorites").select("id").eq("user_id", userId).eq("recipe_id", recipe.id).maybeSingle()
+          ? supabase.from("user_favorites").select("user_id,recipe_id").eq("user_id", userId).eq("recipe_id", recipe.id).maybeSingle()
           : Promise.resolve({ data: null }),
         supabase
           .from("recipe_tag_associations")
@@ -242,31 +242,85 @@ export const deleteRecipe = async (id: string): Promise<boolean> => {
 }
 
 export const rateRecipe = async (recipeId: string, userId: string, rating: number, review?: string): Promise<any> => {
-  // ... (implementation from v330)
-  return null // Placeholder
+  try {
+    // Verificar si ya existe un rating para este usuario y receta
+    const { data: existing, error: checkError } = await supabase
+      .from("recipe_ratings")
+      .select("recipe_id, user_id")
+      .eq("recipe_id", recipeId)
+      .eq("user_id", userId)
+      .maybeSingle()
+
+    if (checkError) throw checkError
+
+    if (existing) {
+      // Actualizar el rating existente
+      const { error: updateError } = await supabase
+        .from("recipe_ratings")
+        .update({ rating, review, created_at: new Date().toISOString() })
+        .eq("recipe_id", recipeId)
+        .eq("user_id", userId)
+      if (updateError) throw updateError
+      return { updated: true }
+    } else {
+      // Crear un nuevo rating
+      const { error: insertError } = await supabase
+        .from("recipe_ratings")
+        .insert({ recipe_id: recipeId, user_id: userId, rating, review, created_at: new Date().toISOString() })
+      if (insertError) throw insertError
+      return { created: true }
+    }
+  } catch (error) {
+    console.error("Error in rateRecipe:", error)
+    if (error instanceof Error) throw new Error(`Failed to rate recipe: ${error.message}`)
+    throw new Error("An unexpected error occurred while rating recipe")
+  }
 }
 
 export const toggleFavorite = async (recipeId: string, userId: string): Promise<boolean> => {
   try {
-    const { data: existing } = await supabase
+    // First, check if the favorite exists
+    const { data: existing, error: checkError } = await supabase
       .from("user_favorites")
-      .select("id")
+      .select("user_id,recipe_id")
       .eq("user_id", userId)
       .eq("recipe_id", recipeId)
-      .single()
+      .maybeSingle()
+
+    if (checkError) {
+      console.error("Error checking existing favorite:", checkError)
+      throw checkError
+    }
 
     if (existing) {
-      const { error } = await supabase.from("user_favorites").delete().eq("user_id", userId).eq("recipe_id", recipeId)
-      if (error) throw error
+      // Favorite exists, so remove it
+      const { error: deleteError } = await supabase
+        .from("user_favorites")
+        .delete()
+        .eq("user_id", userId)
+        .eq("recipe_id", recipeId)
+      
+      if (deleteError) {
+        console.error("Error deleting favorite:", deleteError)
+        throw deleteError
+      }
+      
       return false // Not favorited anymore
     } else {
-      const { error } = await supabase.from("user_favorites").insert({ user_id: userId, recipe_id: recipeId })
-      if (error) throw error
+      // Favorite doesn't exist, so add it
+      const { error: insertError } = await supabase
+        .from("user_favorites")
+        .insert({ user_id: userId, recipe_id: recipeId })
+      
+      if (insertError) {
+        console.error("Error inserting favorite:", insertError)
+        throw insertError
+      }
+      
       return true // Now favorited
     }
   } catch (error) {
     console.error("Error in toggleFavorite:", error)
-    // Consider re-throwing or returning a more specific error object
     if (error instanceof Error) throw new Error(`Failed to toggle favorite: ${error.message}`)
     throw new Error("An unexpected error occurred while toggling favorite status")
   }
