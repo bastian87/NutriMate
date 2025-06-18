@@ -192,7 +192,7 @@ export default function DashboardPage() {
                 <Link href="/meal-plans">
                   <Button variant="outline">
                     <Calendar className="h-4 w-4 mr-2" />
-                    {t("dashboard.viewFullPlan")}
+                    {t("dashboard.viewAllPlans")}
                   </Button>
                 </Link>
               </div>
