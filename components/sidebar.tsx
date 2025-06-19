@@ -153,7 +153,7 @@ export function Sidebar() {
         initial={false}
         animate={isCollapsed ? "collapsed" : "expanded"}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="hidden lg:flex flex-col h-screen bg-orange-50 dark:bg-gray-900 border-r border-orange-200 dark:border-gray-800 shadow-sm overflow-hidden"
+        className="hidden lg:flex flex-col sticky top-0 h-screen bg-orange-50 dark:bg-gray-900 border-r border-orange-200 dark:border-gray-800 shadow-sm overflow-hidden"
       >
         <div className="flex items-center justify-center h-16 border-b border-orange-200 dark:border-gray-800">
           <Link href="/" className="flex items-center gap-2">
