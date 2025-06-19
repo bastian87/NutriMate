@@ -112,6 +112,8 @@ export const translations = {
       managePlan: "Manage Plan",
       cancelPlan: "Cancel Plan",
       freePlan: "Free Plan",
+      manageBilling: "Manage Billing",
+      refresStatus:"Refresh subscription status",
       premiumPlan: "Premium Plan",
       features: "Features",
       price: "Price",

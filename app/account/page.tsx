@@ -166,7 +166,7 @@ export default function AccountPage() {
           <Link href="/account/settings">
             <Button className="bg-orange-600 hover:bg-orange-700">
               <Settings className="h-4 w-4 mr-2" />
-              Profile & Advanced Settings
+              {t("accountPage.profileAdvancedSettings")}
             </Button>
           </Link>
         </div>

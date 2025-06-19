@@ -193,9 +193,11 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
               {`Tu suscripción está cancelada, pero tienes acceso premium hasta el ${new Date(cancelledSubscription.ends_at).toLocaleDateString()}. Luego perderás acceso a las funciones premium.`}
             </div>
-            <Button variant="outline" className="w-full mt-2" onClick={refreshSubscription} disabled={isLoading}>
-              Refrescar estado
-            </Button>
+            <div className="flex justify-center mt-2">
+              <Button variant="outline" size="sm" onClick={refreshSubscription} disabled={isLoading}>
+                Refrescar estado
+              </Button>
+            </div>
           </CardContent>
         </Card>
       );
@@ -289,26 +291,17 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
           </div>
         ) : (
           <div className="space-y-2">
-            <Button variant="outline" className="w-full" disabled={isLoading} onClick={handleManageBilling}>
+            <Button variant="outline" className="w-fit" disabled={isLoading} onClick={handleManageBilling}>
               <Settings className="h-4 w-4 mr-2" />
-              Manage Billing
+              {t("subscription.manageBilling")}
             </Button>
             {message && <div className="text-green-700 bg-green-50 border border-green-200 rounded p-2 text-sm mt-2">{message}</div>}
             {error && <div className="text-red-700 bg-red-50 border border-red-200 rounded p-2 text-sm mt-2">{error}</div>}
           </div>
         )}
 
-        <div className="text-xs text-gray-500 pt-2 border-t">
-          <p>
-            Need help?{" "}
-            <a href="/support" className="text-orange-600 hover:underline">
-              Contact support
-            </a>
-          </p>
-        </div>
-
-        <Button variant="outline" className="w-full mb-2" onClick={refreshSubscription} disabled={isLoading}>
-          Refrescar estado de suscripción
+        <Button variant="outline" className="w-fit mb-2" onClick={refreshSubscription} disabled={isLoading}>
+        {t("subscription.refresStatus")}
         </Button>
       </CardContent>
     </Card>
