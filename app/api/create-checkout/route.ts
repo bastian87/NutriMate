@@ -31,13 +31,16 @@ export async function POST(request: NextRequest) {
       userEmail: user?.email 
     })
 
+    if (!user) {
+      console.error("Usuario no autenticado: se requiere login para suscribirse");
+      return NextResponse.json({ error: "Debes iniciar sesión para suscribirte." }, { status: 401 });
+    }
+
     // Handle both authenticated and guest users
     const checkoutData = {
       variantId,
-      ...(user && {
-        userId: user.id,
-        userEmail: user.email,
-      }),
+      userId: user.id,
+      userEmail: user.email,
       redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success`,
     }
 

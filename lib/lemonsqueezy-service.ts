@@ -128,11 +128,23 @@ export async function resumeSubscription(subscriptionId: string): Promise<boolea
   }
 }
 
-export async function getCustomerPortalUrl(customerId: string): Promise<string | null> {
+export async function getCustomerPortalUrl(subscriptionId: string): Promise<string | null> {
   try {
-    // LemonSqueezy doesn't have a direct customer portal API
-    // You would typically redirect users to their account page
-    return `https://app.lemonsqueezy.com/my-orders`
+    const response = await fetch(`${LEMONSQUEEZY_BASE_URL}/subscriptions/${subscriptionId}`, {
+      headers: {
+        Accept: "application/vnd.api+json",
+        "Content-Type": "application/vnd.api+json",
+        Authorization: `Bearer ${LEMONSQUEEZY_CONFIG.apiKey}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch subscription: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const portalUrl = data.data.attributes.urls?.customer_portal
+    return portalUrl || null
   } catch (error) {
     console.error("Error getting customer portal URL:", error)
     return null

@@ -101,18 +101,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Buscar el customer_id del usuario
+    // Buscar el subscription_id del usuario
     const { data: subData, error: subError } = await supabase
       .from("user_subscriptions")
-      .select("customer_id")
+      .select("subscription_id")
       .eq("user_id", user.id)
       .single()
 
-    if (subError || !subData?.customer_id) {
-      return NextResponse.json({ error: "No customer found" }, { status: 404 })
+    if (subError || !subData?.subscription_id) {
+      return NextResponse.json({ error: "No subscription found" }, { status: 404 })
     }
 
-    const url = await getCustomerPortalUrl(subData.customer_id)
+    const url = await getCustomerPortalUrl(subData.subscription_id)
     if (!url) {
       return NextResponse.json({ error: "No portal URL available" }, { status: 500 })
     }

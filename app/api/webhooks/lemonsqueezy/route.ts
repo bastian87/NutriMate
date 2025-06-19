@@ -36,48 +36,204 @@ export async function POST(request: NextRequest) {
     switch (event.meta.event_name) {
       case "subscription_created":
       case "subscription_updated": {
+        console.log(`[Webhook] Entrando a handler de ${event.meta.event_name} para subscription_id: ${event.data.id}, user_id: ${event.data.attributes.custom_data?.user_id || event.meta.custom_data?.user_id}`);
         console.log("Evento de suscripción recibido:", event.meta.event_name, event.data)
         const subscription = event.data
         const userId =
           subscription.attributes.custom_data?.user_id ||
           event.meta.custom_data?.user_id;
-        console.log("userId extraído:", userId)
+        const subscriptionId = subscription.id;
+        const planName = subscription.attributes.product_name;
+        const status = subscription.attributes.status;
+        // Conversión segura de fechas a string ISO para timestamptz
+        const renewsAt = subscription.attributes.renews_at
+          ? new Date(subscription.attributes.renews_at).toISOString()
+          : null;
+        const endsAt = subscription.attributes.ends_at
+          ? new Date(subscription.attributes.ends_at).toISOString()
+          : null;
+        const customerId = subscription.attributes.customer_id;
 
-        if (userId) {
-          const { error, data } = await supabase.from("user_subscriptions").upsert({
-            user_id: userId,
-            subscription_id: subscription.id,
-            status: subscription.attributes.status,
-            plan_name: subscription.attributes.product_name,
-            current_period_start: subscription.attributes.current_period_start,
-            current_period_end: subscription.attributes.current_period_end,
-            updated_at: new Date().toISOString(),
-          });
-          if (error) {
-            console.error("Error al hacer upsert en user_subscriptions:", error);
-          } else {
-            console.log("Upsert exitoso en user_subscriptions:", data);
+        // Validación de campos clave
+        if (!userId || !subscriptionId || !planName || !status) {
+          console.error("[Webhook] Faltan campos clave en el evento:", { userId, subscriptionId, planName, status });
+          break;
+        }
+
+        // Idempotencia mejorada: solo ignora si status y fechas son iguales
+        const { data: existing } = await supabase
+          .from("user_subscriptions")
+          .select("status, renews_at, ends_at")
+          .eq("subscription_id", subscriptionId)
+          .single();
+
+        const isSameStatus = existing?.status === status;
+        const isSameRenews = existing?.renews_at === renewsAt;
+        const isSameEnds = existing?.ends_at === endsAt;
+        const needsUpdate =
+          !existing?.renews_at || !existing?.ends_at ||
+          !isSameRenews || !isSameEnds;
+
+        if (isSameStatus && !needsUpdate) {
+          console.log(`[Webhook] Upsert EVITADO (idempotente) para subscription_id: ${subscriptionId}, user_id: ${userId}. Status: ${status}, renews_at: ${renewsAt}, ends_at: ${endsAt}`);
+          break;
+        } else {
+          console.log(`[Webhook] Upsert PERMITIDO para subscription_id: ${subscriptionId}, user_id: ${userId}. Status: ${status}, renews_at: ${renewsAt}, ends_at: ${endsAt}`);
+        }
+        // Log antes del upsert
+        console.log(`[Webhook] Upsert ejecutado para subscription_id: ${subscriptionId}, user_id: ${userId}. Datos:`, {
+          status,
+          renews_at: renewsAt,
+          ends_at: endsAt,
+          plan_name: planName,
+          customer_id: customerId,
+        });
+
+        // Limpieza de duplicados: dejar solo una fila por subscription_id y user_id (priorizar activa más reciente)
+        const { data: dups } = await supabase
+          .from("user_subscriptions")
+          .select("id, status, updated_at")
+          .eq("user_id", userId)
+          .eq("subscription_id", subscriptionId);
+        if (dups && dups.length > 1) {
+          // Mantener la activa más reciente o la más reciente si no hay activa
+          const keep = dups.find(d => d.status === "active") ||
+            dups.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
+          const toDelete = dups.filter(d => d.id !== keep.id).map(d => d.id);
+          if (toDelete.length > 0) {
+            await supabase.from("user_subscriptions").delete().in("id", toDelete);
+            console.log("[Webhook] Duplicados eliminados:", toDelete);
           }
         }
-        break
+
+        // Log de depuración: datos enviados a upsert
+        console.log("[Webhook] Datos enviados a upsert:", {
+          user_id: userId,
+          subscription_id: subscriptionId,
+          customer_id: customerId,
+          status,
+          plan_name: planName,
+          renews_at: renewsAt,
+          ends_at: endsAt,
+          updated_at: new Date().toISOString(),
+        });
+
+        // Upsert por subscription_id
+        const { error, data } = await supabase.from("user_subscriptions").upsert({
+          user_id: userId,
+          subscription_id: subscriptionId,
+          customer_id: customerId,
+          status,
+          plan_name: planName,
+          renews_at: renewsAt,
+          ends_at: endsAt,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'subscription_id' });
+        if (error) {
+          console.error(`[Webhook] Error al hacer upsert para subscription_id: ${subscriptionId}, user_id: ${userId}:`, error);
+        } else {
+          console.log(`[Webhook] Upsert EXITOSO para subscription_id: ${subscriptionId}, user_id: ${userId}`);
+        }
+        break;
       }
 
       case "subscription_cancelled": {
-        const subscription = event.data
-        const userId =
-          subscription.attributes.custom_data?.user_id ||
-          event.meta.custom_data?.user_id;
+        // Mejor idempotencia y limpieza de duplicados en cancelación
+        const subscription = event.data;
+        const userId = subscription.attributes.custom_data?.user_id || event.meta.custom_data?.user_id;
+        const subscriptionId = subscription.id;
+        const planName = subscription.attributes.product_name;
+        const status = subscription.attributes.status;
+        const renewsAt = subscription.attributes.renews_at
+          ? new Date(subscription.attributes.renews_at).toISOString()
+          : null;
+        const endsAt = subscription.attributes.ends_at
+          ? new Date(subscription.attributes.ends_at).toISOString()
+          : null;
+        const customerId = subscription.attributes.customer_id;
 
-        if (userId) {
-          await supabase
-            .from("user_subscriptions")
-            .update({
-              status: "cancelled",
-              updated_at: new Date().toISOString(),
-            })
-            .eq("subscription_id", subscription.id)
+        if (!userId || !subscriptionId || !planName || !status) {
+          console.error("[Webhook] Faltan campos clave en cancelación:", { userId, subscriptionId, planName, status });
+          break;
         }
-        break
+
+        // Idempotencia mejorada: solo ignora si status y fechas son iguales
+        const { data: existing } = await supabase
+          .from("user_subscriptions")
+          .select("status, renews_at, ends_at")
+          .eq("subscription_id", subscriptionId)
+          .single();
+
+        const isSameStatus = existing?.status === status;
+        const needsUpdate =
+          !existing?.renews_at || !existing?.ends_at ||
+          existing.renews_at !== renewsAt || existing.ends_at !== endsAt;
+
+        if (isSameStatus && !needsUpdate) {
+          console.log("[Webhook] Evento idempotente ignorado para subscription_id:", subscriptionId);
+          break;
+        }
+
+        // Limpieza de duplicados: dejar solo una fila por subscription_id y user_id
+        const { data: dups } = await supabase
+          .from("user_subscriptions")
+          .select("id, status, updated_at")
+          .eq("user_id", userId)
+          .eq("subscription_id", subscriptionId);
+        if (dups && dups.length > 1) {
+          const keep = dups.find(d => d.status === "active") ||
+            dups.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
+          const toDelete = dups.filter(d => d.id !== keep.id).map(d => d.id);
+          if (toDelete.length > 0) {
+            await supabase.from("user_subscriptions").delete().in("id", toDelete);
+            console.log("[Webhook] Duplicados eliminados en cancelación:", toDelete);
+          }
+        }
+
+        // Log de depuración: datos enviados a upsert
+        console.log("[Webhook] Datos enviados a upsert:", {
+          user_id: userId,
+          subscription_id: subscriptionId,
+          customer_id: customerId,
+          status,
+          plan_name: planName,
+          renews_at: renewsAt,
+          ends_at: endsAt,
+          updated_at: new Date().toISOString(),
+        });
+
+        // Upsert por subscription_id
+        const { error, data } = await supabase.from("user_subscriptions").upsert({
+          user_id: userId,
+          subscription_id: subscriptionId,
+          customer_id: customerId,
+          status,
+          plan_name: planName,
+          renews_at: renewsAt,
+          ends_at: endsAt,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'subscription_id' });
+        if (error) {
+          console.error(`[Webhook] Error al hacer upsert para subscription_id: ${subscriptionId}, user_id: ${userId}:`, error);
+        } else {
+          console.log(`[Webhook] Upsert EXITOSO para subscription_id: ${subscriptionId}, user_id: ${userId}`);
+        }
+
+        // Refuerzo de limpieza de duplicados: solo la fila más reciente por subscription_id y user_id
+        const { data: allDups } = await supabase
+          .from("user_subscriptions")
+          .select("id, updated_at")
+          .eq("user_id", userId)
+          .eq("subscription_id", subscriptionId);
+        if (allDups && allDups.length > 1) {
+          const sorted = allDups.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+          const toDelete = sorted.slice(1).map(d => d.id);
+          if (toDelete.length > 0) {
+            await supabase.from("user_subscriptions").delete().in("id", toDelete);
+            console.log("[Webhook] Duplicados eliminados tras upsert:", toDelete);
+          }
+        }
+        break;
       }
     }
 

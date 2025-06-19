@@ -25,11 +25,19 @@ class SubscriptionService {
 
   async createSubscription(userId: string, planId: string) {
     try {
+      // 1. Cancela cualquier suscripción activa previa
+      await this.supabase
+        .from("user_subscriptions")
+        .update({ status: "cancelled", updated_at: new Date().toISOString() })
+        .eq("user_id", userId)
+        .eq("status", "active");
+
+      // 2. Inserta la nueva suscripción como activa
       const { data, error } = await this.supabase
         .from("user_subscriptions")
-        .insert([{ user_id: userId, plan_id: planId }])
+        .insert([{ user_id: userId, plan_id: planId, status: "active" }])
         .select()
-        .single()
+        .single();
 
       if (error) {
         console.error("Error creating subscription:", error)
