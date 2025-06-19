@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuthContext } from "@/components/auth/auth-provider"
 import { userService } from "@/lib/services/user-service"
 import type { UserPreferences } from "@/lib/types/database"
+import { useLanguage } from "@/lib/i18n/context"
 
 import ProfileForm from "@/components/forms/ProfileForm"
 import HealthForm from "@/components/forms/HealthForm"
@@ -22,6 +23,7 @@ const AccountSettingsPage = () => {
   const router = useRouter()
   const { toast } = useToast()
   const { user } = useAuthContext()
+  const { t } = useLanguage()
 
   const [preferences, setPreferences] = useState<UserPreferences | null>(null)
   const [loadingPreferences, setLoadingPreferences] = useState(true)
@@ -32,8 +34,8 @@ const AccountSettingsPage = () => {
     if (!user) return
     setLoadingPreferences(true)
     try {
-      const { data, error } = await userService.getUserPreferences(user.id)
-      if (error) throw error
+      const data = await userService.getUserPreferences(user.id)
+      if (!data) throw new Error("Could not load preferences")
       setPreferences(data as UserPreferences)
     } catch (error) {
       console.error("Failed to fetch user preferences:", error)
@@ -55,8 +57,8 @@ const AccountSettingsPage = () => {
     if (!user) return
     try {
       const newPreferences = { ...preferences, ...updatedPrefs } as UserPreferences
-      const { error } = await userService.saveUserPreferences(user.id, newPreferences)
-      if (error) throw error
+      const result = await userService.saveUserPreferences(user.id, newPreferences)
+      if (!result) throw new Error("Could not save preferences")
 
       setPreferences(newPreferences)
       toast({
@@ -113,7 +115,7 @@ const AccountSettingsPage = () => {
       <div className="mb-6">
         <Link href="/account" className="inline-flex items-center text-gray-600 hover:text-orange-600">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Account
+          {t("accountSettings.backToAccount")}
         </Link>
       </div>
 
@@ -131,19 +133,7 @@ const AccountSettingsPage = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <ProfileForm user={user} />
         </motion.div>
-
-        {preferences && (
-          <>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <HealthForm user={user} initialPreferences={preferences} onUpdate={handleUpdatePreferences} />
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-              <DietForm user={user} initialPreferences={preferences} onUpdate={handleUpdatePreferences} />
-            </motion.div>
-          </>
-        )}
-
+        
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <SecurityForm user={user} />
         </motion.div>
@@ -160,16 +150,15 @@ const AccountSettingsPage = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-red-600">
               <Trash2 className="h-5 w-5" />
-              Danger Zone
+              {t("accountSettings.dangerZone")}
             </CardTitle>
-            <CardDescription>Permanently delete your account and all associated data</CardDescription>
+            <CardDescription>{t("accountSettings.dangerZoneDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="p-4 bg-red-50 rounded-lg border border-red-200">
               <h3 className="font-medium text-red-800 mb-2">Delete Account</h3>
               <p className="text-sm text-red-700 mb-4">
-                This action cannot be undone. This will permanently delete your account, all your recipes, meal plans,
-                and remove all associated data. <strong>You will not be able to sign in again with this email.</strong>
+                {t("accountSettings.deleteWarning")} <strong>{t("accountSettings.deleteWarningStrong")}</strong>
               </p>
               <Button
                 variant="destructive"
@@ -177,7 +166,7 @@ const AccountSettingsPage = () => {
                 className="bg-red-600 hover:bg-red-700"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete Account
+                {t("accountSettings.deleteAccount")}
               </Button>
             </div>
           </CardContent>
@@ -197,18 +186,16 @@ const AccountSettingsPage = () => {
 
             <div className="mb-6">
               <p className="text-gray-600 mb-4">
-                Are you absolutely sure you want to delete your account? This action cannot be undone.
+                {t("accountSettings.deleteConfirm")}
               </p>
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <p className="text-sm text-red-800 font-medium mb-2">This will permanently delete:</p>
                 <ul className="text-sm text-red-700 space-y-1">
-                  <li>• Your profile and account information</li>
+                  <li>• {t("accountSettings.deleteProfile")}</li>
                   <li>• All saved recipes and meal plans</li>
                   <li>• Your subscription and billing history</li>
                   <li>• All preferences and settings</li>
-                  <li>
-                    • <strong>Your ability to sign in again</strong>
-                  </li>
+                  <li>• <strong>{t("accountSettings.deleteSignIn")}</strong></li>
                 </ul>
               </div>
             </div>
@@ -220,7 +207,7 @@ const AccountSettingsPage = () => {
                 disabled={deleteLoading}
                 className="flex-1"
               >
-                Cancel
+                {t("accountSettings.cancel")}
               </Button>
               <Button
                 variant="destructive"
@@ -228,7 +215,7 @@ const AccountSettingsPage = () => {
                 disabled={deleteLoading}
                 className="flex-1 bg-red-600 hover:bg-red-700"
               >
-                {deleteLoading ? "Deleting..." : "Delete Forever"}
+                {deleteLoading ? t("accountSettings.deleting") : t("accountSettings.deleteForever")}
               </Button>
             </div>
           </div>

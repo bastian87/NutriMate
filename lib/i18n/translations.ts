@@ -717,5 +717,40 @@ export const translations = {
     subscriptionStatus: {
       freePlanDesc: "Enjoy NutriMate's basic features. Upgrade to Premium to unlock the full potential!"
     },
+    accountSettings: {
+      backToAccount: "Back to Account",
+      dangerZone: "Danger Zone",
+      dangerZoneDesc: "Permanently delete your account and all associated data",
+      deleteWarning: "This action cannot be undone. This will permanently delete your account, all your recipes, meal plans, and remove all associated data.",
+      deleteWarningStrong: "You will not be able to sign in again with this email.",
+      deleteAccount: "Delete Account",
+      deleteConfirm: "Are you absolutely sure you want to delete your account? This action cannot be undone.",
+      deleteProfile: "Your profile and account information",
+      deleteRecipes: "All saved recipes and meal plans",
+      deleteSubscription: "Your subscription and billing history",
+      deletePreferences: "All preferences and settings",
+      deleteSignIn: "Your ability to sign in again",
+      cancel: "Cancel",
+      deleting: "Deleting...",
+      deleteForever: "Delete Forever"
+    },
+    profileForm: {
+      updateProfileDesc: "Update your profile information below.",
+      fullNamePlaceholder: "Enter your full name",
+      emailPlaceholder: "Enter your email address",
+      updating: "Updating..."
+    },
+    securityForm: {
+      changePassword: "Change Password",
+      changePasswordDesc: "Update your account password below.",
+      currentPassword: "Current Password",
+      currentPasswordPlaceholder: "Enter your current password",
+      newPassword: "New Password",
+      newPasswordPlaceholder: "Enter your new password",
+      confirmNewPassword: "Confirm New Password",
+      confirmNewPasswordPlaceholder: "Re-enter your new password",
+      updating: "Updating...",
+      updatePassword: "Update Password"
+    },
   },
 }
