@@ -8,6 +8,7 @@ import { Crown, AlertTriangle, X } from "lucide-react"
 import Link from "next/link"
 import { useAuthContext } from "@/components/auth/auth-provider"
 import { getUserUsage, type UsageLimit } from "@/lib/subscription-service"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface UsageLimitBannerProps {
   feature: "recipes" | "mealPlans" | "customRecipes"
@@ -19,6 +20,7 @@ export function UsageLimitBanner({ feature, className }: UsageLimitBannerProps) 
   const [usage, setUsage] = useState<UsageLimit | null>(null)
   const [dismissed, setDismissed] = useState(false)
   const [loading, setLoading] = useState(true)
+  const { t } = useLanguage()
 
   useEffect(() => {
     const fetchUsage = async () => {
@@ -45,22 +47,22 @@ export function UsageLimitBanner({ feature, className }: UsageLimitBannerProps) 
         return {
           current: usage.recipes.saved,
           max: usage.recipes.maxSaved,
-          label: "Saved Recipes",
-          upgradeText: "Save unlimited recipes",
+          label: t("recipes.title"),
+          upgradeText: t("usageLimit.saveUnlimited"),
         }
       case "mealPlans":
         return {
           current: usage.mealPlans.created,
           max: usage.mealPlans.maxCreated,
-          label: "Meal Plans",
-          upgradeText: "Create unlimited meal plans",
+          label: t("navigation.mealPlans"),
+          upgradeText: t("usageLimit.createUnlimitedMealPlans"),
         }
       case "customRecipes":
         return {
           current: usage.customRecipes.created,
           max: usage.customRecipes.maxCreated,
-          label: "Custom Recipes",
-          upgradeText: "Create unlimited custom recipes",
+          label: t("recipes.addRecipe"),
+          upgradeText: t("usageLimit.createUnlimitedCustomRecipes"),
         }
     }
   }
@@ -83,19 +85,19 @@ export function UsageLimitBanner({ feature, className }: UsageLimitBannerProps) 
               ) : (
                 <Crown className="h-5 w-5 text-orange-600" />
               )}
-              <h3 className="font-semibold text-gray-900">{isAtLimit ? "Limit Reached" : "Approaching Limit"}</h3>
+              <h3 className="font-semibold text-gray-900">{isAtLimit ? t("usageLimit.limitReached") : t("usageLimit.approachingLimit")}</h3>
             </div>
 
             <p className="text-sm text-gray-600 mb-3">
               {isAtLimit
-                ? `You've used all ${featureData.max} of your ${featureData.label.toLowerCase()}.`
-                : `You've used ${featureData.current} of ${featureData.max} ${featureData.label.toLowerCase()}.`}
+                ? t("usageLimit.allUsed", { max: featureData.max, label: featureData.label.toLowerCase() })
+                : t("usageLimit.usedOf", { current: featureData.current, max: featureData.max, label: featureData.label.toLowerCase() })}
             </p>
 
             <div className="mb-3">
               <div className="flex justify-between text-xs text-gray-500 mb-1">
-                <span>{featureData.current} used</span>
-                <span>{featureData.max} limit</span>
+                <span>{t("usageLimit.used", { current: featureData.current })}</span>
+                <span>{t("usageLimit.limit", { max: featureData.max })}</span>
               </div>
               <Progress
                 value={percentage}
@@ -111,7 +113,7 @@ export function UsageLimitBanner({ feature, className }: UsageLimitBannerProps) 
               <Link href="/pricing">
                 <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
                   <Crown className="h-4 w-4 mr-1" />
-                  Upgrade to Premium
+                  {t("usageLimit.upgrade")}
                 </Button>
               </Link>
             </div>

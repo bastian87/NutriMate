@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { userService } from "@/lib/services/user-service"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface ProfileFormProps {
   user: any
@@ -22,6 +23,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     email: "",
   })
   const { toast } = useToast()
+  const { t } = useLanguage()
 
   // Load user data when component mounts
   useEffect(() => {
@@ -58,8 +60,8 @@ export default function ProfileForm({ user }: ProfileFormProps) {
 
       if (updatedProfile) {
         toast({
-          title: "Profile updated",
-          description: "Your profile has been successfully updated.",
+          title: t("toast.updateProfileTitle"),
+          description: t("toast.updateProfileDesc"),
         })
       } else {
         throw new Error("Failed to update profile")
@@ -67,8 +69,8 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     } catch (error) {
       console.error("Error updating profile:", error)
       toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
+        title: t("toast.error"),
+        description: t("toast.updateProfileError"),
         variant: "destructive",
       })
     } finally {
@@ -86,37 +88,37 @@ export default function ProfileForm({ user }: ProfileFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile Information</CardTitle>
-        <CardDescription>Update your personal information and profile details.</CardDescription>
+        <CardTitle>{t("account.profile")}</CardTitle>
+        <CardDescription>{t("profileForm.updateProfileDesc")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="full_name">Full Name</Label>
+              <Label htmlFor="full_name">{t("account.name")}</Label>
               <Input
                 id="full_name"
                 name="full_name"
                 value={formData.full_name}
                 onChange={handleChange}
-                placeholder="Enter your full name"
+                placeholder={t("profileForm.fullNamePlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("account.email")}</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter your email"
+                placeholder={t("profileForm.emailPlaceholder")}
               />
             </div>
           </div>
 
           <Button type="submit" disabled={loading}>
-            {loading ? "Updating..." : "Update Profile"}
+            {loading ? t("profileForm.updating") : t("account.updateProfile")}
           </Button>
         </form>
       </CardContent>

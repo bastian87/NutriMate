@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface HealthFormProps {
   user: any
@@ -28,6 +29,7 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
     medicalConditions: initialPreferences?.medicalConditions || [],
   })
   const { toast } = useToast()
+  const { t } = useLanguage()
 
   const activityLevels = [
     { value: "sedentary", label: "Sedentary (little or no exercise)" },
@@ -69,13 +71,13 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
 
       onUpdate(formData)
       toast({
-        title: "Health information updated",
-        description: "Your health preferences have been successfully updated.",
+        title: t("toast.updateHealthTitle"),
+        description: t("toast.updateHealthDesc"),
       })
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to update health information. Please try again.",
+        title: t("toast.error"),
+        description: t("toast.updateHealthError"),
         variant: "destructive",
       })
     } finally {
@@ -100,14 +102,14 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Health Information</CardTitle>
-        <CardDescription>Help us personalize your nutrition recommendations.</CardDescription>
+        <CardTitle>{t("healthForm.title")}</CardTitle>
+        <CardDescription>{t("healthForm.description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="age">Age</Label>
+              <Label htmlFor="age">{t("healthForm.age")}</Label>
               <Input
                 id="age"
                 name="age"
@@ -118,7 +120,7 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="height">Height (cm)</Label>
+              <Label htmlFor="height">{t("healthForm.height")}</Label>
               <Input
                 id="height"
                 name="height"
@@ -129,7 +131,7 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="weight">Weight (kg)</Label>
+              <Label htmlFor="weight">{t("healthForm.weight")}</Label>
               <Input
                 id="weight"
                 name="weight"
@@ -142,18 +144,18 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
           </div>
 
           <div className="space-y-2">
-            <Label>Activity Level</Label>
+            <Label>{t("healthForm.activityLevel")}</Label>
             <Select
               value={formData.activityLevel}
               onValueChange={(value) => setFormData((prev) => ({ ...prev, activityLevel: value }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select your activity level" />
+                <SelectValue placeholder={t("healthForm.activityLevelPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {activityLevels.map((level) => (
                   <SelectItem key={level.value} value={level.value}>
-                    {level.label}
+                    {t(`healthForm.activityLevels.${level.value}`) || level.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -161,7 +163,7 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
           </div>
 
           <div className="space-y-3">
-            <Label>Health Goals</Label>
+            <Label>{t("healthForm.healthGoals")}</Label>
             <div className="grid grid-cols-2 gap-2">
               {healthGoalOptions.map((goal) => (
                 <div key={goal} className="flex items-center space-x-2">
@@ -171,7 +173,7 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
                     onCheckedChange={(checked) => handleCheckboxChange("healthGoals", goal, checked as boolean)}
                   />
                   <Label htmlFor={`goal-${goal}`} className="text-sm">
-                    {goal}
+                    {t(`healthForm.healthGoalOptions.${goal.replace(/\s/g, "")}`) || goal}
                   </Label>
                 </div>
               ))}
@@ -179,7 +181,7 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
           </div>
 
           <div className="space-y-3">
-            <Label>Medical Conditions</Label>
+            <Label>{t("healthForm.medicalConditions")}</Label>
             <div className="grid grid-cols-2 gap-2">
               {medicalConditionOptions.map((condition) => (
                 <div key={condition} className="flex items-center space-x-2">
@@ -191,7 +193,7 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
                     }
                   />
                   <Label htmlFor={`condition-${condition}`} className="text-sm">
-                    {condition}
+                    {t(`healthForm.medicalConditionOptions.${condition.replace(/\s/g, "")}`) || condition}
                   </Label>
                 </div>
               ))}
@@ -199,7 +201,7 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
           </div>
 
           <Button type="submit" disabled={loading}>
-            {loading ? "Updating..." : "Update Health Information"}
+            {loading ? t("healthForm.updating") : t("healthForm.update")}
           </Button>
         </form>
       </CardContent>

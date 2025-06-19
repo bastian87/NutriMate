@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Clock, RefreshCw } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface MealCardProps {
   title: string
@@ -16,6 +17,8 @@ interface MealCardProps {
 }
 
 export default function MealCard({ title, recipe, calories, protein, carbs, fat, time, image }: MealCardProps) {
+  const { t } = useLanguage()
+
   return (
     <Card className="overflow-hidden">
       <div className="relative h-48 w-full">
@@ -33,19 +36,19 @@ export default function MealCard({ title, recipe, calories, protein, carbs, fat,
       <CardContent>
         <div className="grid grid-cols-4 gap-2 mb-4">
           <div className="text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Calories</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t('mealCard.calories')}</p>
             <p className="font-semibold">{calories}</p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Protein</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t('mealCard.protein')}</p>
             <p className="font-semibold">{protein}g</p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Carbs</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t('mealCard.carbs')}</p>
             <p className="font-semibold">{carbs}g</p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Fat</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t('mealCard.fat')}</p>
             <p className="font-semibold">{fat}g</p>
           </div>
         </div>

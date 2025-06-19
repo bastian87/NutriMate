@@ -58,9 +58,9 @@ export default function GroceryListPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <p className="text-gray-600 mb-4">Please sign in to access your grocery list.</p>
+          <p className="text-gray-600 mb-4">{t("groceryList.pleaseSignIn")}</p>
           <Link href="/login">
-            <Button className="bg-orange-600 hover:bg-orange-700">Sign In</Button>
+            <Button className="bg-orange-600 hover:bg-orange-700">{t("groceryList.signIn")}</Button>
           </Link>
         </div>
       </div>
@@ -72,7 +72,7 @@ export default function GroceryListPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading your grocery list...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">{t("groceryList.loading")}</p>
         </div>
       </div>
     )
@@ -82,8 +82,8 @@ export default function GroceryListPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <p className="text-red-600 mb-4">Error loading grocery list: {error}</p>
-          <Button onClick={() => window.location.reload()}>Try Again</Button>
+          <p className="text-red-600 mb-4">{t("groceryList.errorLoading")} {error}</p>
+          <Button onClick={() => window.location.reload()}>{t("groceryList.tryAgain")}</Button>
         </div>
       </div>
     )
@@ -117,45 +117,45 @@ export default function GroceryListPage() {
       <div className="mb-6">
         <Link href="/dashboard" className="inline-flex items-center text-orange-600 hover:text-orange-700">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
+          {t("groceryList.backToDashboard")}
         </Link>
       </div>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <h1 className="text-3xl font-bold">Grocery List</h1>
+        <h1 className="text-3xl font-bold">{t("groceryList.title")}</h1>
         <div className="flex space-x-2">
           <Button variant="outline" className="flex items-center">
             <Printer className="mr-2 h-4 w-4" />
-            Print
+            {t("groceryList.print")}
           </Button>
           <Button variant="outline" className="flex items-center">
             <Download className="mr-2 h-4 w-4" />
-            Download
+            {t("groceryList.download")}
           </Button>
         </div>
       </div>
 
       {/* Add New Item Form */}
       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8">
-        <h3 className="font-semibold text-lg mb-4">Add New Item</h3>
+        <h3 className="font-semibold text-lg mb-4">{t("groceryList.addNewItem")}</h3>
         <form onSubmit={handleAddItem} className="flex gap-4">
           <Input
             type="text"
-            placeholder="Item name"
+            placeholder={t("groceryList.itemName")}
             value={newItemName}
             onChange={(e) => setNewItemName(e.target.value)}
             className="flex-1"
           />
           <Input
             type="text"
-            placeholder="Quantity (optional)"
+            placeholder={t("groceryList.quantityOptional")}
             value={newItemQuantity}
             onChange={(e) => setNewItemQuantity(e.target.value)}
             className="w-32"
           />
           <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
             <Plus className="h-4 w-4 mr-2" />
-            Add
+            {t("groceryList.add")}
           </Button>
         </form>
       </div>
@@ -174,9 +174,9 @@ export default function GroceryListPage() {
               <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Badge className={category.color}>{category.name}</Badge>
+                    <Badge className={category.color}>{t(`groceryList.categories.${category.key}`)}</Badge>
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {items.length} item{items.length !== 1 ? "s" : ""}
+                      {items.length} {items.length !== 1 ? t("groceryList.items") : t("groceryList.item")}
                     </span>
                   </div>
                 </div>

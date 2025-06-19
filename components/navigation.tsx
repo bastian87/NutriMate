@@ -4,16 +4,18 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Home, BookOpen, ShoppingCart, User, Sparkles } from "lucide-react"
 import Image from "next/image"
+import { useLanguage } from "@/lib/i18n/context"
 
 export function Navigation() {
   const pathname = usePathname()
+  const { t } = useLanguage()
 
   const navItems = [
-    { href: "/", label: "Home", icon: Home },
-    { href: "/recipes", label: "Recipes", icon: BookOpen },
-    { href: "/grocery-list", label: "Grocery List", icon: ShoppingCart },
-    { href: "/ai-assistant", label: "AI Assistant", icon: Sparkles },
-    { href: "/profile", label: "Profile", icon: User },
+    { href: "/", label: t("navigation.home"), icon: Home },
+    { href: "/recipes", label: t("navigation.recipes"), icon: BookOpen },
+    { href: "/grocery-list", label: t("navigation.groceryList"), icon: ShoppingCart },
+    { href: "/ai-assistant", label: t("navigation.aiAssistant"), icon: Sparkles },
+    { href: "/profile", label: t("navigation.profile"), icon: User },
   ]
 
   return (
@@ -23,7 +25,7 @@ export function Navigation() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <Image src="/logo-new.png" alt="NutriMate Logo" width={32} height={32} className="rounded-lg" />
-              <span className="text-2xl font-bold text-orange-600">NutriMate</span>
+              <span className="text-2xl font-bold text-orange-600">{t("navigation.brand")}</span>
             </Link>
           </div>
 

@@ -362,3 +362,9 @@ export interface Database {
     }
   }
 }
+
+export type UserPreferences = {
+  dietary_preferences: string[]
+  excluded_ingredients: string[]
+  // Agrega otros campos si los necesitas
+}

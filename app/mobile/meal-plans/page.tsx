@@ -11,11 +11,13 @@ import { useAuthContext } from "@/components/auth/auth-provider"
 import { motion, AnimatePresence } from "framer-motion"
 import { format } from "date-fns"
 import MobileNavigation from "@/components/mobile-navigation"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function MobileMealPlansPage() {
   const { user } = useAuthContext()
   const { mealPlans, loading, error, deleteMealPlan, generateMealPlan } = useMealPlans()
   const [isGenerating, setIsGenerating] = useState(false)
+  const { t } = useLanguage()
 
   const handleGenerateMealPlan = async () => {
     if (!user) return
@@ -50,19 +52,19 @@ export default function MobileMealPlansPage() {
           <div className="flex items-center justify-between">
             <Link href="/mobile" className="flex items-center text-gray-600">
               <ArrowLeft className="h-5 w-5 mr-2" />
-              Back
+              {t("mobileMealPlans.back")}
             </Link>
-            <h1 className="text-lg font-bold">Meal Plans</h1>
+            <h1 className="text-lg font-bold">{t("mobileMealPlans.mealPlans")}</h1>
             <div className="w-8"></div>
           </div>
         </div>
 
         <div className="text-center py-12 px-4">
           <ChefHat className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-4">Sign in to view your meal plans</h2>
-          <p className="text-gray-600 mb-6">Create personalized meal plans and track your nutrition goals.</p>
+          <h2 className="text-2xl font-bold mb-4">{t("mobileMealPlans.signInToView")}</h2>
+          <p className="text-gray-600 mb-6">{t("mobileMealPlans.createPersonalized")}</p>
           <Link href="/login">
-            <Button className="bg-orange-600 hover:bg-orange-700">Sign In</Button>
+            <Button className="bg-orange-600 hover:bg-orange-700">{t("mobileMealPlans.signIn")}</Button>
           </Link>
         </div>
         <MobileNavigation />
@@ -78,16 +80,16 @@ export default function MobileMealPlansPage() {
           <div className="flex items-center justify-between">
             <Link href="/mobile" className="flex items-center text-gray-600">
               <ArrowLeft className="h-5 w-5 mr-2" />
-              Back
+              {t("mobileMealPlans.back")}
             </Link>
-            <h1 className="text-lg font-bold">Meal Plans</h1>
+            <h1 className="text-lg font-bold">{t("mobileMealPlans.mealPlans")}</h1>
             <div className="w-8"></div>
           </div>
         </div>
 
         <div className="text-center py-12 px-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading meal plans...</p>
+          <p className="mt-4 text-gray-600">{t("mobileMealPlans.loading")}</p>
         </div>
         <MobileNavigation />
       </div>
@@ -102,16 +104,16 @@ export default function MobileMealPlansPage() {
           <div className="flex items-center justify-between">
             <Link href="/mobile" className="flex items-center text-gray-600">
               <ArrowLeft className="h-5 w-5 mr-2" />
-              Back
+              {t("mobileMealPlans.back")}
             </Link>
-            <h1 className="text-lg font-bold">Meal Plans</h1>
+            <h1 className="text-lg font-bold">{t("mobileMealPlans.mealPlans")}</h1>
             <div className="w-8"></div>
           </div>
         </div>
 
         <div className="text-center py-12 px-4">
-          <p className="text-red-600 mb-4">Error loading meal plans: {error}</p>
-          <Button onClick={() => window.location.reload()}>Try Again</Button>
+          <p className="text-red-600 mb-4">{t("mobileMealPlans.errorLoading")} {error}</p>
+          <Button onClick={() => window.location.reload()}>{t("mobileMealPlans.tryAgain")}</Button>
         </div>
         <MobileNavigation />
       </div>
@@ -125,9 +127,9 @@ export default function MobileMealPlansPage() {
         <div className="flex items-center justify-between">
           <Link href="/mobile" className="flex items-center text-gray-600">
             <ArrowLeft className="h-5 w-5 mr-2" />
-            Back
+            {t("mobileMealPlans.back")}
           </Link>
-          <h1 className="text-lg font-bold">Meal Plans</h1>
+          <h1 className="text-lg font-bold">{t("mobileMealPlans.mealPlans")}</h1>
           <div className="w-8"></div>
         </div>
       </div>
@@ -135,14 +137,14 @@ export default function MobileMealPlansPage() {
       {/* Content */}
       <div className="px-4 py-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <p className="text-gray-600 mb-4">Plan your meals for the week and stay on track with your nutrition goals</p>
+          <p className="text-gray-600 mb-4">{t("mobileMealPlans.planYourMeals")}</p>
           <Button
             onClick={handleGenerateMealPlan}
             disabled={isGenerating}
             className="w-full bg-orange-600 hover:bg-orange-700"
           >
             <Plus className="h-4 w-4 mr-2" />
-            {isGenerating ? "Generating..." : "Generate Meal Plan"}
+            {isGenerating ? t("mobileMealPlans.generating") : t("mobileMealPlans.generate")}
           </Button>
         </motion.div>
 
@@ -190,16 +192,19 @@ export default function MobileMealPlansPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <h4 className="font-medium text-sm">This week includes:</h4>
+                        <h4 className="font-medium text-sm">{t("mobileMealPlans.thisWeekIncludes")}</h4>
                         <div className="flex flex-wrap gap-1">
                           <Badge variant="outline" className="text-xs">
-                            Breakfast
+                            {t("mobileMealPlans.breakfast")}
                           </Badge>
                           <Badge variant="outline" className="text-xs">
-                            Lunch
+                            {t("mobileMealPlans.lunch")}
                           </Badge>
                           <Badge variant="outline" className="text-xs">
-                            Dinner
+                            {t("mobileMealPlans.dinner")}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {t("mobileMealPlans.snack")}
                           </Badge>
                         </div>
                       </div>

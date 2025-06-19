@@ -53,56 +53,56 @@ export default function PricingPage() {
 
   const plans = [
     {
-      name: "Free",
+      name: t("pricing.free"),
       price: "$0",
-      period: "forever",
-      description: "Perfect for getting started with meal planning",
+      period: t("pricing.forever"),
+      description: t("pricing.freeDesc"),
       features: [
-        "Basic recipe search",
-        "Save up to 10 recipes",
-        "Simple meal planning",
-        "Basic grocery lists",
-        "Mobile app access",
+        t("pricing.basicRecipeSearch"),
+        t("pricing.saveUpTo10"),
+        t("pricing.simpleMealPlanning"),
+        t("pricing.basicGroceryLists"),
+        t("pricing.mobileAppAccess"),
       ],
-      buttonText: "Get Started",
+      buttonText: t("pricing.getStarted"),
       buttonVariant: "outline" as const,
       popular: false,
       action: () => (window.location.href = user ? "/recipes" : "/signup"),
     },
     {
-      name: "Premium",
+      name: t("pricing.premium"),
       price: "$4.99",
-      period: "month",
-      description: "Everything you need for complete nutrition management",
+      period: t("pricing.month"),
+      description: t("pricing.premiumDesc"),
       features: [
-        "Unlimited recipe access",
-        "Advanced meal planning",
-        "Smart grocery lists",
-        "Nutritional analysis",
-        "Custom recipe creation",
-        "Export meal plans",
-        "Priority support",
+        t("pricing.unlimitedRecipeAccess"),
+        t("pricing.advancedMealPlanning"),
+        t("pricing.smartGroceryLists"),
+        t("pricing.nutritionalAnalysis"),
+        t("pricing.customRecipeCreation"),
+        t("pricing.exportMealPlans"),
+        t("pricing.prioritySupport"),
       ],
-      buttonText: "Start Premium",
+      buttonText: t("pricing.startPremium"),
       buttonVariant: "default" as const,
       popular: true,
       variantId: process.env.NEXT_PUBLIC_LEMONSQUEEZY_MONTHLY_VARIANT_ID!,
       action: (variantId: string) => handleSubscribe(variantId, "monthly"),
     },
     {
-      name: "Premium Annual",
+      name: t("pricing.premiumAnnual"),
       price: "$49.99",
-      period: "year",
-      description: "Best value - save 16.5% with annual billing",
+      period: t("pricing.year"),
+      description: t("pricing.premiumAnnualDesc"),
       features: [
-        "Everything in Premium",        
-        "Advanced analytics",
-        "Recipe recommendations",
-        "Meal plan templates",
-        "Family sharing (up to 4 members)",
-        "Premium support",
+        t("pricing.everythingInPremium"),        
+        t("pricing.advancedAnalytics"),
+        t("pricing.recipeRecommendations"),
+        t("pricing.mealPlanTemplates"),
+        t("pricing.familySharing"),
+        t("pricing.premiumSupport"),
       ],
-      buttonText: "Start Annual",
+      buttonText: t("pricing.startAnnual"),
       buttonVariant: "default" as const,
       popular: false,
       variantId: process.env.NEXT_PUBLIC_LEMONSQUEEZY_ANNUAL_VARIANT_ID!,
@@ -113,9 +113,9 @@ export default function PricingPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
-        <h1 className="text-4xl font-serif font-bold mb-4">Choose Your Plan</h1>
+        <h1 className="text-4xl font-serif font-bold mb-4">{t("pricing.chooseYourPlan")}</h1>
         <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          Start your nutrition journey with the perfect plan for your needs
+          {t("pricing.startYourJourney")}
         </p>
       </motion.div>
 
@@ -132,7 +132,7 @@ export default function PricingPage() {
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <Badge className="bg-orange-600 text-white px-4 py-1">
                   <Star className="h-3 w-3 mr-1" />
-                  Most Popular
+                  {t("pricing.mostPopular")}
                 </Badge>
               </div>
             )}
@@ -174,7 +174,7 @@ export default function PricingPage() {
                   {loading === plan.name.toLowerCase() ? (
                     <div className="flex items-center gap-2">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                      Processing...
+                      {t("pricing.processing")}
                     </div>
                   ) : (
                     <>
@@ -195,13 +195,13 @@ export default function PricingPage() {
         transition={{ delay: 0.4 }}
         className="text-center mt-12"
       >
-        <p className="text-gray-600 dark:text-gray-400 mb-4">All plans include a 14-day free trial. Cancel anytime.</p>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">{t("pricing.allPlansInclude")}</p>
         <div className="flex justify-center gap-4 text-sm">
           <Link href="/privacy" className="text-orange-600 hover:underline">
-            Privacy Policy
+            {t("pricing.privacy")}
           </Link>
           <Link href="/terms" className="text-orange-600 hover:underline">
-            Terms of Service
+            {t("pricing.terms")}
           </Link>
         </div>
       </motion.div>

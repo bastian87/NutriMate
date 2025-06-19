@@ -10,6 +10,7 @@ import { useMealPlan } from "@/hooks/use-meal-plans"
 import { useGroceryList } from "@/hooks/use-grocery-list"
 import { motion } from "framer-motion"
 import { format } from "date-fns"
+import { useLanguage } from "@/lib/i18n/context"
 
 const MEAL_TYPES = ["breakfast", "lunch", "dinner"] as const
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -18,6 +19,7 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
   const { mealPlan, loading, error, regenerateMeal } = useMealPlan(params.id)
   const { addAllMealPlanIngredients } = useGroceryList()
   const [isAddingToGrocery, setIsAddingToGrocery] = useState(false)
+  const { t } = useLanguage()
 
   const addAllToGroceryList = async () => {
     if (!mealPlan) return
@@ -48,7 +50,7 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading meal plan...</p>
+          <p className="mt-4 text-gray-600">{t("mealPlans.loadingMealPlan")}</p>
         </div>
       </div>
     )
@@ -58,9 +60,9 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Error loading meal plan: {error}</p>
+          <p className="text-red-600 mb-4">{t("mealPlans.errorLoadingMealPlan")} {error}</p>
           <Link href="/meal-plans">
-            <Button>Back to Meal Plans</Button>
+            <Button>{t("mealPlans.backToMealPlans")}</Button>
           </Link>
         </div>
       </div>
@@ -73,7 +75,7 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
       <div className="container mx-auto px-4 py-6">
         <Link href="/meal-plans" className="inline-flex items-center text-gray-600 hover:text-orange-600 mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Meal Plans
+          {t("mealPlans.backToMealPlans")}
         </Link>
 
         <motion.div
@@ -116,7 +118,7 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
 
                     return (
                       <div key={mealType} className="space-y-3">
-                        <h4 className="font-semibold text-lg capitalize">{mealType}</h4>
+                        <h4 className="font-semibold text-lg capitalize">{t(`mealPlans.${mealType}`)}</h4>
                         {meal ? (
                           <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                             <div className="relative h-32">
@@ -132,14 +134,14 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
                               <div className="flex justify-between items-center text-xs text-gray-600 mb-2">
                                 <span className="flex items-center">
                                   <Clock className="h-3 w-3 mr-1" />
-                                  {meal.recipe.prep_time_minutes + meal.recipe.cook_time_minutes}m
+                                  {(meal.recipe.prep_time_minutes ?? 0) + (meal.recipe.cook_time_minutes ?? 0)}m
                                 </span>
                                 <span>{meal.recipe.calories} cal</span>
                               </div>
                               <div className="flex gap-1">
                                 <Link href={`/recipes/${meal.recipe.id}`}>
                                   <Button size="sm" variant="outline" className="text-xs">
-                                    View Recipe
+                                    {t("mealPlans.viewRecipe")}
                                   </Button>
                                 </Link>
                                 <Button
@@ -149,13 +151,14 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
                                   className="text-xs"
                                 >
                                   <RefreshCw className="h-3 w-3" />
+                                  {t("mealPlans.regenerate")}
                                 </Button>
                               </div>
                             </div>
                           </div>
                         ) : (
                           <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
-                            <p className="text-gray-500 text-sm">No meal planned</p>
+                            <p className="text-gray-500 text-sm">{t("mealPlans.noMealPlanned")}</p>
                           </div>
                         )}
                       </div>
@@ -182,25 +185,25 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">
-                    {mealPlan.meals.reduce((sum, meal) => sum + meal.recipe.calories, 0)}
+                    {mealPlan.meals.reduce((sum, meal) => sum + (meal.recipe.calories ?? 0), 0)}
                   </div>
                   <div className="text-sm text-gray-600">Total Calories</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">
-                    {mealPlan.meals.reduce((sum, meal) => sum + meal.recipe.protein, 0)}g
+                    {mealPlan.meals.reduce((sum, meal) => sum + (meal.recipe.protein ?? 0), 0)}g
                   </div>
                   <div className="text-sm text-gray-600">Protein</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">
-                    {mealPlan.meals.reduce((sum, meal) => sum + meal.recipe.carbs, 0)}g
+                    {mealPlan.meals.reduce((sum, meal) => sum + (meal.recipe.carbs ?? 0), 0)}g
                   </div>
                   <div className="text-sm text-gray-600">Carbs</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">
-                    {mealPlan.meals.reduce((sum, meal) => sum + meal.recipe.fat, 0)}g
+                    {mealPlan.meals.reduce((sum, meal) => sum + (meal.recipe.fat ?? 0), 0)}g
                   </div>
                   <div className="text-sm text-gray-600">Fat</div>
                 </div>

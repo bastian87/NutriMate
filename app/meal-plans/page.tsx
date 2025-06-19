@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import type { ExportFormat } from "@/lib/services/meal-plan-service"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function MealPlansPage() {
   const { user } = useAuthContext()
@@ -19,6 +20,7 @@ export default function MealPlansPage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isExporting, setIsExporting] = useState<string | null>(null) // Store ID of plan being exported
   const { toast } = useToast()
+  const { t } = useLanguage()
 
   const handleGenerateMealPlan = async () => {
     if (!user) return
@@ -114,12 +116,10 @@ export default function MealPlansPage() {
       <div className="container mx-auto px-4 py-8 font-sans">
         <div className="text-center py-12">
           <ChefHat className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-4">Sign in to view your meal plans</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Create personalized meal plans and track your nutrition goals.
-          </p>
+          <h2 className="text-2xl font-bold mb-4">{t("mealPlans.signInToView")}</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{t("mealPlans.createPersonalized")}</p>
           <Link href="/login">
-            <Button className="bg-orange-600 hover:bg-orange-700">Sign In</Button>
+            <Button className="bg-orange-600 hover:bg-orange-700">{t("mealPlans.signIn")}</Button>
           </Link>
         </div>
       </div>
@@ -139,9 +139,9 @@ export default function MealPlansPage() {
     return (
       <div className="container mx-auto px-4 py-8 font-sans">
         <div className="text-center py-12">
-          <p className="text-red-600 dark:text-red-400 mb-4">Error loading meal plans: {error}</p>
+          <p className="text-red-600 dark:text-red-400 mb-4">{t("mealPlans.errorLoading")} {error}</p>
           <Button onClick={() => window.location.reload()} className="bg-orange-600 hover:bg-orange-700">
-            Try Again
+            {t("mealPlans.tryAgain")}
           </Button>
         </div>
       </div>
@@ -156,10 +156,8 @@ export default function MealPlansPage() {
         className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
       >
         <div>
-          <h1 className="text-3xl font-bold mb-2">My Meal Plans</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Plan your meals for the week and stay on track with your nutrition goals.
-          </p>
+          <h1 className="text-3xl font-bold mb-2">{t("mealPlans.myMealPlans")}</h1>
+          <p className="text-gray-600 dark:text-gray-400">{t("mealPlans.planYourMeals")}</p>
         </div>
         <Button
           onClick={handleGenerateMealPlan}
@@ -167,7 +165,7 @@ export default function MealPlansPage() {
           className="bg-orange-600 hover:bg-orange-700 min-w-[180px]"
         >
           {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
-          {isGenerating ? "Generating..." : "Generate Meal Plan"}
+          {isGenerating ? t("mealPlans.generating") : t("mealPlans.generate")}
         </Button>
       </motion.div>
 
@@ -180,9 +178,9 @@ export default function MealPlansPage() {
             className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
           >
             <ChefHat className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No meal plans yet</h3>
+            <h3 className="text-xl font-semibold mb-2">{t("mealPlans.noMealPlansYet")}</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Click the button above to generate your first personalized meal plan!
+              {t("mealPlans.clickToGenerate")}
             </p>
           </motion.div>
         )}

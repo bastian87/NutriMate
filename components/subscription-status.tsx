@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Crown, Calendar, CreditCard, Settings } from "lucide-react"
 import { supabase } from "@/lib/supabase/client"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface SubscriptionStatusProps {
   userId?: string
@@ -16,6 +17,7 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { t } = useLanguage()
 
   useEffect(() => {
     if (!userId) return
@@ -129,7 +131,7 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
             <Badge className="bg-gray-100 text-gray-800">Free</Badge>
           </div>
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700">
-            Disfruta de las funciones básicas de NutriMate. ¡Actualiza a Premium para desbloquear todo el potencial!
+            {t("subscriptionStatus.freePlanDesc")}
           </div>
         </CardContent>
       </Card>

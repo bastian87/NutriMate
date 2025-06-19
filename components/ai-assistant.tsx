@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2, Send, ChefHatIcon as Chef, Sparkles } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface UserProfile {
   dietaryRestrictions: string[]
@@ -26,6 +27,7 @@ interface Message {
 }
 
 export default function AIAssistant() {
+  const { t } = useLanguage()
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",

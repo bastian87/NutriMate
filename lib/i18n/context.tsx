@@ -4,15 +4,19 @@ import type React from "react"
 import { createContext, useContext, useState, useEffect, useCallback } from "react"
 import { translations } from "./translations"
 
-type Language = "en" | "es" | "fr"
+const availableLanguages = ["en"] as const
+
+type Language = typeof availableLanguages[number]
 
 interface LanguageContextType {
   language: Language
   setLanguage: (lang: Language) => void
-  t: (key: string, fallback?: string) => string
+  t: TFunction
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
+
+export type TFunction = (key: string, options?: Record<string, any>) => string
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // Initialize with a default language. 'en' is a safe default.
@@ -40,7 +44,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   )
 
   const t = useCallback(
-    (key: string, fallback?: string): string => {
+    (key: string, options?: Record<string, any>): string => {
       const keys = key.split(".")
       const currentTranslations = translations[language] || translations.en
       let value: any = currentTranslations
@@ -51,6 +55,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (typeof value === "string") {
+        if (options) {
+          Object.entries(options).forEach(([k, v]) => {
+            value = value.replace(new RegExp(`{${k}}`, "g"), String(v))
+          })
+        }
         return value
       }
 
@@ -62,10 +71,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (typeof englishValue === "string") {
+        if (options) {
+          Object.entries(options).forEach(([k, v]) => {
+            englishValue = englishValue.replace(new RegExp(`{${k}}`, "g"), String(v))
+          })
+        }
         return englishValue
       }
 
-      return fallback || key
+      return key
     },
     [language],
   )

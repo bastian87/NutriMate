@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { CreditCard, DollarSign } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface BillingFormProps {
   user: any

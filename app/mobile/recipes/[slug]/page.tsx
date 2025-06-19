@@ -1,25 +1,55 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ChevronLeft, Bookmark, Share2, Clock } from "lucide-react"
-import { mockRecipes } from "@/lib/mock-data"
 import MobileNavigation from "@/components/mobile-navigation"
-
-// This would be fetched from a database in a real application
-const getRecipeData = (slug: string) => {
-  // Find the recipe by slug (using name as slug for simplicity)
-  const recipe = mockRecipes.find((r) => r.name.toLowerCase().replace(/\s+/g, "-") === slug)
-
-  // If recipe not found, return the first recipe as a fallback
-  return recipe || mockRecipes[0]
-}
+import { useLanguage } from "@/lib/i18n/context"
+import { recipeService, type RecipeWithDetails } from "@/lib/services/recipe-service"
 
 export default function MobileRecipePage({ params }: { params: { slug: string } }) {
-  const recipe = getRecipeData(params.slug)
+  const [recipe, setRecipe] = useState<RecipeWithDetails | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const [activeTab, setActiveTab] = useState<"recipe" | "reviews">("recipe")
+  const { t } = useLanguage()
+
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+    recipeService.getRecipeBySlug(params.slug)
+      .then((data) => {
+        setRecipe(data)
+        setLoading(false)
+      })
+      .catch(() => {
+        setError("Recipe not found")
+        setLoading(false)
+      })
+  }, [params.slug])
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading recipe...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !recipe) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error || "Recipe not found"}</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white min-h-screen pb-20">
@@ -90,7 +120,7 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
       <div className="relative">
         <div className="aspect-w-16 aspect-h-9 w-full">
           <Image
-            src={recipe.imageUrl || "/placeholder.svg?height=400&width=600"}
+            src={recipe.image_url || "/placeholder.svg?height=400&width=600"}
             alt={recipe.name}
             width={600}
             height={400}
@@ -114,7 +144,7 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
         <div className="mt-2">
           <div className="flex items-center">
             <p className="text-gray-700">
-              By <span className="underline">Nutrition Expert</span>
+              {t("mobileRecipe.by")} <span className="underline">{t("mobileRecipe.nutritionExpert")}</span>
             </p>
           </div>
         </div>
@@ -134,13 +164,13 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
         <div className="mt-4">
           <div className="flex items-center">
             <Clock className="h-5 w-5 text-gray-500 mr-2" />
-            <span className="text-gray-700">{recipe.prepTimeMinutes + recipe.cookTimeMinutes} minutes</span>
+            <span className="text-gray-700">{(recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0)} {t("mobile.minutes")}</span>
           </div>
         </div>
 
         <div className="mt-6">
           <p className="text-gray-700">{recipe.description}</p>
-          <button className="text-orange-600 font-medium mt-2">Read More</button>
+          <button className="text-orange-600 font-medium mt-2">{t("mobileRecipe.readMore")}</button>
         </div>
       </div>
 
@@ -148,10 +178,10 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
       <div className="px-4 py-2 flex space-x-4 border-t border-b border-gray-200">
         <button className="flex-1 bg-orange-600 text-white py-3 rounded-lg flex items-center justify-center font-medium">
           <Bookmark className="h-5 w-5 mr-2" />
-          Save
+          {t("mobileRecipe.save")}
         </button>
         <button className="flex-1 border border-gray-300 py-3 rounded-lg flex items-center justify-center font-medium">
-          Cook
+          {t("mobileRecipe.cook")}
         </button>
         <button className="flex-1 border border-gray-300 py-3 rounded-lg flex items-center justify-center font-medium">
           <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -162,7 +192,7 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
               strokeLinecap="round"
             />
           </svg>
-          Give
+          {t("mobileRecipe.give")}
         </button>
       </div>
 
@@ -173,13 +203,13 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
             className={`pb-2 px-4 font-medium ${activeTab === "recipe" ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-500"}`}
             onClick={() => setActiveTab("recipe")}
           >
-            Recipe
+            {t("mobileRecipe.recipe")}
           </button>
           <button
             className={`pb-2 px-4 font-medium ${activeTab === "reviews" ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-500"}`}
             onClick={() => setActiveTab("reviews")}
           >
-            Reviews
+            {t("mobileRecipe.reviews")}
           </button>
         </div>
       </div>
@@ -187,7 +217,7 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
       {/* Recipe Content */}
       {activeTab === "recipe" && (
         <div className="px-4 py-6">
-          <h2 className="text-xl font-serif font-bold mb-4">Ingredients</h2>
+          <h2 className="text-xl font-serif font-bold mb-4">{t("mobileRecipe.ingredients")}</h2>
           <ul className="space-y-3 mb-8">
             {recipe.ingredients.map((ingredient) => (
               <li key={ingredient.id} className="flex items-center">
@@ -300,7 +330,7 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
       )}
 
       {/* Mobile Navigation */}
-      <MobileNavigation />
+      <MobileNavigation isOpen={true} onClose={() => {}} />
     </div>
   )
 }

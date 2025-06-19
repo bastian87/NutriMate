@@ -5,14 +5,17 @@ import Image from "next/image"
 import { Search, Bookmark, ChevronRight } from "lucide-react"
 import { mockRecipes } from "@/lib/mock-data"
 import MobileNavigation from "@/components/mobile-navigation"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function MobileHomePage() {
+  const { t } = useLanguage()
+
   return (
     <div className="bg-white min-h-screen pb-20">
       {/* Header */}
       <header className="px-4 py-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center">
-          <span className="text-orange-600 font-serif text-2xl font-bold">NutriMate</span>
+          <span className="text-orange-600 font-serif text-2xl font-bold">{t("mobile.nutriMate")}</span>
         </div>
         <div className="flex items-center space-x-4">
           <button>
@@ -27,7 +30,7 @@ export default function MobileHomePage() {
       {/* Featured Recipe */}
       <div className="px-4 py-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-serif font-bold">Recipe of the Day</h2>
+          <h2 className="text-xl font-serif font-bold">{t("mobile.recipeOfTheDay")}</h2>
           <Link href="/mobile/recipes" className="text-orange-600">
             <ChevronRight className="h-5 w-5" />
           </Link>
@@ -45,7 +48,7 @@ export default function MobileHomePage() {
               />
             </div>
             <div className="absolute top-3 left-3 bg-orange-600 text-white text-xs font-bold uppercase tracking-wide px-2 py-1 rounded-full">
-              Featured
+              {t("mobile.featured")}
             </div>
           </div>
           <h3 className="font-serif font-bold text-xl">Grilled Salmon with Roasted Vegetables</h3>
@@ -67,7 +70,7 @@ export default function MobileHomePage() {
       {/* Collections */}
       <div className="px-4 py-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-serif font-bold">Collections</h2>
+          <h2 className="text-xl font-serif font-bold">{t("mobile.collections")}</h2>
           <Link href="/mobile/collections" className="text-orange-600">
             <ChevronRight className="h-5 w-5" />
           </Link>
@@ -75,9 +78,9 @@ export default function MobileHomePage() {
 
         <div className="flex overflow-x-auto space-x-4 pb-4 -mx-4 px-4 hide-scrollbar">
           {[
-            { title: "Healthy Weeknight Dinners", image: "/placeholder.svg?height=200&width=300" },
-            { title: "High-Protein Meals", image: "/placeholder.svg?height=200&width=300" },
-            { title: "Mediterranean Diet", image: "/placeholder.svg?height=200&width=300" },
+            { title: t("mobile.healthyWeeknightDinners"), image: "/placeholder.svg?height=200&width=300" },
+            { title: t("mobile.highProteinMeals"), image: "/placeholder.svg?height=200&width=300" },
+            { title: t("mobile.mediterraneanDiet"), image: "/placeholder.svg?height=200&width=300" },
           ].map((collection, index) => (
             <Link href={`/mobile/collections/${index}`} key={index} className="flex-shrink-0 w-64">
               <div className="relative rounded-lg overflow-hidden">
@@ -102,7 +105,7 @@ export default function MobileHomePage() {
       {/* Recent Recipes */}
       <div className="px-4 py-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-serif font-bold">Recent Recipes</h2>
+          <h2 className="text-xl font-serif font-bold">{t("mobile.recentRecipes")}</h2>
           <Link href="/mobile/recipes" className="text-orange-600">
             <ChevronRight className="h-5 w-5" />
           </Link>
@@ -126,7 +129,7 @@ export default function MobileHomePage() {
               <div className="ml-4 flex-1">
                 <h3 className="font-medium">{recipe.name}</h3>
                 <div className="flex items-center text-sm text-gray-500 mt-1">
-                  <span>{recipe.prepTimeMinutes + recipe.cookTimeMinutes} minutes</span>
+                  <span>{recipe.prepTimeMinutes + recipe.cookTimeMinutes} {t("mobile.minutes")}</span>
                 </div>
                 <div className="flex mt-1">
                   {[1, 2, 3, 4, 5].map((star) => (

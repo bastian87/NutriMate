@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import type { UserPreferences } from "@/lib/types/database"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface DietFormProps {
   user: any
@@ -24,6 +25,7 @@ export default function DietForm({ user, initialPreferences, onUpdate }: DietFor
     // Assuming other fields from your onboarding might be here
   })
   const { toast } = useToast()
+  const { t } = useLanguage()
 
   const dietTypes = [
     "No Restrictions",
@@ -52,13 +54,13 @@ export default function DietForm({ user, initialPreferences, onUpdate }: DietFor
       }
       await onUpdate(dataToUpdate)
       toast({
-        title: "Diet preferences updated",
-        description: "Your dietary preferences have been successfully updated.",
+        title: t("toast.updateDietTitle"),
+        description: t("toast.updateDietDesc"),
       })
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to update diet preferences. Please try again.",
+        title: t("toast.error"),
+        description: t("toast.updateDietError"),
         variant: "destructive",
       })
     } finally {
@@ -77,13 +79,13 @@ export default function DietForm({ user, initialPreferences, onUpdate }: DietFor
   return (
     <Card className="w-full h-full">
       <CardHeader>
-        <CardTitle>Diet Preferences</CardTitle>
-        <CardDescription>Tell us about your dietary preferences and restrictions.</CardDescription>
+        <CardTitle>{t("dietForm.title")}</CardTitle>
+        <CardDescription>{t("dietForm.description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
-            <Label>Dietary Preferences</Label>
+            <Label>{t("dietForm.dietaryPreferences")}</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {dietTypes.map((diet) => (
                 <div key={diet} className="flex items-center space-x-2">
@@ -93,7 +95,7 @@ export default function DietForm({ user, initialPreferences, onUpdate }: DietFor
                     onCheckedChange={(checked) => handleCheckboxChange(diet, checked as boolean)}
                   />
                   <Label htmlFor={`diet-${diet}`} className="text-sm font-normal">
-                    {diet}
+                    {t(`dietTypes.${diet.replace(/\s/g, "")}`) || diet}
                   </Label>
                 </div>
               ))}
@@ -101,19 +103,19 @@ export default function DietForm({ user, initialPreferences, onUpdate }: DietFor
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="excluded_ingredients">Excluded Ingredients</Label>
+            <Label htmlFor="excluded_ingredients">{t("dietForm.excludedIngredients")}</Label>
             <Textarea
               id="excluded_ingredients"
               value={formData.excluded_ingredients}
               onChange={(e) => setFormData((prev) => ({ ...prev, excluded_ingredients: e.target.value }))}
-              placeholder="e.g., mushrooms, cilantro, olives"
+              placeholder={t("dietForm.excludedIngredientsPlaceholder")}
               rows={3}
             />
-            <p className="text-xs text-muted-foreground">Separate ingredients with a comma.</p>
+            <p className="text-xs text-muted-foreground">{t("dietForm.excludedIngredientsHelp")}</p>
           </div>
 
           <Button type="submit" disabled={loading}>
-            {loading ? "Updating..." : "Update Diet Preferences"}
+            {loading ? t("dietForm.updating") : t("dietForm.update")}
           </Button>
         </form>
       </CardContent>

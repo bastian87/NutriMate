@@ -7,22 +7,25 @@ import { Clock, Bookmark, AlertCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { RecipeCardSkeleton } from "@/components/recipe-card-skeleton"
 import type { RecipeWithDetails } from "@/lib/services/recipe-service"
+import { useLanguage } from "@/lib/i18n/context"
+import type { TFunction } from "@/lib/i18n/context"
 
 // Categories for filtering
-const categories = [
-  { id: "all", label: "All Recipes", icon: "🍽️" },
-  { id: "breakfast", label: "Breakfasts", icon: "🥞" },
-  { id: "lunch", label: "Lunches", icon: "🥗" },
-  { id: "dinner", label: "Dinner", icon: "🍽️" },
-  { id: "dessert", label: "Desserts", icon: "🧁" },
-  { id: "snack", label: "Snacks", icon: "🥨" },
-  { id: "side dish", label: "Sides", icon: "🥖" },
-  { id: "soup", label: "Soups", icon: "🍲" },
+const categories: { id: string; label: (t: TFunction) => string; icon: string }[] = [
+  { id: "all", label: t => t("savedRecipes.allRecipes"), icon: "🍽️" },
+  { id: "breakfast", label: t => t("savedRecipes.breakfasts"), icon: "🥞" },
+  { id: "lunch", label: t => t("savedRecipes.lunches"), icon: "🥗" },
+  { id: "dinner", label: t => t("savedRecipes.dinners"), icon: "🍽️" },
+  { id: "dessert", label: t => t("savedRecipes.desserts"), icon: "🧁" },
+  { id: "snack", label: t => t("savedRecipes.snacks"), icon: "🥨" },
+  { id: "side dish", label: t => t("savedRecipes.sides"), icon: "🥖" },
+  { id: "soup", label: t => t("savedRecipes.soups"), icon: "🍲" },
 ]
 
 export default function SavedRecipesPage() {
   const { favorites, loading, error, removeFavorite } = useUserFavorites()
   const [selectedCategory, setSelectedCategory] = useState("all")
+  const { t } = useLanguage()
 
   const filteredRecipes = useMemo(() => {
     if (selectedCategory === "all") {
@@ -46,10 +49,10 @@ export default function SavedRecipesPage() {
       return (
         <div className="flex flex-col items-center justify-center text-center py-16 bg-gray-50 rounded-lg">
           <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800">An Error Occurred</h2>
+          <h2 className="text-xl font-semibold text-gray-800">{t("savedRecipes.anErrorOccurred")}</h2>
           <p className="text-gray-600 mt-2">{error}</p>
           <Button onClick={() => window.location.reload()} className="mt-4">
-            Try Again
+            {t("savedRecipes.tryAgain")}
           </Button>
         </div>
       )
@@ -59,12 +62,12 @@ export default function SavedRecipesPage() {
       return (
         <div className="flex flex-col items-center justify-center text-center py-16 bg-gray-50 rounded-lg">
           <Bookmark className="h-12 w-12 text-gray-400 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800">No Saved Recipes Yet</h2>
+          <h2 className="text-xl font-semibold text-gray-800">{t("savedRecipes.noSavedRecipesYet")}</h2>
           <p className="text-gray-600 mt-2">
-            You haven&apos;t saved any recipes. Start exploring and save your favorites!
+            {t("savedRecipes.noSavedRecipesDesc")}
           </p>
           <Button asChild className="mt-6">
-            <Link href="/recipes">Explore Recipes</Link>
+            <Link href="/recipes">{t("savedRecipes.exploreRecipes")}</Link>
           </Button>
         </div>
       )
@@ -73,8 +76,8 @@ export default function SavedRecipesPage() {
     if (filteredRecipes.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center text-center py-16 bg-gray-50 rounded-lg">
-          <h2 className="text-xl font-semibold text-gray-800">No Recipes Found</h2>
-          <p className="text-gray-600 mt-2">No saved recipes match the selected category.</p>
+          <h2 className="text-xl font-semibold text-gray-800">{t("savedRecipes.noRecipesFound")}</h2>
+          <p className="text-gray-600 mt-2">{t("savedRecipes.noSavedRecipesMatch")}</p>
         </div>
       )
     }
@@ -129,9 +132,9 @@ export default function SavedRecipesPage() {
     <div className="p-6 bg-cream-50 min-h-screen">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Saved Recipes</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t("savedRecipes.savedRecipes")}</h1>
           <p className="text-gray-600">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin inline-block" /> : `${favorites.length} recipes`}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin inline-block" /> : t("savedRecipes.recipes", { count: filteredRecipes.length })}
           </p>
         </div>
       </div>
@@ -148,7 +151,7 @@ export default function SavedRecipesPage() {
             disabled={loading || favorites.length === 0}
           >
             <span>{category.icon}</span>
-            {category.label}
+            <span>{category.label(t)}</span>
           </Button>
         ))}
       </div>

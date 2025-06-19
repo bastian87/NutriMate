@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Crown, X, Sparkles } from "lucide-react"
 import Link from "next/link"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface SubscriptionBannerProps {
   onDismiss?: () => void
@@ -12,6 +13,7 @@ interface SubscriptionBannerProps {
 
 export default function SubscriptionBanner({ onDismiss }: SubscriptionBannerProps) {
   const [isVisible, setIsVisible] = useState(true)
+  const { t } = useLanguage()
 
   const handleDismiss = () => {
     setIsVisible(false)
@@ -29,9 +31,9 @@ export default function SubscriptionBanner({ onDismiss }: SubscriptionBannerProp
               <Crown className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-semibold">Upgrade to NutriMate Premium</h3>
+              <h3 className="font-semibold">{t('subscriptionBanner.title')}</h3>
               <p className="text-sm text-white/90">
-                Unlimited AI suggestions, advanced meal planning, and more for just $4.99/month
+                {t('subscriptionBanner.description')}
               </p>
             </div>
           </div>
@@ -39,7 +41,7 @@ export default function SubscriptionBanner({ onDismiss }: SubscriptionBannerProp
             <Link href="/pricing">
               <Button variant="secondary" size="sm" className="bg-white text-orange-600 hover:bg-white/90">
                 <Sparkles className="h-4 w-4 mr-1" />
-                Upgrade Now
+                {t('subscriptionBanner.upgradeNow')}
               </Button>
             </Link>
             <Button variant="ghost" size="sm" onClick={handleDismiss} className="text-white hover:bg-white/20">

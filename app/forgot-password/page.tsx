@@ -11,12 +11,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowLeft, Mail } from "lucide-react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase/client"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [error, setError] = useState("")
+  const { t } = useLanguage()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,12 +32,12 @@ export default function ForgotPasswordPage() {
       })
 
       if (error) {
-        setError(error.message)
+        setError(t("forgotPassword.unexpectedError"))
       } else {
-        setMessage("Check your email for a password reset link!")
+        setMessage(t("forgotPassword.checkEmail"))
       }
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.")
+      setError(t("forgotPassword.unexpectedError"))
     } finally {
       setIsLoading(false)
     }
@@ -45,9 +47,9 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-cream-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-center">Reset Your Password</CardTitle>
+          <CardTitle className="text-center">{t("forgotPassword.resetYourPassword")}</CardTitle>
           <p className="text-center text-sm text-gray-600 mt-2">
-            Enter your email address and we'll send you a link to reset your password.
+            {t("forgotPassword.enterEmail")}
           </p>
         </CardHeader>
         <CardContent>
@@ -66,11 +68,11 @@ export default function ForgotPasswordPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email">{t("forgotPassword.emailAddress")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email address"
+                placeholder={t("forgotPassword.enterYourEmail")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -79,14 +81,14 @@ export default function ForgotPasswordPage() {
             </div>
 
             <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={isLoading}>
-              {isLoading ? "Sending..." : "Send Reset Link"}
+              {isLoading ? t("forgotPassword.sending") : t("forgotPassword.sendResetLink")}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <Link href="/login" className="inline-flex items-center text-sm text-orange-600 hover:text-orange-700">
               <ArrowLeft className="h-4 w-4 mr-1" />
-              Back to Sign In
+              {t("forgotPassword.backToSignIn")}
             </Link>
           </div>
         </CardContent>

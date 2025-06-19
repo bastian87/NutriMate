@@ -4,34 +4,37 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Monitor, Smartphone, Settings, CreditCard } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function TestPagesPage() {
+  const { t } = useLanguage()
+
   const desktopPages = [
-    { name: "Home", path: "/", description: "Main landing page" },
-    { name: "Dashboard", path: "/dashboard", description: "User dashboard with meal plans" },
-    { name: "Recipes", path: "/recipes", description: "Browse all recipes" },
+    { name: t("testPages.home"), path: "/", description: t("testPages.homeDesc") },
+    { name: t("testPages.dashboard"), path: "/dashboard", description: t("testPages.dashboardDesc") },
+    { name: t("testPages.recipes"), path: "/recipes", description: t("testPages.recipesDesc") },
     {
-      name: "Recipe Detail",
+      name: t("testPages.recipeDetail"),
       path: "/recipes/117a4059-431d-4b8d-bf8c-ff5477b2aabd",
-      description: "Individual recipe page",
+      description: t("testPages.recipeDetailDesc"),
     },
-    { name: "Grocery List", path: "/grocery-list", description: "Shopping list management" },
-    { name: "Meal Plans", path: "/meal-plans", description: "Meal planning interface" },
-    { name: "AI Assistant", path: "/ai-assistant", description: "Recipe suggestions chat" },
-    { name: "Pricing", path: "/pricing", description: "Subscription plans" },
-    { name: "Checkout", path: "/checkout", description: "Payment and subscription" },
-    { name: "Checkout Success", path: "/checkout/success", description: "Post-payment page" },
-    { name: "Onboarding", path: "/onboarding", description: "User setup flow" },
-    { name: "Login", path: "/login", description: "User authentication" },
-    { name: "Signup", path: "/signup", description: "User registration" },
-    { name: "Subscription", path: "/account/subscription", description: "Manage subscription" },
+    { name: t("testPages.groceryList"), path: "/grocery-list", description: t("testPages.groceryListDesc") },
+    { name: t("testPages.mealPlans"), path: "/meal-plans", description: t("testPages.mealPlansDesc") },
+    { name: t("testPages.aiAssistant"), path: "/ai-assistant", description: "Recipe suggestions chat" },
+    { name: t("testPages.pricing"), path: "/pricing", description: t("testPages.pricingDesc") },
+    { name: t("testPages.checkout"), path: "/checkout", description: t("testPages.checkoutDesc") },
+    { name: t("testPages.checkoutSuccess"), path: "/checkout/success", description: t("testPages.checkoutSuccessDesc") },
+    { name: t("testPages.onboarding"), path: "/onboarding", description: t("testPages.onboardingDesc") },
+    { name: t("testPages.login"), path: "/login", description: t("testPages.loginDesc") },
+    { name: t("testPages.signup"), path: "/signup", description: t("testPages.signupDesc") },
+    { name: t("testPages.subscription"), path: "/account/subscription", description: t("testPages.subscriptionDesc") },
   ]
 
   const mobilePages = [
-    { name: "Mobile Home", path: "/mobile", description: "Mobile-optimized home" },
-    { name: "Mobile Meal Plans", path: "/mobile/meal-plans", description: "Mobile meal planning" },
-    { name: "Mobile Grocery List", path: "/mobile/grocery-list", description: "Mobile shopping lists" },
-    { name: "Mobile Account", path: "/mobile/account", description: "Mobile account management" },
+    { name: t("testPages.mobileHome"), path: "/mobile", description: t("testPages.mobileHomeDesc") },
+    { name: t("testPages.mobileMealPlans"), path: "/mobile/meal-plans", description: "Mobile meal planning" },
+    { name: t("testPages.mobileGroceryList"), path: "/mobile/grocery-list", description: "Mobile shopping lists" },
+    { name: t("testPages.mobileAccount"), path: "/mobile/account", description: "Mobile account management" },
     {
       name: "Mobile Recipe",
       path: "/mobile/recipes/grilled-salmon-with-roasted-vegetables",

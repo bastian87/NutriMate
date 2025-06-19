@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation"
 import OnboardingForm from "@/components/onboarding-form"
 import { useAuthContext } from "@/components/auth/auth-provider"
 import { Loader2 } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function OnboardingPage() {
   const { user, loading } = useAuthContext()
   const router = useRouter()
+  const { t } = useLanguage()
 
   useEffect(() => {
     if (!loading && !user) {
@@ -25,7 +27,7 @@ export default function OnboardingPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-cream-50 p-4">
         <Loader2 className="h-12 w-12 animate-spin text-orange-600" />
-        <p className="mt-4 text-lg text-gray-700">Loading user session...</p>
+        <p className="mt-4 text-lg text-gray-700">{t("onboarding.loadingUserSession")}</p>
       </div>
     )
   }
@@ -35,7 +37,7 @@ export default function OnboardingPage() {
     // but it's a fallback.
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-cream-50 p-4">
-        <p className="text-lg text-gray-700">Redirecting to login...</p>
+        <p className="text-lg text-gray-700">{t("onboarding.redirectingToLogin")}</p>
       </div>
     )
   }

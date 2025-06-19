@@ -113,10 +113,10 @@ export default function GroceryListComponent({ groceryList, setGroceryList }: Gr
 
       {showAddForm && (
         <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
-          <h3 className="font-medium mb-3">Add New Item</h3>
+          <h3 className="font-medium mb-3">{t('groceryList.addNewItem')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
-              <Label htmlFor="item-name">Item Name</Label>
+              <Label htmlFor="item-name">{t('groceryList.itemName')}</Label>
               <Input
                 id="item-name"
                 value={newItem}
@@ -126,7 +126,7 @@ export default function GroceryListComponent({ groceryList, setGroceryList }: Gr
               />
             </div>
             <div>
-              <Label htmlFor="item-quantity">Quantity</Label>
+              <Label htmlFor="item-quantity">{t('groceryList.quantity')}</Label>
               <Input
                 id="item-quantity"
                 value={newItemQuantity}
@@ -136,7 +136,7 @@ export default function GroceryListComponent({ groceryList, setGroceryList }: Gr
               />
             </div>
             <div>
-              <Label htmlFor="item-category">Category</Label>
+              <Label htmlFor="item-category">{t('groceryList.category')}</Label>
               <select
                 id="item-category"
                 value={newItemCategory}
@@ -153,10 +153,10 @@ export default function GroceryListComponent({ groceryList, setGroceryList }: Gr
           </div>
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setShowAddForm(false)}>
-              Cancel
+              {t('groceryList.cancel')}
             </Button>
             <Button onClick={addNewItem} className="bg-orange-600 hover:bg-orange-700">
-              Add Item
+              {t('groceryList.addItem')}
             </Button>
           </div>
         </div>
@@ -196,13 +196,13 @@ export default function GroceryListComponent({ groceryList, setGroceryList }: Gr
         {Object.keys(filteredItems).length === 0 && (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             {searchQuery ? (
-              <p>No items found. Try a different search or add new items.</p>
+              <p>{t('groceryList.noItemsFound')}</p>
             ) : (
               <div>
-                <p className="mb-4">Your grocery list is empty. Add some items to get started!</p>
+                <p className="mb-4">{t('groceryList.emptyList')}</p>
                 <Button onClick={() => setShowAddForm(true)} className="bg-orange-600 hover:bg-orange-700">
                   <Plus className="mr-2 h-4 w-4" />
-                  Add Your First Item
+                  {t('groceryList.addFirstItem')}
                 </Button>
               </div>
             )}

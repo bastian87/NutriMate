@@ -50,7 +50,7 @@ interface UseMealPlanReturn {
 }
 
 // Hook for multiple meal plans
-export const useMealPlans = (): UseMealPlansReturn => {
+export const useMealPlans = (): UseMealPlansReturn & { exportMealPlan: typeof mealPlanService.exportMealPlan } => {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -112,11 +112,15 @@ export const useMealPlans = (): UseMealPlansReturn => {
     await loadMealPlans()
   }, [loadMealPlans])
 
+  const exportMealPlan = async (id: string, options: { format: string, includeNutrition: boolean }) => {
+    return mealPlanService.exportMealPlan(id, options)
+  }
+
   useEffect(() => {
     loadMealPlans()
   }, [loadMealPlans])
 
-  return { mealPlans, loading, error, generateMealPlan, deleteMealPlan, refreshMealPlans }
+  return { mealPlans, loading, error, generateMealPlan, deleteMealPlan, refreshMealPlans, exportMealPlan }
 }
 
 // Hook for a single meal plan

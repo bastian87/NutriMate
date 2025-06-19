@@ -8,10 +8,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { submitFeedback } from "@/lib/mock-services"
+import { feedbackService } from "@/lib/services/feedback-service"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function FeedbackForm() {
   const { toast } = useToast()
+  const { t } = useLanguage()
   const [message, setMessage] = useState("")
   const [email, setEmail] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -21,8 +23,8 @@ export default function FeedbackForm() {
 
     if (!message.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter a message",
+        title: t("feedback.errorTitle"),
+        description: t("feedback.emptyMessage"),
         variant: "destructive",
       })
       return
@@ -31,12 +33,12 @@ export default function FeedbackForm() {
     setIsSubmitting(true)
 
     try {
-      const response = await submitFeedback({ message, email })
+      const response = await feedbackService.submitFeedback({ message, email })
 
       if (response.success) {
         toast({
-          title: "Thank you!",
-          description: "Your feedback has been submitted successfully.",
+          title: t("feedback.successTitle"),
+          description: t("feedback.successDesc"),
         })
 
         setMessage("")
@@ -46,8 +48,8 @@ export default function FeedbackForm() {
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to submit feedback. Please try again.",
+        title: t("feedback.errorTitle"),
+        description: t("feedback.errorDesc"),
         variant: "destructive",
       })
     } finally {
@@ -58,10 +60,10 @@ export default function FeedbackForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label htmlFor="feedback-message">How can we improve NutriMate?</Label>
+        <Label htmlFor="feedback-message">{t("feedback.label")}</Label>
         <Textarea
           id="feedback-message"
-          placeholder="Share your thoughts, suggestions, or report issues..."
+          placeholder={t("feedback.placeholder")}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           className="mt-1"
@@ -70,22 +72,22 @@ export default function FeedbackForm() {
       </div>
 
       <div>
-        <Label htmlFor="feedback-email">Email (optional)</Label>
+        <Label htmlFor="feedback-email">{t("feedback.emailLabel")}</Label>
         <Input
           id="feedback-email"
           type="email"
-          placeholder="your@email.com"
+          placeholder={t("feedback.emailPlaceholder")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="mt-1"
         />
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          If you'd like us to follow up with you about your feedback
+          {t("feedback.followUp")}
         </p>
       </div>
 
       <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={isSubmitting}>
-        {isSubmitting ? "Submitting..." : "Submit Feedback"}
+        {isSubmitting ? t("feedback.submitting") : t("feedback.submit")}
       </Button>
     </form>
   )

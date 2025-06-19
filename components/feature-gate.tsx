@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Crown, Lock, AlertTriangle } from "lucide-react"
 import { useSubscription } from "@/hooks/use-subscription"
 import Link from "next/link"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface FeatureGateProps {
   children: ReactNode
@@ -25,6 +26,7 @@ export function FeatureGate({
   showUsageLimit = false,
 }: FeatureGateProps) {
   const { isPremium, loading } = useSubscription()
+  const { t } = useLanguage()
 
   if (loading) {
     return (
@@ -68,33 +70,31 @@ export function FeatureGate({
         </div>
         <CardTitle className="flex items-center justify-center gap-2">
           <Lock className="h-5 w-5" />
-          {title || (isPremiumOnly ? "Premium Feature" : "Upgrade Required")}
+          {title || (isPremiumOnly ? t("featureGate.premiumFeature") : t("featureGate.upgradeRequired"))}
         </CardTitle>
         <CardDescription>
           {description ||
             (isPremiumOnly
-              ? `${feature.replace(/_/g, " ")} is available for Premium users only`
-              : `You've reached your free tier limit. Upgrade to continue using ${feature.replace(/_/g, " ")}`)}
+              ? t("featureGate.availableForPremium", { feature: feature.replace(/_/g, " ") })
+              : t("featureGate.freeLimitReached", { feature: feature.replace(/_/g, " ") }))}
         </CardDescription>
       </CardHeader>
       <CardContent className="text-center space-y-4">
         {!isPremiumOnly && showUsageLimit && (
           <div className="bg-white dark:bg-gray-800 rounded-lg p-3 text-sm">
             <p className="text-gray-600 dark:text-gray-400">
-              Free users have limited access to this feature. Upgrade to Premium for unlimited access.
+              {t("featureGate.freeLimited")}
             </p>
           </div>
         )}
-
         <div className="space-y-2">
           <Button asChild className="w-full bg-orange-600 hover:bg-orange-700">
             <Link href="/pricing">
               <Crown className="h-4 w-4 mr-2" />
-              Upgrade to Premium
+              {t("featureGate.upgrade")}
             </Link>
           </Button>
-
-          {!isPremiumOnly && <p className="text-xs text-gray-500">Or continue with limited free access</p>}
+          {!isPremiumOnly && <p className="text-xs text-gray-500">{t("featureGate.continueFree")}</p>}
         </div>
       </CardContent>
     </Card>

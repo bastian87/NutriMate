@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { X, Crown, Calendar, ShoppingCart, Star, Heart } from "lucide-react"
 import Link from "next/link"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface UpgradePromptProps {
   feature: string
@@ -42,6 +43,7 @@ const featureDetails = {
 
 export default function UpgradePrompt({ feature, onClose, trigger = "feature_locked" }: UpgradePromptProps) {
   const [isVisible, setIsVisible] = useState(true)
+  const { t } = useLanguage()
 
   const handleClose = () => {
     setIsVisible(false)
@@ -56,11 +58,11 @@ export default function UpgradePrompt({ feature, onClose, trigger = "feature_loc
   const getTriggerMessage = () => {
     switch (trigger) {
       case "limit_reached":
-        return "You've reached your free limit"
+        return t("upgradePrompt.trigger.limitReached")
       case "trial_ended":
-        return "Your free trial has ended"
+        return t("upgradePrompt.trigger.trialEnded")
       default:
-        return "This is a Premium feature"
+        return t("upgradePrompt.trigger.featureLocked")
     }
   }
 
@@ -75,42 +77,28 @@ export default function UpgradePrompt({ feature, onClose, trigger = "feature_loc
             <div className="mx-auto bg-orange-100 rounded-full p-3 w-16 h-16 flex items-center justify-center">
               <IconComponent className="h-8 w-8 text-orange-600" />
             </div>
-            <CardTitle className="text-xl">{details.title}</CardTitle>
+            <CardTitle className="text-xl">{t(`upgradePrompt.${feature}.title`)}</CardTitle>
             <Badge variant="secondary" className="bg-orange-100 text-orange-800">
               {getTriggerMessage()}
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-gray-600 text-center">{details.description}</p>
+          <p className="text-gray-600 text-center">{t(`upgradePrompt.${feature}.description`)}</p>
 
           {/* Premium Benefits */}
           <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-4">
             <h4 className="font-semibold text-orange-800 mb-3 flex items-center gap-2">
               <Crown className="h-4 w-4" />
-              Premium Benefits
+              {t("upgradePrompt.premiumBenefits")}
             </h4>
             <ul className="space-y-2 text-sm">
-              <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
-                <span>Advanced meal planning (4 weeks)</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
-                <span>Smart grocery lists with categories</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
-                <span>Detailed nutrition tracking</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
-                <span>Custom dietary restrictions</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
-                <span>Priority customer support</span>
-              </li>
+              {t("upgradePrompt.benefitsList", { returnObjects: true }).map((benefit: string, idx: number) => (
+                <li key={idx} className="flex items-center gap-2">
+                  <span className="text-green-500">✓</span>
+                  <span>{benefit}</span>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -118,10 +106,10 @@ export default function UpgradePrompt({ feature, onClose, trigger = "feature_loc
           <div className="text-center space-y-2">
             <div className="flex items-center justify-center gap-2">
               <span className="text-2xl font-bold">$4.99</span>
-              <span className="text-gray-600">/month</span>
-              <Badge className="bg-green-100 text-green-800">7-day free trial</Badge>
+              <span className="text-gray-600">{t("upgradePrompt.perMonth")}</span>
+              <Badge className="bg-green-100 text-green-800">{t("upgradePrompt.freeTrialBadge")}</Badge>
             </div>
-            <p className="text-sm text-gray-600">Or save 17% with annual billing ($49.99/year)</p>
+            <p className="text-sm text-gray-600">{t("upgradePrompt.saveWithAnnual")}</p>
           </div>
 
           {/* Action Buttons */}
@@ -129,19 +117,19 @@ export default function UpgradePrompt({ feature, onClose, trigger = "feature_loc
             <Link href="/pricing" className="block">
               <Button className="w-full bg-orange-600 hover:bg-orange-700 h-11">
                 <Crown className="h-4 w-4 mr-2" />
-                Start Free Trial
+                {t("upgradePrompt.startTrial")}
               </Button>
             </Link>
             <Button variant="outline" onClick={handleClose} className="w-full">
-              Maybe Later
+              {t("upgradePrompt.maybeLater")}
             </Button>
           </div>
 
           {/* Trust Signals */}
           <div className="text-center text-xs text-gray-500 space-y-1">
-            <p>🔒 Secure payment with LemonSqueezy</p>
-            <p>🌍 Supports Argentina and 100+ countries</p>
-            <p>❌ Cancel anytime, no questions asked</p>
+            <p>{t("upgradePrompt.securePayment")}</p>
+            <p>{t("upgradePrompt.supportsCountries")}</p>
+            <p>{t("upgradePrompt.cancelAnytime")}</p>
           </div>
         </CardContent>
       </Card>

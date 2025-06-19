@@ -166,7 +166,7 @@ export function Sidebar() {
                   exit={{ opacity: 0 }}
                   className="font-bold text-xl"
                 >
-                  NutriMate
+                  {t("navigation.brand")}
                 </motion.span>
               )}
             </AnimatePresence>

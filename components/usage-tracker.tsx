@@ -9,6 +9,7 @@ import { Sparkles, Calendar, Crown } from "lucide-react"
 import { getUserUsage, getUserSubscription } from "@/lib/subscription-service"
 import type { UsageLimit, Subscription } from "@/lib/subscription-service"
 import Link from "next/link"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface UsageTrackerProps {
   userId: string
@@ -18,6 +19,7 @@ export default function UsageTracker({ userId }: UsageTrackerProps) {
   const [usage, setUsage] = useState<UsageLimit | null>(null)
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const { t } = useLanguage()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,8 +67,7 @@ export default function UsageTracker({ userId }: UsageTrackerProps) {
   const isPremium = subscription.plan === "premium" && subscription.status === "active"
 
   // Ensure all required properties exist with defaults
-  const mealPlans = usage.mealPlans || { used: 0, limit: 1 }
-  const groceryLists = usage.groceryLists || { used: 0, limit: 3 }
+  const mealPlans = usage.mealPlans
 
   return (
     <Card>
@@ -74,12 +75,12 @@ export default function UsageTracker({ userId }: UsageTrackerProps) {
         <CardTitle className="flex items-center justify-between">
           <span className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-orange-600" />
-            Usage This Month
+            {t("usageTracker.usageThisMonth")}
           </span>
           {isPremium && (
             <Badge className="bg-orange-100 text-orange-800">
               <Crown className="h-3 w-3 mr-1" />
-              Premium
+              {t("usageTracker.premium")}
             </Badge>
           )}
         </CardTitle>
@@ -88,51 +89,31 @@ export default function UsageTracker({ userId }: UsageTrackerProps) {
         {/* Meal Plans */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Advanced Meal Plans</span>
+            <span className="text-sm font-medium">{t("usageTracker.advancedMealPlans")}</span>
             <span className="text-sm text-gray-600">
               {isPremium ? (
                 <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  Unlimited
+                  {t("usageTracker.unlimited")}
                 </Badge>
               ) : (
-                `${mealPlans.used}/${mealPlans.limit}`
+                `${mealPlans.created}/${mealPlans.maxCreated} ${t("usageTracker.used")}`
               )}
             </span>
           </div>
-          {!isPremium && <Progress value={(mealPlans.used / mealPlans.limit) * 100} className="h-2" />}
-        </div>
-
-        {/* Grocery Lists */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Grocery Lists</span>
-            <span className="text-sm text-gray-600">
-              {isPremium ? (
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  Unlimited
-                </Badge>
-              ) : (
-                `${groceryLists.used}/${groceryLists.limit}`
-              )}
-            </span>
-          </div>
-          {!isPremium && <Progress value={(groceryLists.used / groceryLists.limit) * 100} className="h-2" />}
+          {!isPremium && <Progress value={(mealPlans.created / mealPlans.maxCreated) * 100} className="h-2" />}
         </div>
 
         {/* Premium Features */}
         {!isPremium && (
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-            <h4 className="font-medium text-orange-900 mb-1">Unlock Premium Features</h4>
+            <h4 className="font-medium text-orange-900 mb-1">{t("usageTracker.unlockPremium")}</h4>
             <ul className="text-sm text-orange-800 space-y-1">
-              <li>• Advanced meal planning (4 weeks)</li>
-              <li>• Smart grocery lists</li>
-              <li>• Personalized nutrition insights</li>
-              <li>• Custom dietary restrictions</li>
+              <li>{t("usageTracker.advancedMealPlansDesc")}</li>
             </ul>
             <Link href="/pricing">
               <Button className="w-full mt-3 bg-orange-600 hover:bg-orange-700" size="sm">
                 <Crown className="h-4 w-4 mr-2" />
-                Upgrade to Premium
+                {t("pricing.upgradeToPremium")}
               </Button>
             </Link>
           </div>
@@ -143,8 +124,8 @@ export default function UsageTracker({ userId }: UsageTrackerProps) {
           <Calendar className="h-3 w-3" />
           <span>
             {subscription.plan === "premium"
-              ? `Premium until ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`
-              : "Free plan"}
+              ? t("subscription.premiumPlan")
+              : t("subscription.freePlan")}
           </span>
         </div>
       </CardContent>

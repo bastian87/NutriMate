@@ -109,7 +109,7 @@ export default function DashboardPage() {
       <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[calc(100vh-200px)]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading your dashboard...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t("dashboard.loading")}</p>
         </div>
       </div>
     )
@@ -122,15 +122,15 @@ export default function DashboardPage() {
           <Card className="w-full max-w-md">
             <CardContent className="p-8 text-center">
               <Home className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Dashboard Access Required</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">Please sign in to access your dashboard.</p>
+              <h2 className="text-xl font-semibold mb-2">{t("dashboard.accessRequired")}</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">{t("dashboard.pleaseSignIn")}</p>
               <div className="space-y-3">
                 <Link href="/login" className="w-full">
-                  <Button className="w-full">Sign In</Button>
+                  <Button className="w-full">{t("dashboard.signIn")}</Button>
                 </Link>
                 <Link href="/signup" className="w-full">
                   <Button variant="outline" className="w-full">
-                    Create Account
+                    {t("dashboard.createAccount")}
                   </Button>
                 </Link>
               </div>
@@ -168,7 +168,7 @@ export default function DashboardPage() {
       {mealPlansError && (
         <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-md flex items-center gap-2">
           <AlertCircle className="h-5 w-5" />
-          <p>Could not load meal plans: {mealPlansError}</p>
+          <p>{t("dashboard.error")}: {mealPlansError}</p>
         </div>
       )}
 

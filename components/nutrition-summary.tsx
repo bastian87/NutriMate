@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, Target, Award, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface NutritionData {
   calories: number
@@ -34,6 +35,8 @@ export function NutritionSummary({
   title = "Nutrition Summary",
   period = "Today",
 }: NutritionSummaryProps) {
+  const { t } = useLanguage()
+
   const calculatePercentage = (value: number, target: number) => {
     return Math.min(Math.round((value / target) * 100), 100)
   }
@@ -94,7 +97,7 @@ export function NutritionSummary({
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="font-serif">{title}</CardTitle>
+            <CardTitle className="font-bold">{title}</CardTitle>
             <p className="text-sm text-gray-600 dark:text-gray-400">{period}</p>
           </div>
           <Badge

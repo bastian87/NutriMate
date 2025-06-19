@@ -81,28 +81,28 @@ export default function OnboardingForm() {
     const newErrors: ValidationErrors = {}
 
     if (!formData.age || formData.age <= 0) {
-      newErrors.age = t("validation.ageRequired")
+      newErrors.age = t("onboardingForm.validation.ageRequired")
     } else if (formData.age < 18) {
-      newErrors.age = t("validation.ageMinimum")
+      newErrors.age = t("onboardingForm.validation.ageMinimum")
     }
 
     if (!formData.height || formData.height <= 0) {
-      newErrors.height = t("validation.heightRequired")
+      newErrors.height = t("onboardingForm.validation.heightRequired")
     } else {
       const minHeight = heightUnit === "cm" ? 100 : 3
       const maxHeight = heightUnit === "cm" ? 250 : 8
       if (formData.height < minHeight || formData.height > maxHeight) {
-        newErrors.height = t("validation.heightRange")
+        newErrors.height = t("onboardingForm.validation.heightRange")
       }
     }
 
     if (!formData.weight || formData.weight <= 0) {
-      newErrors.weight = t("validation.weightRequired")
+      newErrors.weight = t("onboardingForm.validation.weightRequired")
     } else {
       const minWeight = weightUnit === "kg" ? 30 : 66
       const maxWeight = weightUnit === "kg" ? 200 : 440
       if (formData.weight < minWeight || formData.weight > maxWeight) {
-        newErrors.weight = t("validation.weightRange")
+        newErrors.weight = t("onboardingForm.validation.weightRange")
       }
     }
 
@@ -114,7 +114,7 @@ export default function OnboardingForm() {
     const newErrors: ValidationErrors = {}
 
     if (!formData.health_goal) {
-      newErrors.healthGoal = t("validation.healthGoalRequired")
+      newErrors.healthGoal = t("onboardingForm.validation.healthGoalRequired")
     }
 
     setErrors(newErrors)
@@ -169,7 +169,7 @@ export default function OnboardingForm() {
 
   const handleNext = async () => {
     if (!user) {
-      setErrors({ general: "You must be logged in to continue." })
+      setErrors({ general: t("onboardingForm.loginRequired") })
       return
     }
     // Clear previous errors
@@ -227,7 +227,7 @@ export default function OnboardingForm() {
         setShowConfirmation(true)
       } catch (error) {
         console.error("Error saving preferences:", error)
-        setErrors({ general: t("validation.savingError") })
+        setErrors({ general: t("onboardingForm.savingError") })
       } finally {
         setIsSubmitting(false)
       }

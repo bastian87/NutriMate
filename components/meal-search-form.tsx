@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { ChevronDown, Search } from "lucide-react"
 import Link from "next/link"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function MealSearchForm() {
   const [dietType, setDietType] = useState("Any")
@@ -14,6 +15,7 @@ export default function MealSearchForm() {
   const [dietDropdownOpen, setDietDropdownOpen] = useState(false)
   const [caloriesDropdownOpen, setCaloriesDropdownOpen] = useState(false)
   const [mealCountDropdownOpen, setMealCountDropdownOpen] = useState(false)
+  const { t } = useLanguage()
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -21,7 +23,7 @@ export default function MealSearchForm() {
         <div className="flex-1 p-3 border-b md:border-b-0 md:border-r border-gray-200">
           <div className="flex items-center">
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">Diet Type</label>
+              <label className="block text-xs text-gray-500 mb-1">{t('mealSearchForm.dietType')}</label>
               <div className="relative">
                 <button
                   className="flex items-center justify-between w-full text-left"
@@ -57,7 +59,7 @@ export default function MealSearchForm() {
         <div className="flex-1 p-3 border-b md:border-b-0 md:border-r border-gray-200">
           <div className="flex items-center">
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">Calories</label>
+              <label className="block text-xs text-gray-500 mb-1">{t('mealSearchForm.calories')}</label>
               <div className="relative">
                 <button
                   className="flex items-center justify-between w-full text-left"
@@ -93,7 +95,7 @@ export default function MealSearchForm() {
         <div className="flex-1 p-3 border-b md:border-b-0 md:border-r border-gray-200">
           <div className="flex items-center">
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">Meal Count</label>
+              <label className="block text-xs text-gray-500 mb-1">{t('mealSearchForm.mealCount')}</label>
               <div className="relative">
                 <button
                   className="flex items-center justify-between w-full text-left"
@@ -130,7 +132,7 @@ export default function MealSearchForm() {
           <Link href="/dashboard">
             <Button className="bg-orange-500 hover:bg-orange-600">
               <Search className="h-4 w-4 mr-2" />
-              Search
+              {t('mealSearchForm.search')}
             </Button>
           </Link>
         </div>
@@ -139,7 +141,7 @@ export default function MealSearchForm() {
       <div className="px-3 py-2 bg-gray-50 border-t border-gray-200 flex items-center">
         <Checkbox id="direct-only" />
         <Label htmlFor="direct-only" className="ml-2 text-sm text-gray-600">
-          Exclude recipes with allergens
+          {t('mealSearchForm.excludeRecipesWithAllergens')}
         </Label>
       </div>
     </div>

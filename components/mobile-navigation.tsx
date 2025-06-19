@@ -3,6 +3,7 @@
 import type React from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface MobileNavigationProps {
   isOpen: boolean
@@ -10,6 +11,8 @@ interface MobileNavigationProps {
 }
 
 const MobileNavigation: React.FC<MobileNavigationProps> = ({ isOpen, onClose }) => {
+  const { t } = useLanguage()
+
   return (
     <div
       className={`fixed top-0 left-0 w-full h-full bg-white z-50 transform transition-transform duration-300 ${
@@ -37,22 +40,22 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isOpen, onClose }) 
         <ul>
           <li className="py-2">
             <Link href="/" onClick={onClose} className="block text-gray-700 hover:text-gray-900">
-              Home
+              {t("mobileNavigation.home")}
             </Link>
           </li>
           <li className="py-2">
             <Link href="/about" onClick={onClose} className="block text-gray-700 hover:text-gray-900">
-              About
+              {t("mobileNavigation.about")}
             </Link>
           </li>
           <li className="py-2">
             <Link href="/services" onClick={onClose} className="block text-gray-700 hover:text-gray-900">
-              Services
+              {t("mobileNavigation.services")}
             </Link>
           </li>
           <li className="py-2">
             <Link href="/contact" onClick={onClose} className="block text-gray-700 hover:text-gray-900">
-              Contact
+              {t("mobileNavigation.contact")}
             </Link>
           </li>
         </ul>

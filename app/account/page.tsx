@@ -135,7 +135,7 @@ export default function AccountPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <p className="text-gray-600 mb-4">Please sign in to access your account.</p>
+          <p className="text-gray-600 mb-4">{t("accountPage.pleaseSignIn")}</p>
         </div>
       </div>
     )
@@ -146,7 +146,7 @@ export default function AccountPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading account information...</p>
+          <p className="mt-4 text-gray-600">{t("accountPage.loading")}</p>
         </div>
       </div>
     )
@@ -160,8 +160,8 @@ export default function AccountPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-serif font-bold mb-2">Account Settings</h1>
-            <p className="text-gray-600">Manage your health preferences and profile settings</p>
+            <h1 className="text-3xl font-bold mb-2">{t("accountPage.title")}</h1>
+            <p className="text-gray-600">{t("accountPage.subtitle")}</p>
           </div>
           <Link href="/account/settings">
             <Button className="bg-orange-600 hover:bg-orange-700">
@@ -179,14 +179,14 @@ export default function AccountPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Heart className="h-5 w-5" />
-                Health Information
+                {t("accountPage.healthInfo")}
               </CardTitle>
-              <CardDescription>Your basic health metrics for personalized recommendations</CardDescription>
+              <CardDescription>{t("accountPage.healthInfoDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="age">Age</Label>
+                  <Label htmlFor="age">{t("accountPage.age")}</Label>
                   <Input
                     id="age"
                     type="number"
@@ -195,15 +195,15 @@ export default function AccountPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="gender">Gender</Label>
+                  <Label htmlFor="gender">{t("accountPage.gender")}</Label>
                   <Select value={preferences.gender} onValueChange={(value) => setPreferences((prev) => ({ ...prev, gender: value }))}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
+                      <SelectValue placeholder={t("accountPage.selectGender")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="male">{t("accountPage.male")}</SelectItem>
+                      <SelectItem value="female">{t("accountPage.female")}</SelectItem>
+                      <SelectItem value="other">{t("accountPage.other")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -211,7 +211,7 @@ export default function AccountPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="height">Height (cm)</Label>
+                  <Label htmlFor="height">{t("accountPage.height")}</Label>
                   <Input
                     id="height"
                     type="number"
@@ -220,7 +220,7 @@ export default function AccountPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="weight">Weight (kg)</Label>
+                  <Label htmlFor="weight">{t("accountPage.weight")}</Label>
                   <Input
                     id="weight"
                     type="number"
@@ -231,38 +231,38 @@ export default function AccountPage() {
               </div>
 
               <div>
-                <Label htmlFor="activity_level">Activity Level</Label>
+                <Label htmlFor="activity_level">{t("accountPage.activityLevel")}</Label>
                 <Select value={preferences.activity_level} onValueChange={(value) => setPreferences((prev) => ({ ...prev, activity_level: value }))}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select activity level" />
+                    <SelectValue placeholder={t("accountPage.selectActivityLevel")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sedentary">Sedentary (little or no exercise)</SelectItem>
-                    <SelectItem value="light">Lightly active (light exercise/sports 1-3 days/week)</SelectItem>
-                    <SelectItem value="moderate">Moderately active (moderate exercise/sports 3-5 days/week)</SelectItem>
-                    <SelectItem value="active">Very active (hard exercise/sports 6-7 days a week)</SelectItem>
-                    <SelectItem value="very_active">Extra active (very hard exercise/sports & physical job)</SelectItem>
+                    <SelectItem value="sedentary">{t("accountPage.sedentary")}</SelectItem>
+                    <SelectItem value="light">{t("accountPage.light")}</SelectItem>
+                    <SelectItem value="moderate">{t("accountPage.moderate")}</SelectItem>
+                    <SelectItem value="active">{t("accountPage.active")}</SelectItem>
+                    <SelectItem value="very_active">{t("accountPage.veryActive")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label htmlFor="health_goal">Health Goal</Label>
+                <Label htmlFor="health_goal">{t("accountPage.healthGoal")}</Label>
                 <Select value={preferences.health_goal} onValueChange={(value) => setPreferences((prev) => ({ ...prev, health_goal: value }))}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select health goal" />
+                    <SelectValue placeholder={t("accountPage.selectHealthGoal")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="weight_loss">Weight Loss</SelectItem>
-                    <SelectItem value="maintenance">Weight Maintenance</SelectItem>
-                    <SelectItem value="muscle_gain">Muscle Gain</SelectItem>
-                    <SelectItem value="general_health">General Health</SelectItem>
+                    <SelectItem value="weight_loss">{t("accountPage.weightLoss")}</SelectItem>
+                    <SelectItem value="maintenance">{t("accountPage.maintenance")}</SelectItem>
+                    <SelectItem value="muscle_gain">{t("accountPage.muscleGain")}</SelectItem>
+                    <SelectItem value="general_health">{t("accountPage.generalHealth")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label htmlFor="calorie_target">Daily Calorie Target</Label>
+                <Label htmlFor="calorie_target">{t("accountPage.calorieTarget")}</Label>
                 <Input
                   id="calorie_target"
                   type="number"
@@ -280,13 +280,13 @@ export default function AccountPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5" />
-                Dietary Preferences
+                {t("accountPage.dietaryPreferences")}
               </CardTitle>
-              <CardDescription>Customize your dietary preferences and restrictions</CardDescription>
+              <CardDescription>{t("accountPage.dietaryPreferencesDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label className="text-base font-medium">Dietary Preferences</Label>
+                <Label className="text-base font-medium">{t("accountPage.dietaryPreferences")}</Label>
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   {dietTypes.map((diet) => (
                     <div key={diet} className="flex items-center space-x-2">
@@ -304,10 +304,10 @@ export default function AccountPage() {
               </div>
 
               <div>
-                <Label htmlFor="excluded_ingredients">Excluded Ingredients</Label>
+                <Label htmlFor="excluded_ingredients">{t("accountPage.excludedIngredients")}</Label>
                 <Input
                   id="excluded_ingredients"
-                  placeholder="e.g., nuts, shellfish, soy (comma separated)"
+                  placeholder={t("accountPage.excludedIngredientsPlaceholder")}
                   value={preferences.excluded_ingredients?.join(", ") || ""}
                   onChange={(e) =>
                     setPreferences((prev) => ({
@@ -316,11 +316,11 @@ export default function AccountPage() {
                     }))
                   }
                 />
-                <p className="text-sm text-gray-500 mt-1">Separate ingredients with commas</p>
+                <p className="text-sm text-gray-500 mt-1">{t("accountPage.separateIngredients")}</p>
               </div>
 
               <Button onClick={handleSavePreferences} disabled={saving} className="w-full">
-                {saving ? "Saving..." : "Save Preferences"}
+                {saving ? t("accountPage.saving") : t("accountPage.savePreferences")}
               </Button>
             </CardContent>
           </Card>
@@ -332,13 +332,13 @@ export default function AccountPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5" />
-                Preferencias avanzadas
+                {t("accountPage.advancedPreferences")}
               </CardTitle>
-              <CardDescription>Personaliza aún más tu experiencia</CardDescription>
+              <CardDescription>{t("accountPage.advancedPreferencesDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="include_snacks">¿Incluir snacks?</Label>
+                <Label htmlFor="include_snacks">{t("accountPage.includeSnacks")}</Label>
                 <Checkbox
                   id="include_snacks"
                   checked={preferences.include_snacks}
@@ -347,25 +347,25 @@ export default function AccountPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="allergies">Alergias (separadas por coma)</Label>
+                <Label htmlFor="allergies">{t("accountPage.allergies")}</Label>
                 <Input
                   id="allergies"
-                  placeholder="ej: nueces, mariscos, huevo"
+                  placeholder={t("accountPage.allergies")}
                   value={preferences.allergies?.join(", ") || ""}
                   onChange={(e) => setPreferences((prev) => ({ ...prev, allergies: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) }))}
                 />
               </div>
               <div>
-                <Label htmlFor="intolerances">Intolerancias (separadas por coma)</Label>
+                <Label htmlFor="intolerances">{t("accountPage.intolerances")}</Label>
                 <Input
                   id="intolerances"
-                  placeholder="ej: lactosa, gluten"
+                  placeholder={t("accountPage.intolerances")}
                   value={preferences.intolerances?.join(", ") || ""}
                   onChange={(e) => setPreferences((prev) => ({ ...prev, intolerances: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) }))}
                 />
               </div>
               <div>
-                <Label htmlFor="max_prep_time">Tiempo máximo de preparación (minutos)</Label>
+                <Label htmlFor="max_prep_time">{t("accountPage.maxPrepTime")}</Label>
                 <Input
                   id="max_prep_time"
                   type="number"
@@ -376,24 +376,24 @@ export default function AccountPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="macro_priority">Prioridad de macronutrientes</Label>
+                <Label htmlFor="macro_priority">{t("accountPage.macroPriority")}</Label>
                 <Select
                   value={preferences.macro_priority || "balanced"}
                   onValueChange={(value) => setPreferences((prev) => ({ ...prev, macro_priority: value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecciona prioridad" />
+                    <SelectValue placeholder={t("accountPage.selectMacroPriority")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="balanced">Balanceado</SelectItem>
-                    <SelectItem value="protein">Alta proteína</SelectItem>
-                    <SelectItem value="carbs">Altos carbohidratos</SelectItem>
-                    <SelectItem value="fat">Altas grasas</SelectItem>
+                    <SelectItem value="balanced">{t("accountPage.balanced")}</SelectItem>
+                    <SelectItem value="protein">{t("accountPage.protein")}</SelectItem>
+                    <SelectItem value="carbs">{t("accountPage.carbs")}</SelectItem>
+                    <SelectItem value="fat">{t("accountPage.fat")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <Button onClick={handleSavePreferences} disabled={saving} className="w-full">
-                {saving ? "Saving..." : "Guardar preferencias avanzadas"}
+                {saving ? t("accountPage.saving") : t("accountPage.saveAdvancedPreferences")}
               </Button>
             </CardContent>
           </Card>

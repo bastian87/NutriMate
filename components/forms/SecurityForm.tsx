@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast"
 import { Key, Loader2 } from "lucide-react"
 import { authService } from "@/lib/services/auth-service"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface SecurityFormProps {
   user: any // Replace 'any' with a proper user type if available
@@ -22,6 +23,7 @@ export default function SecurityForm({ user }: SecurityFormProps) {
     confirmPassword: "",
   })
   const { toast } = useToast()
+  const { t } = useLanguage()
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,8 +31,8 @@ export default function SecurityForm({ user }: SecurityFormProps) {
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast({
-        title: "Error",
-        description: "New passwords don't match.",
+        title: t("toast.error"),
+        description: t("toast.passwordMismatch"),
         variant: "destructive",
       })
       setLoading(false)
@@ -39,8 +41,8 @@ export default function SecurityForm({ user }: SecurityFormProps) {
 
     if (!passwordData.currentPassword || !passwordData.newPassword) {
       toast({
-        title: "Error",
-        description: "All password fields are required.",
+        title: t("toast.error"),
+        description: t("toast.requiredFields"),
         variant: "destructive",
       })
       setLoading(false)
@@ -55,8 +57,8 @@ export default function SecurityForm({ user }: SecurityFormProps) {
       }
 
       toast({
-        title: "Password Updated",
-        description: "Your password has been successfully updated.",
+        title: t("toast.updatePasswordTitle"),
+        description: t("toast.updatePasswordDesc"),
       })
 
       setPasswordData({
@@ -67,8 +69,8 @@ export default function SecurityForm({ user }: SecurityFormProps) {
     } catch (error: any) {
       console.error("Password update error:", error)
       toast({
-        title: "Error",
-        description: error.message || "Failed to update password. Please try again.",
+        title: t("toast.error"),
+        description: error.message || t("toast.updatePasswordError"),
         variant: "destructive",
       })
     } finally {
@@ -88,52 +90,51 @@ export default function SecurityForm({ user }: SecurityFormProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Key className="h-5 w-5" />
-          Change Password
+          {t("securityForm.changePassword")}
         </CardTitle>
         <CardDescription>
-          Update your password to keep your account secure. For the new password to take effect, you might need to log
-          out and log back in.
+          {t("securityForm.changePasswordDesc")}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handlePasswordChange} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="currentPassword">Current Password</Label>
+            <Label htmlFor="currentPassword">{t("securityForm.currentPassword")}</Label>
             <Input
               id="currentPassword"
               name="currentPassword"
               type="password"
               value={passwordData.currentPassword}
               onChange={handlePasswordInputChange}
-              placeholder="Enter your current password"
+              placeholder={t("securityForm.currentPasswordPlaceholder")}
               required
               autoComplete="current-password"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="newPassword">New Password</Label>
+            <Label htmlFor="newPassword">{t("securityForm.newPassword")}</Label>
             <Input
               id="newPassword"
               name="newPassword"
               type="password"
               value={passwordData.newPassword}
               onChange={handlePasswordInputChange}
-              placeholder="Enter your new password (min. 6 characters)"
+              placeholder={t("securityForm.newPasswordPlaceholder")}
               required
               autoComplete="new-password"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm New Password</Label>
+            <Label htmlFor="confirmPassword">{t("securityForm.confirmNewPassword")}</Label>
             <Input
               id="confirmPassword"
               name="confirmPassword"
               type="password"
               value={passwordData.confirmPassword}
               onChange={handlePasswordInputChange}
-              placeholder="Confirm your new password"
+              placeholder={t("securityForm.confirmNewPasswordPlaceholder")}
               required
               autoComplete="new-password"
             />
@@ -141,7 +142,7 @@ export default function SecurityForm({ user }: SecurityFormProps) {
 
           <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            {loading ? "Updating..." : "Update Password"}
+            {loading ? t("securityForm.updating") : t("securityForm.updatePassword")}
           </Button>
         </form>
       </CardContent>
