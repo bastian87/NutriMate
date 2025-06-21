@@ -67,7 +67,7 @@ export default function PricingPage() {
       buttonText: t("pricing.getStarted"),
       buttonVariant: "outline" as const,
       popular: false,
-      action: () => (window.location.href = user ? "/recipes" : "/signup"),
+      action: (_variantId?: string) => (window.location.href = user ? "/recipes" : "/signup"),
     },
     {
       name: t("pricing.premium"),
@@ -162,13 +162,7 @@ export default function PricingPage() {
                   className={`w-full mt-6 ${
                     plan.buttonVariant === "default" ? "bg-orange-600 hover:bg-orange-700" : ""
                   }`}
-                  onClick={() => {
-                    if (plan.variantId) {
-                      plan.action(plan.variantId)
-                    } else {
-                      plan.action()
-                    }
-                  }}
+                  onClick={() => plan.action(plan.variantId ?? "")}
                   disabled={loading === plan.name.toLowerCase()}
                 >
                   {loading === plan.name.toLowerCase() ? (
@@ -197,10 +191,10 @@ export default function PricingPage() {
       >
         <p className="text-gray-600 dark:text-gray-400 mb-4">{t("pricing.allPlansInclude")}</p>
         <div className="flex justify-center gap-4 text-sm">
-          <Link href="/privacy" className="text-orange-600 hover:underline">
+          <Link href="/privacy-policy" className="text-orange-600 hover:underline">
             {t("pricing.privacy")}
           </Link>
-          <Link href="/terms" className="text-orange-600 hover:underline">
+          <Link href="/terms-of-service" className="text-orange-600 hover:underline">
             {t("pricing.terms")}
           </Link>
         </div>

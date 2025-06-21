@@ -475,12 +475,12 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
           >
             <p className="text-gray-600 mb-4">All plans include a 14-day free trial. Cancel anytime.</p>
             <div className="flex justify-center gap-4 text-sm">
-              <a href="#" className="text-orange-600 hover:underline">
+              <Link href="/privacy-policy" className="text-orange-600 hover:underline">
                 Privacy Policy
-              </a>
-              <a href="#" className="text-orange-600 hover:underline">
+              </Link>
+              <Link href="/terms-of-service" className="text-orange-600 hover:underline">
                 Terms of Service
-              </a>
+              </Link>
             </div>
           </motion.div>
         </div>
@@ -557,9 +557,14 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Privacy
-                  </a>
+                  <Link href="/privacy-policy" className="hover:text-white transition-colors">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms-of-service" className="hover:text-white transition-colors">
+                    Terms of Service
+                  </Link>
                 </li>
               </ul>
             </div>

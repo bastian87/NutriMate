@@ -60,12 +60,12 @@ export default function Footer() {
             <h4 className="text-md font-medium mb-4">{t("footer.legal")}</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/terms" className="text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-500">
+                <Link href="/terms-of-service" className="text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-500">
                   {t("footer.terms")}
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-500">
+                <Link href="/privacy-policy" className="text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-500">
                   {t("footer.privacy")}
                 </Link>
               </li>
