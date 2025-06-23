@@ -466,23 +466,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
             ))}
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            viewport={{ once: true }}
-            className="text-center mt-12"
-          >
-            <p className="text-gray-600 mb-4">All plans include a 14-day free trial. Cancel anytime.</p>
-            <div className="flex justify-center gap-4 text-sm">
-              <Link href="/privacy-policy" className="text-orange-600 hover:underline">
-                Privacy Policy
-              </Link>
-              <Link href="/terms-of-service" className="text-orange-600 hover:underline">
-                Terms of Service
-              </Link>
-            </div>
-          </motion.div>
+          {/* Texto de prueba gratuita eliminado */}
         </div>
       </section>
 

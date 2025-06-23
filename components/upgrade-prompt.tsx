@@ -11,7 +11,7 @@ import { useLanguage } from "@/lib/i18n/context"
 interface UpgradePromptProps {
   feature: string
   onClose?: () => void
-  trigger?: "limit_reached" | "feature_locked" | "trial_ended"
+  trigger?: "limit_reached" | "feature_locked"
 }
 
 const featureDetails = {
@@ -59,8 +59,6 @@ export default function UpgradePrompt({ feature, onClose, trigger = "feature_loc
     switch (trigger) {
       case "limit_reached":
         return t("upgradePrompt.trigger.limitReached")
-      case "trial_ended":
-        return t("upgradePrompt.trigger.trialEnded")
       default:
         return t("upgradePrompt.trigger.featureLocked")
     }
@@ -109,7 +107,6 @@ export default function UpgradePrompt({ feature, onClose, trigger = "feature_loc
             <div className="flex items-center justify-center gap-2">
               <span className="text-2xl font-bold">$4.99</span>
               <span className="text-gray-600">{t("upgradePrompt.perMonth")}</span>
-              <Badge className="bg-green-100 text-green-800">{t("upgradePrompt.freeTrialBadge")}</Badge>
             </div>
             <p className="text-sm text-gray-600">{t("upgradePrompt.saveWithAnnual")}</p>
           </div>

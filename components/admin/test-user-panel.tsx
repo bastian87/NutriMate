@@ -27,12 +27,6 @@ const testUsers: TestUser[] = [
     status: "active",
     features: ["Unlimited AI suggestions", "Unlimited meal plans", "Advanced nutrition insights", "Export features"],
   },
-  {
-    email: "mike.trial@nutrimate.test",
-    plan: "premium",
-    status: "trialing",
-    features: ["7-day trial", "All premium features", "Expires in 5 days"],
-  },
 ]
 
 export default function TestUserPanel() {
@@ -122,9 +116,7 @@ export default function TestUserPanel() {
                         variant={
                           user.status === "active"
                             ? "default"
-                            : user.status === "trialing"
-                              ? "secondary"
-                              : "destructive"
+                            : "destructive"
                         }
                         className="capitalize"
                       >

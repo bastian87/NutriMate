@@ -277,14 +277,6 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
             <h2 className="text-2xl font-bold mb-6">Ingredients</h2>
             <p className="text-gray-700 mb-4">For {recipe.servings} servings</p>
 
-            {/* Debug info */}
-            <div className="mb-4 p-2 bg-gray-100 rounded text-sm">
-              <p>Debug Info:</p>
-              <p>User logged in: {user ? "Yes" : "No"}</p>
-              <p>Ingredients count: {recipe.ingredients?.length || 0}</p>
-              <p>Selected ingredients: {selectedIngredients.length}</p>
-            </div>
-
             <ul className="space-y-4">
               {recipe.ingredients && recipe.ingredients.length > 0 ? (
                 recipe.ingredients.map((ingredient, index) => (
@@ -307,12 +299,6 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
 
             {/* Always show the button section for debugging */}
             <div className="mt-6">
-              <div className="mb-2 text-sm text-gray-600">
-                Button conditions:
-                <br />- User: {user ? "✓" : "✗"}
-                <br />- Has ingredients: {recipe.ingredients && recipe.ingredients.length > 0 ? "✓" : "✗"}
-              </div>
-
               {/* Show button regardless of conditions for now */}
               <Button
                 onClick={addToGroceryList}

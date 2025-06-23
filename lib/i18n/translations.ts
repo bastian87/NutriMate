@@ -18,7 +18,7 @@ export const translations = {
       title: "Your Personal Nutrition Assistant",
       subtitle:
         "Transform your health journey with meal planning, smart nutrition tracking, and personalized recipe recommendations. Make healthy eating effortless and enjoyable.",
-      getStarted: "Start Free Trial",
+      getStarted: "Comenzar",
       exploreRecipes: "View Pricing",
       goToDashboard: "Go to Dashboard",
       featuresTitle: "Everything you need for a healthier lifestyle",
@@ -475,7 +475,7 @@ export const translations = {
       startAnnual: "Start Annual",
       mostPopular: "Most Popular",
       processing: "Processing...",
-      allPlansInclude: "All plans include a 14-day free trial. Cancel anytime.",
+      allPlansInclude: "Todos los planes incluyen acceso inmediato. Cancela cuando quieras.",
       privacy: "Privacy Policy",
       terms: "Terms of Service"
     },
@@ -689,7 +689,7 @@ export const translations = {
       },
       trigger: {
         limitReached: "You've reached your free limit",
-        trialEnded: "Your free trial has ended",
+        trialEnded: "Tu acceso ha finalizado",
         featureLocked: "This is a Premium feature",
       },
       premiumBenefits: "Premium Benefits",
@@ -700,7 +700,7 @@ export const translations = {
         "Custom dietary restrictions",
         "Priority customer support",
       ],
-      startTrial: "Start Free Trial",
+      startTrial: "Suscribirse",
       maybeLater: "Maybe Later",
       securePayment: "🔒 Secure payment with LemonSqueezy",
       supportsCountries: "🌍 Supports Argentina and 100+ countries",
@@ -708,7 +708,7 @@ export const translations = {
       perMonth: "/month",
       perYear: "per year",
       saveWithAnnual: "Or save 17% with annual billing ($49.99/year)",
-      freeTrialBadge: "7-day free trial",
+      freeTrialBadge: "Premium",
     },
     mobileNavigation: {
       home: "Home",
@@ -779,7 +779,7 @@ export const translations = {
       },
       trigger: {
         limitReached: "Has alcanzado tu límite gratuito",
-        trialEnded: "Tu prueba gratuita ha finalizado",
+        trialEnded: "Tu acceso ha finalizado",
         featureLocked: "Esta es una función Premium",
       },
       premiumBenefits: "Beneficios Premium",
@@ -798,7 +798,7 @@ export const translations = {
       perMonth: "/mes",
       perYear: "por año",
       saveWithAnnual: "O ahorra 17% con facturación anual ($49.99/año)",
-      freeTrialBadge: "Prueba gratuita de 7 días",
+      freeTrialBadge: "Premium",
     },
   },
   fr: {
@@ -825,7 +825,7 @@ export const translations = {
       },
       trigger: {
         limitReached: "Vous avez atteint votre limite gratuite",
-        trialEnded: "Votre essai gratuit est terminé",
+        trialEnded: "Votre accès a expiré",
         featureLocked: "Ceci est une fonctionnalité Premium",
       },
       premiumBenefits: "Avantages Premium",
@@ -836,7 +836,7 @@ export const translations = {
         "Restrictions alimentaires personnalisées",
         "Support client prioritaire",
       ],
-      startTrial: "Commencer l'essai gratuit",
+      startTrial: "S'abonner",
       maybeLater: "Peut-être plus tard",
       securePayment: "🔒 Paiement sécurisé avec LemonSqueezy",
       supportsCountries: "🌍 Disponible en Argentine et dans plus de 100 pays",
@@ -844,7 +844,7 @@ export const translations = {
       perMonth: "/mois",
       perYear: "par an",
       saveWithAnnual: "Ou économisez 17% avec la facturation annuelle (49,99$/an)",
-      freeTrialBadge: "Essai gratuit de 7 jours",
+      freeTrialBadge: "Premium",
     },
   },
 }

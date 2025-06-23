@@ -27,13 +27,6 @@ export async function createTestUsers() {
       fullName: "Jane Premium User",
       plan: "premium",
     },
-    {
-      email: "mike.trial@test.com",
-      password: "testpass123",
-      fullName: "Mike Trial User",
-      plan: "premium",
-      status: "trialing",
-    },
   ]
 
   for (const testUser of testUsers) {
@@ -70,16 +63,11 @@ export async function createTestUsers() {
       const subscriptionData: any = {
         user_id: authData.user.id,
         plan: testUser.plan,
-        status: testUser.status || "active",
       }
 
       if (testUser.plan === "premium") {
         subscriptionData.current_period_start = new Date().toISOString()
         subscriptionData.current_period_end = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-
-        if (testUser.status === "trialing") {
-          subscriptionData.trial_end = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-        }
       }
 
       const { error: subscriptionError } = await supabase.from("subscriptions").insert(subscriptionData)
@@ -110,7 +98,6 @@ export async function createTestUsers() {
   console.log("\n🎉 Test users created! You can now log in with:")
   console.log("Free User: john.free@test.com / testpass123")
   console.log("Premium User: jane.premium@test.com / testpass123")
-  console.log("Trial User: mike.trial@test.com / testpass123")
 }
 
 // Uncomment to run

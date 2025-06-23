@@ -111,7 +111,7 @@ export default function PaymentMethods({ billingCycle, userEmail, userId }: Paym
                   Creating checkout...
                 </div>
               ) : (
-                `Start 7-Day Free Trial - $${billingCycle === "monthly" ? "4.99/mo" : "49.99/yr"}`
+                `Suscribirse - $${billingCycle === "monthly" ? "4.99/mo" : "49.99/yr"}`
               )}
             </Button>
           </div>
@@ -134,7 +134,7 @@ export default function PaymentMethods({ billingCycle, userEmail, userId }: Paym
 
       <div className="text-xs text-gray-500 text-center space-y-1">
         <p>🔒 Your payment information is encrypted and secure</p>
-        <p>7-day free trial • Cancel anytime • No hidden fees</p>
+        <p>Sin cargos ocultos. Cancela cuando quieras.</p>
         <p>Powered by LemonSqueezy - Trusted by 50,000+ businesses worldwide</p>
       </div>
     </div>

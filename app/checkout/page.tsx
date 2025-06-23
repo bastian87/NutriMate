@@ -127,13 +127,6 @@ export default function CheckoutPage() {
                     {billingCycle === "monthly" ? "Billed monthly" : "Billed annually"}
                   </p>
                 </div>
-
-                {/* Trial Notice */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-sm text-blue-800">
-                    <strong>7-day free trial</strong> - You won't be charged until your trial ends. Cancel anytime.
-                  </p>
-                </div>
               </CardContent>
             </Card>
           </div>
@@ -144,7 +137,7 @@ export default function CheckoutPage() {
               <CardHeader>
                 <CardTitle>Choose Payment Method</CardTitle>
                 <p className="text-sm text-gray-600">
-                  Select your preferred payment method to start your 7-day free trial
+                  Selecciona tu método de pago preferido para activar NutriMate Premium
                 </p>
               </CardHeader>
               <CardContent>

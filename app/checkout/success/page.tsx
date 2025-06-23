@@ -6,8 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle, Crown, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import confetti from "canvas-confetti"
+import { useAuthContext } from "@/components/auth/auth-provider"
+import { useSubscription } from "@/hooks/use-subscription"
 
 export default function CheckoutSuccessPage() {
+  const { user } = useAuthContext()
+  const { subscription, loading } = useSubscription()
+
   useEffect(() => {
     // Trigger confetti animation
     const duration = 3000
@@ -36,6 +41,10 @@ export default function CheckoutSuccessPage() {
     })()
   }, [])
 
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Cargando...</div>
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center p-4">
       <Card className="max-w-2xl w-full text-center">
@@ -43,10 +52,31 @@ export default function CheckoutSuccessPage() {
           <div className="mx-auto bg-green-100 rounded-full p-4 w-20 h-20 flex items-center justify-center mb-6">
             <CheckCircle className="h-12 w-12 text-green-600" />
           </div>
-          <CardTitle className="text-3xl font-bold mb-2">Welcome to NutriMate Premium!</CardTitle>
-          <p className="text-gray-600 text-lg">Your 7-day free trial has started successfully</p>
+          <CardTitle className="text-3xl font-bold mb-2">
+            {subscription?.status === "active"
+              ? "¡Bienvenido a NutriMate Premium!"
+              : "¡Suscripción en proceso!"}
+          </CardTitle>
+          <p className="text-gray-600 text-lg">
+            {subscription?.status === "active"
+              ? `Tu plan: ${subscription.plan_name || "Premium"}`
+              : "Estamos procesando tu suscripción..."}
+          </p>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Información real de la suscripción */}
+          {subscription && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-medium text-blue-900 mb-2">Detalles de tu suscripción</h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Estado: {subscription.status}</li>
+                <li>• Plan: {subscription.plan_name}</li>
+                <li>• Inicio: {new Date(subscription.current_period_start).toLocaleDateString()}</li>
+                <li>• Fin: {new Date(subscription.current_period_end).toLocaleDateString()}</li>
+              </ul>
+            </div>
+          )}
+
           {/* What's Next */}
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
             <h3 className="text-xl font-semibold mb-4 flex items-center justify-center gap-2">

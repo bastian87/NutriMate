@@ -18,7 +18,7 @@ export interface TestUser {
   password: string
   fullName: string
   plan: "free" | "premium"
-  status?: "active" | "trialing" | "canceled"
+  status?: "active" | "canceled"
   preferences?: {
     age: number
     gender: string
@@ -63,23 +63,6 @@ const testUsers: TestUser[] = [
       healthGoal: "muscle_gain",
       dietaryPreferences: ["vegan", "gluten_free"],
       excludedIngredients: [],
-    },
-  },
-  {
-    email: "mike.trial@nutrimate.test",
-    password: "testpass123",
-    fullName: "Mike Trial User",
-    plan: "premium",
-    status: "trialing",
-    preferences: {
-      age: 25,
-      gender: "male",
-      height: 180,
-      weight: 80,
-      activityLevel: "low",
-      healthGoal: "maintenance",
-      dietaryPreferences: [],
-      excludedIngredients: ["dairy"],
     },
   },
 ]
@@ -130,10 +113,6 @@ export async function createTestUsers() {
       if (testUser.plan === "premium") {
         subscriptionData.current_period_start = new Date().toISOString()
         subscriptionData.current_period_end = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-
-        if (testUser.status === "trialing") {
-          subscriptionData.trial_end = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-        }
       }
 
       const { error: subscriptionError } = await supabase.from("subscriptions").upsert(subscriptionData)
@@ -194,7 +173,6 @@ export async function createTestUsers() {
   console.log("\n📧 Test Users Created:")
   console.log("Free User: john.free@nutrimate.test / testpass123")
   console.log("Premium User: jane.premium@nutrimate.test / testpass123")
-  console.log("Trial User: mike.trial@nutrimate.test / testpass123")
   console.log("\n🔗 You can now test different subscription tiers and features!")
 }
 
