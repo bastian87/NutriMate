@@ -20,13 +20,21 @@ interface HealthFormProps {
 
 export default function HealthForm({ user, initialPreferences, onUpdate }: HealthFormProps) {
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    age: any;
+    height: any;
+    weight: any;
+    activity_level: any;
+    health_goals: any;
+    medical_conditions: any;
+    [key: string]: any;
+  }>({
     age: initialPreferences?.age || "",
     height: initialPreferences?.height || "",
     weight: initialPreferences?.weight || "",
-    activityLevel: initialPreferences?.activityLevel || "",
-    healthGoals: initialPreferences?.healthGoals || [],
-    medicalConditions: initialPreferences?.medicalConditions || [],
+    activity_level: initialPreferences?.activity_level || "",
+    health_goals: initialPreferences?.health_goals || [],
+    medical_conditions: initialPreferences?.medical_conditions || [],
   })
   const { toast } = useToast()
   const { t } = useLanguage()
@@ -146,8 +154,8 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
           <div className="space-y-2">
             <Label>{t("healthForm.activityLevel")}</Label>
             <Select
-              value={formData.activityLevel}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, activityLevel: value }))}
+              value={formData.activity_level}
+              onValueChange={(value) => setFormData((prev) => ({ ...prev, activity_level: value }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder={t("healthForm.activityLevelPlaceholder")} />
@@ -169,8 +177,8 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
                 <div key={goal} className="flex items-center space-x-2">
                   <Checkbox
                     id={`goal-${goal}`}
-                    checked={formData.healthGoals.includes(goal)}
-                    onCheckedChange={(checked) => handleCheckboxChange("healthGoals", goal, checked as boolean)}
+                    checked={formData.health_goals.includes(goal)}
+                    onCheckedChange={(checked) => handleCheckboxChange("health_goals", goal, checked as boolean)}
                   />
                   <Label htmlFor={`goal-${goal}`} className="text-sm">
                     {t(`healthForm.healthGoalOptions.${goal.replace(/\s/g, "")}`) || goal}
@@ -187,9 +195,9 @@ export default function HealthForm({ user, initialPreferences, onUpdate }: Healt
                 <div key={condition} className="flex items-center space-x-2">
                   <Checkbox
                     id={`condition-${condition}`}
-                    checked={formData.medicalConditions.includes(condition)}
+                    checked={formData.medical_conditions.includes(condition)}
                     onCheckedChange={(checked) =>
-                      handleCheckboxChange("medicalConditions", condition, checked as boolean)
+                      handleCheckboxChange("medical_conditions", condition, checked as boolean)
                     }
                   />
                   <Label htmlFor={`condition-${condition}`} className="text-sm">

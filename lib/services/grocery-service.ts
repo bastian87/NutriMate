@@ -1,15 +1,15 @@
 import { createClient } from "@/lib/supabase/client"
 import type { Database } from "@/lib/types/database"
 
-type GroceryItem = Database["public"]["Tables"]["grocery_items"]["Row"]
-type GroceryItemInsert = Database["public"]["Tables"]["grocery_items"]["Insert"]
+type GroceryItem = Database["public"]["Tables"]["grocery_list_items"]["Row"]
+type GroceryItemInsert = Database["public"]["Tables"]["grocery_list_items"]["Insert"]
 
 export class GroceryService {
   private supabase = createClient()
 
   async getGroceries(userId: string): Promise<GroceryItem[]> {
     const { data, error } = await this.supabase
-      .from("grocery_items")
+      .from("grocery_list_items")
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
@@ -24,7 +24,7 @@ export class GroceryService {
 
   async addGrocery(userId: string, name: string, quantity?: string, unit?: string): Promise<GroceryItem | null> {
     const { data, error } = await this.supabase
-      .from("grocery_items")
+      .from("grocery_list_items")
       .insert([
         {
           user_id: userId,
@@ -46,7 +46,7 @@ export class GroceryService {
   }
 
   async updateGrocery(id: string, updates: Partial<GroceryItem>): Promise<GroceryItem | null> {
-    const { data, error } = await this.supabase.from("grocery_items").update(updates).eq("id", id).select().single()
+    const { data, error } = await this.supabase.from("grocery_list_items").update(updates).eq("id", id).select().single()
 
     if (error) {
       console.error("Error updating grocery:", error)
@@ -57,7 +57,7 @@ export class GroceryService {
   }
 
   async deleteGrocery(id: string): Promise<boolean> {
-    const { error } = await this.supabase.from("grocery_items").delete().eq("id", id)
+    const { error } = await this.supabase.from("grocery_list_items").delete().eq("id", id)
 
     if (error) {
       console.error("Error deleting grocery:", error)
@@ -91,7 +91,7 @@ export class GroceryService {
         is_completed: false,
       }))
 
-      const { error: insertError } = await this.supabase.from("grocery_items").insert(groceryItems)
+      const { error: insertError } = await this.supabase.from("grocery_list_items").insert(groceryItems)
 
       if (insertError) throw insertError
 
@@ -103,7 +103,7 @@ export class GroceryService {
   }
 
   async clearCompleted(userId: string): Promise<boolean> {
-    const { error } = await this.supabase.from("grocery_items").delete().eq("user_id", userId).eq("is_completed", true)
+    const { error } = await this.supabase.from("grocery_list_items").delete().eq("user_id", userId).eq("is_completed", true)
 
     if (error) {
       console.error("Error clearing completed items:", error)

@@ -8,10 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import MobileNavigation from "@/components/mobile-navigation"
+import Link from "next/link"
 import { useGroceryList } from "@/hooks/use-grocery-list"
 import { useAuthContext } from "@/components/auth/auth-provider"
-import Link from "next/link"
 
 export default function MobileGroceryListPage() {
   const { groceryList, loading, error, addItem, updateItem, deleteItem } = useGroceryList()
@@ -76,7 +75,6 @@ export default function MobileGroceryListPage() {
             <Button className="bg-orange-600 hover:bg-orange-700">Sign In</Button>
           </Link>
         </div>
-        <MobileNavigation />
       </div>
     )
   }
@@ -100,7 +98,6 @@ export default function MobileGroceryListPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading your grocery list...</p>
         </div>
-        <MobileNavigation />
       </div>
     )
   }
@@ -124,14 +121,13 @@ export default function MobileGroceryListPage() {
           <p className="text-red-600 mb-4">Error loading grocery list: {error}</p>
           <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
-        <MobileNavigation />
       </div>
     )
   }
 
   // Group items by category
   const groupedItems =
-    groceryList?.items.reduce(
+    groceryList?.items?.reduce(
       (acc, item) => {
         const category = item.category || "other"
         if (!acc[category]) {
@@ -140,20 +136,20 @@ export default function MobileGroceryListPage() {
         acc[category].push(item)
         return acc
       },
-      {} as Record<string, typeof groceryList.items>,
+      {} as Record<string, typeof groceryList extends { items: infer T } ? T : any>,
     ) || {}
 
   // Filter items based on search
   const filteredGroupedItems = searchQuery
     ? Object.entries(groupedItems).reduce(
         (acc, [category, items]) => {
-          const filtered = items.filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
+          const filtered = items.filter((item: any) => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
           if (filtered.length > 0) {
             acc[category] = filtered
           }
           return acc
         },
-        {} as Record<string, typeof groceryList.items>,
+        {} as Record<string, typeof groceryList extends { items: infer T } ? T : any>,
       )
     : groupedItems
 
@@ -254,7 +250,7 @@ export default function MobileGroceryListPage() {
 
                 <div className="p-4">
                   <div className="space-y-4">
-                    {items.map((item) => (
+                    {items.map((item: any) => (
                       <div key={item.id} className="flex items-center justify-between group">
                         <div className="flex items-center gap-3 flex-1">
                           <Checkbox
@@ -306,8 +302,6 @@ export default function MobileGroceryListPage() {
       >
         <Plus className="h-6 w-6" />
       </button>
-
-      <MobileNavigation />
     </div>
   )
 }

@@ -54,6 +54,7 @@ export default function MobileOnboarding() {
       setCurrentStep(currentStep + 1)
       window.scrollTo(0, 0)
     } else {
+      if (!user) return;
       setIsSubmitting(true)
       try {
         await userService.saveUserPreferences(user.id, { user_id: user.id, ...formData })

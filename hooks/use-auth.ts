@@ -2,12 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { authService } from "@/lib/services/auth-service"
-
-interface User {
-  id: string
-  email: string
-  name: string
-}
+import type { User } from "@supabase/supabase-js"
 
 interface AuthContextType {
   user: User | null
@@ -43,7 +38,7 @@ export const useAuth = (): AuthContextType => {
     setLoading(true)
     try {
       const signedInUser = await authService.signIn(email, password)
-      setUser(signedInUser)
+      setUser(signedInUser.data?.user ?? null)
     } catch (error) {
       setUser(null)
       throw error
@@ -56,7 +51,7 @@ export const useAuth = (): AuthContextType => {
     setLoading(true)
     try {
       const signedUpUser = await authService.signUp(email, password, name)
-      setUser(signedUpUser)
+      setUser(signedUpUser.data?.user ?? null)
     } catch (error) {
       setUser(null)
       throw error

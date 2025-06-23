@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase/client"
-import type { User, Session, AuthError, SignUpWithPasswordCredentials } from "@supabase/supabase-js"
+import type { User, Session, SignUpWithPasswordCredentials } from "@supabase/supabase-js"
+import { AuthError } from "@supabase/supabase-js"
 
 export interface UserProfile {
   id: string

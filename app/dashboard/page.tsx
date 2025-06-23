@@ -22,7 +22,7 @@ interface MappedMealPlan {
   meals: Array<{
     id: string
     day: number
-    mealType: "breakfast" | "lunch" | "dinner" | "snack"
+    meal_type: "breakfast" | "lunch" | "dinner" | "snack"
     recipe: {
       id: string
       name: string
@@ -30,9 +30,9 @@ interface MappedMealPlan {
       protein: number
       carbs: number
       fat: number
-      imageUrl: string | undefined
-      prepTimeMinutes: number
-      cookTimeMinutes: number
+      image_url: string | undefined
+      prep_time_minutes: number
+      cook_time_minutes: number
     }
   }>
 }
@@ -59,7 +59,7 @@ export default function DashboardPage() {
             meals: (fullPlan.meals || []).map((meal: any) => ({
               id: meal.id,
               day: meal.day_number,
-              mealType: meal.meal_type,
+              meal_type: meal.meal_type,
               recipe: {
                 id: meal.recipe.id,
                 name: meal.recipe.name,
@@ -67,9 +67,9 @@ export default function DashboardPage() {
                 protein: meal.recipe.protein,
                 carbs: meal.recipe.carbs,
                 fat: meal.recipe.fat,
-                imageUrl: meal.recipe.image_url,
-                prepTimeMinutes: meal.recipe.prep_time_minutes,
-                cookTimeMinutes: meal.recipe.cook_time_minutes,
+                image_url: meal.recipe.image_url,
+                prep_time_minutes: meal.recipe.prep_time_minutes,
+                cook_time_minutes: meal.recipe.cook_time_minutes,
               },
             })),
           }

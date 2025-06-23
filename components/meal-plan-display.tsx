@@ -17,15 +17,15 @@ interface Recipe {
   protein: number
   carbs: number
   fat: number
-  imageUrl?: string
-  prepTimeMinutes: number
-  cookTimeMinutes: number
+  image_url?: string
+  prep_time_minutes: number
+  cook_time_minutes: number
 }
 
 interface Meal {
   id: string
   day: number
-  mealType: "breakfast" | "lunch" | "dinner" | "snack"
+  meal_type: "breakfast" | "lunch" | "dinner" | "snack"
   recipe: Recipe
 }
 
@@ -116,25 +116,25 @@ export default function MealPlanDisplay({ mealPlan }: MealPlanDisplayProps) {
         {mealsByDay[activeDay]
           ?.sort((a, b) => {
             const mealOrder = { breakfast: 1, lunch: 2, dinner: 3, snack: 4 }
-            return mealOrder[a.mealType] - mealOrder[b.mealType]
+            return mealOrder[a.meal_type] - mealOrder[b.meal_type]
           })
           .map((meal) => (
             <Card key={meal.id} className="overflow-hidden border border-gray-200">
               <div className="relative h-48 w-full">
                 <Image
-                  src={meal.recipe.imageUrl || "/placeholder.svg?height=200&width=300&text=Recipe"}
+                  src={meal.recipe.image_url || "/placeholder.svg?height=200&width=300&text=Recipe"}
                   alt={meal.recipe.name}
                   fill
                   className="object-cover"
                 />
                 <div className="absolute top-2 left-2 bg-white dark:bg-gray-900 rounded-full px-3 py-1 text-sm font-medium">
-                  {meal.mealType.charAt(0).toUpperCase() + meal.mealType.slice(1)}
+                  {meal.meal_type.charAt(0).toUpperCase() + meal.meal_type.slice(1)}
                 </div>
               </div>
               <CardHeader>
                 <CardTitle className="text-lg font-serif">{meal.recipe.name}</CardTitle>
                 <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                  <Clock className="h-4 w-4 mr-1" /> {meal.recipe.prepTimeMinutes + meal.recipe.cookTimeMinutes} min
+                  <Clock className="h-4 w-4 mr-1" /> {meal.recipe.prep_time_minutes + meal.recipe.cook_time_minutes} min
                 </div>
               </CardHeader>
               <CardContent>

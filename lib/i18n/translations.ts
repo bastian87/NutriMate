@@ -755,4 +755,96 @@ export const translations = {
       updatePassword: "Update Password"
     },
   },
+  es: {
+    upgradePrompt: {
+      advancedMealPlanning: {
+        title: "Planificación avanzada de comidas",
+        description: "Crea planes de comidas detallados por hasta 4 semanas con información nutricional.",
+        benefit: "Planifica tus comidas como un nutricionista profesional",
+      },
+      unlimitedGroceryLists: {
+        title: "Listas de compras ilimitadas",
+        description: "Crea y gestiona listas de compras ilimitadas con organización inteligente.",
+        benefit: "Nunca olvides un ingrediente",
+      },
+      nutritionInsights: {
+        title: "Información nutricional",
+        description: "Obtén análisis nutricional detallado y recomendaciones personalizadas.",
+        benefit: "Optimiza tu nutrición con seguimiento detallado",
+      },
+      customDietaryRestrictions: {
+        title: "Restricciones dietéticas personalizadas",
+        description: "Configura filtros y restricciones dietéticas personalizadas para tus planes de comida.",
+        benefit: "Comidas adaptadas a tus necesidades específicas",
+      },
+      trigger: {
+        limitReached: "Has alcanzado tu límite gratuito",
+        trialEnded: "Tu prueba gratuita ha finalizado",
+        featureLocked: "Esta es una función Premium",
+      },
+      premiumBenefits: "Beneficios Premium",
+      benefitsList: [
+        "Planificación avanzada de comidas (4 semanas)",
+        "Listas de compras inteligentes con categorías",
+        "Seguimiento nutricional detallado",
+        "Restricciones dietéticas personalizadas",
+        "Soporte prioritario al cliente",
+      ],
+      startTrial: "Comenzar prueba gratuita",
+      maybeLater: "Quizás después",
+      securePayment: "🔒 Pago seguro con LemonSqueezy",
+      supportsCountries: "🌍 Disponible en Argentina y más de 100 países",
+      cancelAnytime: "❌ Cancela en cualquier momento, sin preguntas",
+      perMonth: "/mes",
+      perYear: "por año",
+      saveWithAnnual: "O ahorra 17% con facturación anual ($49.99/año)",
+      freeTrialBadge: "Prueba gratuita de 7 días",
+    },
+  },
+  fr: {
+    upgradePrompt: {
+      advancedMealPlanning: {
+        title: "Planification avancée des repas",
+        description: "Créez des plans de repas détaillés pour jusqu'à 4 semaines avec des informations nutritionnelles.",
+        benefit: "Planifiez vos repas comme un nutritionniste professionnel",
+      },
+      unlimitedGroceryLists: {
+        title: "Listes de courses illimitées",
+        description: "Créez et gérez des listes de courses illimitées avec une organisation intelligente.",
+        benefit: "N'oubliez plus jamais un ingrédient",
+      },
+      nutritionInsights: {
+        title: "Aperçus nutritionnels",
+        description: "Obtenez une analyse nutritionnelle détaillée et des recommandations personnalisées.",
+        benefit: "Optimisez votre nutrition avec un suivi détaillé",
+      },
+      customDietaryRestrictions: {
+        title: "Restrictions alimentaires personnalisées",
+        description: "Configurez des filtres et des restrictions alimentaires personnalisés pour la planification des repas.",
+        benefit: "Des repas adaptés à vos besoins spécifiques",
+      },
+      trigger: {
+        limitReached: "Vous avez atteint votre limite gratuite",
+        trialEnded: "Votre essai gratuit est terminé",
+        featureLocked: "Ceci est une fonctionnalité Premium",
+      },
+      premiumBenefits: "Avantages Premium",
+      benefitsList: [
+        "Planification avancée des repas (4 semaines)",
+        "Listes de courses intelligentes avec catégories",
+        "Suivi nutritionnel détaillé",
+        "Restrictions alimentaires personnalisées",
+        "Support client prioritaire",
+      ],
+      startTrial: "Commencer l'essai gratuit",
+      maybeLater: "Peut-être plus tard",
+      securePayment: "🔒 Paiement sécurisé avec LemonSqueezy",
+      supportsCountries: "🌍 Disponible en Argentine et dans plus de 100 pays",
+      cancelAnytime: "❌ Annulez à tout moment, sans poser de questions",
+      perMonth: "/mois",
+      perYear: "par an",
+      saveWithAnnual: "Ou économisez 17% avec la facturation annuelle (49,99$/an)",
+      freeTrialBadge: "Essai gratuit de 7 jours",
+    },
+  },
 }

@@ -155,10 +155,6 @@ function toast({ ...props }: Hint) {
     toast: {
       ...props,
       id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss()
-      },
     },
   })
 

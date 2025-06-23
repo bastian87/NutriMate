@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { mealPlanService } from "@/lib/services/meal-plan-service"
+import type { ExportFormat } from "@/lib/services/meal-plan-service"
 import { createClient } from "@/lib/supabase/client"
 
 // Types based on your database schema
-interface MealPlan {
+export interface MealPlan {
   id: string
   name: string
   start_date: string
@@ -112,7 +113,7 @@ export const useMealPlans = (): UseMealPlansReturn & { exportMealPlan: typeof me
     await loadMealPlans()
   }, [loadMealPlans])
 
-  const exportMealPlan = async (id: string, options: { format: string, includeNutrition: boolean }) => {
+  const exportMealPlan = async (id: string, options: ExportFormat) => {
     return mealPlanService.exportMealPlan(id, options)
   }
 

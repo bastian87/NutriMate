@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { MealPlan } from "@/lib/mock-data"
+import type { MealPlan } from "./use-meal-plans"
 
 interface MealPlanHistoryItem {
   id: string

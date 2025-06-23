@@ -215,18 +215,18 @@ export class MealPlanService {
       if (prefs?.allergies && prefs.allergies.length > 0) {
         recipes = recipes.filter(recipe => {
           const ingredients = (recipe.ingredients || []).map(i => i.name?.toLowerCase())
-          return !prefs.allergies!.some(allergy => ingredients.includes(allergy.toLowerCase()))
+          return !((prefs && prefs.allergies) ? prefs.allergies.some(allergy => ingredients.includes(allergy.toLowerCase())) : false)
         })
       }
       if (prefs?.intolerances && prefs.intolerances.length > 0) {
         recipes = recipes.filter(recipe => {
           const ingredients = (recipe.ingredients || []).map(i => i.name?.toLowerCase())
-          return !prefs.intolerances!.some(intol => ingredients.includes(intol.toLowerCase()))
+          return !((prefs && prefs.intolerances) ? prefs.intolerances.some(intol => ingredients.includes(intol.toLowerCase())) : false)
         })
       }
       // Filtrar por tiempo máximo de preparación
       if (prefs?.maxPrepTime) {
-        recipes = recipes.filter(recipe => (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0) <= prefs.maxPrepTime!)
+        recipes = recipes.filter(recipe => (recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0) <= (prefs && prefs.maxPrepTime ? prefs.maxPrepTime : Infinity))
       }
 
       if (recipes.length === 0) {

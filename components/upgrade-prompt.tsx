@@ -93,12 +93,14 @@ export default function UpgradePrompt({ feature, onClose, trigger = "feature_loc
               {t("upgradePrompt.premiumBenefits")}
             </h4>
             <ul className="space-y-2 text-sm">
-              {t("upgradePrompt.benefitsList", { returnObjects: true }).map((benefit: string, idx: number) => (
-                <li key={idx} className="flex items-center gap-2">
-                  <span className="text-green-500">✓</span>
-                  <span>{benefit}</span>
-                </li>
-              ))}
+              {Array.isArray(t("upgradePrompt.benefitsList", { returnObjects: true }))
+                ? (t("upgradePrompt.benefitsList", { returnObjects: true }) as unknown as string[]).map((benefit, idx) => (
+                    <li key={idx} className="flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      <span>{benefit}</span>
+                    </li>
+                  ))
+                : null}
             </ul>
           </div>
 

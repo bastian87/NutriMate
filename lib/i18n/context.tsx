@@ -4,7 +4,7 @@ import type React from "react"
 import { createContext, useContext, useState, useEffect, useCallback } from "react"
 import { translations } from "./translations"
 
-const availableLanguages = ["en"] as const
+const availableLanguages = ["en", "es", "fr"] as const
 
 type Language = typeof availableLanguages[number]
 
@@ -44,7 +44,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   )
 
   const t = useCallback(
-    (key: string, options?: Record<string, any>): string => {
+    (key: string, options?: Record<string, any>): any => {
       const keys = key.split(".")
       const currentTranslations = translations[language] || translations.en
       let value: any = currentTranslations
@@ -52,6 +52,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       for (const k of keys) {
         value = value?.[k]
         if (value === undefined) break
+      }
+
+      // Si es array y se pide returnObjects, devolver el array
+      if (Array.isArray(value) && options?.returnObjects) {
+        return value
       }
 
       if (typeof value === "string") {
@@ -63,11 +68,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         return value
       }
 
-      // Fallback to English if current language doesn't have the key
+      // Fallback a inglés
       let englishValue: any = translations.en
       for (const k of keys) {
         englishValue = englishValue?.[k]
         if (englishValue === undefined) break
+      }
+
+      if (Array.isArray(englishValue) && options?.returnObjects) {
+        return englishValue
       }
 
       if (typeof englishValue === "string") {

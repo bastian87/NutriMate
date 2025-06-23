@@ -22,7 +22,7 @@ interface ValidationErrors {
   age?: string
   height?: string
   weight?: string
-  healthGoal?: string
+  health_goal?: string
   general?: string
 }
 
@@ -114,7 +114,7 @@ export default function OnboardingForm() {
     const newErrors: ValidationErrors = {}
 
     if (!formData.health_goal) {
-      newErrors.healthGoal = t("onboardingForm.validation.healthGoalRequired")
+      newErrors.health_goal = t("onboardingForm.validation.healthGoalRequired")
     }
 
     setErrors(newErrors)
@@ -510,8 +510,8 @@ export default function OnboardingForm() {
                 value={formData.health_goal}
                 onValueChange={(value) => {
                   setFormData((prev) => ({ ...prev, health_goal: value as HealthGoal }))
-                  if (errors.healthGoal) {
-                    setErrors((prev) => ({ ...prev, healthGoal: undefined }))
+                  if (errors.health_goal) {
+                    setErrors((prev) => ({ ...prev, health_goal: undefined }))
                   }
                 }}
                 className="space-y-3"
@@ -566,7 +566,7 @@ export default function OnboardingForm() {
                   </Label>
                 </div>
               </RadioGroup>
-              <ErrorMessage error={errors.healthGoal} />
+              <ErrorMessage error={errors.health_goal} />
             </div>
           )}
 

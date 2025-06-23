@@ -9,9 +9,9 @@ import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/context"
 
 export default function MealSearchForm() {
-  const [dietType, setDietType] = useState("Any")
+  const [diet_type, setDietType] = useState("Any")
   const [calories, setCalories] = useState("Any")
-  const [mealCount, setMealCount] = useState("3 meals")
+  const [meal_count, setMealCount] = useState("3 meals")
   const [dietDropdownOpen, setDietDropdownOpen] = useState(false)
   const [caloriesDropdownOpen, setCaloriesDropdownOpen] = useState(false)
   const [mealCountDropdownOpen, setMealCountDropdownOpen] = useState(false)
@@ -29,7 +29,7 @@ export default function MealSearchForm() {
                   className="flex items-center justify-between w-full text-left"
                   onClick={() => setDietDropdownOpen(!dietDropdownOpen)}
                 >
-                  <span>{dietType}</span>
+                  <span>{diet_type}</span>
                   <ChevronDown className="h-4 w-4 text-gray-400" />
                 </button>
 
@@ -101,7 +101,7 @@ export default function MealSearchForm() {
                   className="flex items-center justify-between w-full text-left"
                   onClick={() => setMealCountDropdownOpen(!mealCountDropdownOpen)}
                 >
-                  <span>{mealCount}</span>
+                  <span>{meal_count}</span>
                   <ChevronDown className="h-4 w-4 text-gray-400" />
                 </button>
 

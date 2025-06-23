@@ -10,7 +10,6 @@ import { useMealPlans } from "@/hooks/use-meal-plans"
 import { useAuthContext } from "@/components/auth/auth-provider"
 import { motion, AnimatePresence } from "framer-motion"
 import { format } from "date-fns"
-import MobileNavigation from "@/components/mobile-navigation"
 import { useLanguage } from "@/lib/i18n/context"
 
 export default function MobileMealPlansPage() {
@@ -67,7 +66,6 @@ export default function MobileMealPlansPage() {
             <Button className="bg-orange-600 hover:bg-orange-700">{t("mobileMealPlans.signIn")}</Button>
           </Link>
         </div>
-        <MobileNavigation />
       </div>
     )
   }
@@ -91,7 +89,6 @@ export default function MobileMealPlansPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">{t("mobileMealPlans.loading")}</p>
         </div>
-        <MobileNavigation />
       </div>
     )
   }
@@ -115,7 +112,6 @@ export default function MobileMealPlansPage() {
           <p className="text-red-600 mb-4">{t("mobileMealPlans.errorLoading")} {error}</p>
           <Button onClick={() => window.location.reload()}>{t("mobileMealPlans.tryAgain")}</Button>
         </div>
-        <MobileNavigation />
       </div>
     )
   }
@@ -272,8 +268,6 @@ export default function MobileMealPlansPage() {
           </motion.div>
         )}
       </div>
-
-      <MobileNavigation />
     </div>
   )
 }

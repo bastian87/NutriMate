@@ -4,7 +4,6 @@ import Link from "next/link"
 import Image from "next/image"
 import { Search, Bookmark, ChevronRight } from "lucide-react"
 import { mockRecipes } from "@/lib/mock-data"
-import MobileNavigation from "@/components/mobile-navigation"
 import { useLanguage } from "@/lib/i18n/context"
 
 export default function MobileHomePage() {
@@ -129,7 +128,7 @@ export default function MobileHomePage() {
               <div className="ml-4 flex-1">
                 <h3 className="font-medium">{recipe.name}</h3>
                 <div className="flex items-center text-sm text-gray-500 mt-1">
-                  <span>{recipe.prepTimeMinutes + recipe.cookTimeMinutes} {t("mobile.minutes")}</span>
+                  <span>{recipe.prep_time_minutes + recipe.cook_time_minutes} {t("mobile.minutes")}</span>
                 </div>
                 <div className="flex mt-1">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -144,9 +143,6 @@ export default function MobileHomePage() {
           ))}
         </div>
       </div>
-
-      {/* Mobile Navigation */}
-      <MobileNavigation />
     </div>
   )
 }

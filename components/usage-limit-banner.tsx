@@ -102,10 +102,11 @@ export function UsageLimitBanner({ feature, className }: UsageLimitBannerProps) 
               <Progress
                 value={percentage}
                 className="h-2"
-                // @ts-ignore
-                style={{
-                  "--progress-background": isAtLimit ? "#dc2626" : percentage >= 80 ? "#ea580c" : "#059669",
-                }}
+                style={
+                  {
+                    "--progress-background": isAtLimit ? "#dc2626" : percentage >= 80 ? "#ea580c" : "#059669",
+                  } as React.CSSProperties
+                }
               />
             </div>
 
