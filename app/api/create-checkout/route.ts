@@ -5,38 +5,27 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
 export async function POST(request: NextRequest) {
   try {
     const { variantId, plan } = await request.json()
-    console.log("Received checkout request:", { variantId, plan })
 
     if (!variantId) {
-      console.error("Missing variant ID")
       return NextResponse.json({ error: "Variant ID is required" }, { status: 400 })
     }
 
-    // Log environment variables (without exposing sensitive data)
-    console.log("Environment check:", {
-      hasStoreId: !!process.env.NEXT_PUBLIC_LEMONSQUEEZY_STORE_ID,
-      hasApiKey: !!process.env.LEMONSQUEEZY_API_KEY,
-      hasAppUrl: !!process.env.NEXT_PUBLIC_APP_URL,
-      variantId,
-    })
+    // Validar variables de entorno críticas
+    if (!process.env.NEXT_PUBLIC_LEMONSQUEEZY_STORE_ID || !process.env.LEMONSQUEEZY_API_KEY || !process.env.NEXT_PUBLIC_APP_URL) {
+      return NextResponse.json({
+        error: "Faltan variables de entorno requeridas para el checkout. Contacta al administrador."
+      }, { status: 500 })
+    }
 
     const supabase = createServerSupabaseClient()
     const {
       data: { user },
     } = await supabase.auth.getUser()
 
-    console.log("User authentication:", { 
-      isAuthenticated: !!user, 
-      userId: user?.id,
-      userEmail: user?.email 
-    })
-
     if (!user) {
-      console.error("Usuario no autenticado: se requiere login para suscribirse");
-      return NextResponse.json({ error: "Debes iniciar sesión para suscribirte." }, { status: 401 });
+      return NextResponse.json({ error: "Debes iniciar sesión para suscribirte." }, { status: 401 })
     }
 
-    // Handle both authenticated and guest users
     const checkoutData = {
       variantId,
       userId: user.id,
@@ -44,30 +33,30 @@ export async function POST(request: NextRequest) {
       redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success`,
     }
 
-    console.log("Creating checkout with data:", { 
-      ...checkoutData, 
-      variantId: checkoutData.variantId,
-      redirectUrl: checkoutData.redirectUrl 
-    })
-
-    const checkoutUrl = await createCheckout(checkoutData)
-
-    if (!checkoutUrl) {
-      console.error("No checkout URL returned from Lemon Squeezy")
-      throw new Error("No checkout URL returned from Lemon Squeezy")
+    let checkoutUrl: string | null = null
+    try {
+      checkoutUrl = await createCheckout(checkoutData)
+    } catch (err: any) {
+      // Error de red o LemonSqueezy
+      return NextResponse.json({
+        error: "No se pudo crear el checkout. Intenta de nuevo más tarde.",
+        details: err instanceof Error ? err.message : "Unknown error",
+      }, { status: 502 })
     }
 
-    console.log("Checkout created successfully:", { checkoutUrl })
+    if (!checkoutUrl) {
+      return NextResponse.json({ error: "No se pudo obtener la URL de pago." }, { status: 500 })
+    }
 
     return NextResponse.json({
       checkoutUrl,
       success: true,
     })
-  } catch (error) {
-    console.error("Checkout creation error:", error)
+  } catch (error: any) {
+    // Error inesperado
     return NextResponse.json(
       {
-        error: "Failed to create checkout",
+        error: "Error interno al procesar el checkout.",
         details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },

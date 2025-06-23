@@ -7,6 +7,7 @@ import { Calendar, Clock, RefreshCw, Info } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/context"
+import { mealPlanService } from "@/lib/services/meal-plan-service"
 
 // Define types locally since we removed mock data
 interface Recipe {
@@ -69,10 +70,15 @@ export default function MealPlanDisplay({ mealPlan }: MealPlanDisplayProps) {
   const handleRegenerateMeal = async (mealId: string) => {
     setRegeneratingMealId(mealId)
     try {
-      // TODO: Implement real meal regeneration with mealPlanService
-      console.log("Regenerating meal:", mealId)
+      // Regenerar la comida usando mealPlanService
+      await mealPlanService.regenerateMeal(mealId)
+      // Recargar el meal plan después de regenerar
+      // Si tienes un método para recargar desde el padre, llama a ese método aquí
+      // Si no, puedes forzar un reload de la página como fallback:
+      window.location.reload()
     } catch (error) {
-      console.error("Error regenerating meal:", error)
+      console.error("Error regenerando la comida:", error)
+      alert("Ocurrió un error al regenerar la comida. Intenta de nuevo.")
     } finally {
       setRegeneratingMealId(null)
     }
