@@ -4,18 +4,18 @@ import AuthLayout from "@/components/auth-layout"
 import "../globals.css"
 
 export const metadata: Metadata = {
-  title: "Mobile - NutriMate",
-  description: "Mobile app interface",
+  title: "Checkout - NutriMate",
+  description: "Complete your purchase",
 }
 
-export default function MobileLayout({
+export default function CheckoutLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <AuthLayout title="Mobile - NutriMate" description="Mobile app interface">
+    <AuthLayout title="Checkout - NutriMate" description="Complete your purchase">
       {children}
     </AuthLayout>
   )
-}
+} 

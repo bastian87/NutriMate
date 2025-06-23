@@ -63,6 +63,10 @@ export async function getSubscription(subscriptionId: string): Promise<LemonSque
     })
 
     if (!response.ok) {
+      if (response.status === 404) {
+        console.error(`Subscription ${subscriptionId} not found in LemonSqueezy (possibly a test subscription)`)
+        return null
+      }
       throw new Error(`Failed to fetch subscription: ${response.status}`)
     }
 
@@ -130,21 +134,51 @@ export async function resumeSubscription(subscriptionId: string): Promise<boolea
 
 export async function getCustomerPortalUrl(subscriptionId: string): Promise<string | null> {
   try {
-    const response = await fetch(`${LEMONSQUEEZY_BASE_URL}/subscriptions/${subscriptionId}`, {
+    // Primero obtener la suscripción para obtener el customer_id
+    const subscription = await getSubscription(subscriptionId)
+    if (!subscription) {
+      console.error("Could not fetch subscription to get customer_id")
+      return null
+    }
+
+    // URL de retorno por defecto
+    const returnUrl = process.env.NEXT_PUBLIC_APP_URL 
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/account/subscription`
+      : "https://nutrimate.app/account/subscription"
+
+    // Generar el portal del cliente usando el customer_id
+    const response = await fetch(`${LEMONSQUEEZY_BASE_URL}/customers/${subscription.customer_id}/portal`, {
+      method: "POST",
       headers: {
         Accept: "application/vnd.api+json",
         "Content-Type": "application/vnd.api+json",
         Authorization: `Bearer ${LEMONSQUEEZY_CONFIG.apiKey}`,
       },
+      body: JSON.stringify({
+        data: {
+          type: "customer-portals",
+          attributes: {
+            return_url: returnUrl,
+          },
+        },
+      }),
     })
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch subscription: ${response.status}`)
+      const errorText = await response.text()
+      console.error(`Failed to create customer portal: ${response.status} - ${errorText}`)
+      
+      // Si es un error 404, probablemente es una suscripción de prueba
+      if (response.status === 404) {
+        console.error("Customer portal not available for test subscription")
+        return null
+      }
+      
+      return null
     }
 
     const data = await response.json()
-    const portalUrl = data.data.attributes.urls?.customer_portal
-    return portalUrl || null
+    return data.data.attributes.url
   } catch (error) {
     console.error("Error getting customer portal URL:", error)
     return null

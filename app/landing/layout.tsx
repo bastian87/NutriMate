@@ -1,7 +1,12 @@
 import type React from "react"
-import { ThemeProvider } from "@/components/theme-provider"
-import { AuthProvider } from "@/components/auth/auth-provider"
-import { LanguageProvider } from "@/lib/i18n/context"
+import type { Metadata } from "next"
+import "../globals.css"
+
+export const metadata: Metadata = {
+  title: "NutriMate - Your Nutrition Companion",
+  description: "Plan meals, track nutrition, and discover recipes with NutriMate",
+  generator: 'v0.dev'
+}
 
 export default function LandingLayout({
   children,
@@ -9,12 +14,8 @@ export default function LandingLayout({
   children: React.ReactNode
 }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <LanguageProvider>
-        <AuthProvider>
-          <div className="min-h-screen">{children}</div>
-        </AuthProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+    <div className="min-h-screen bg-cream-50">
+      {children}
+    </div>
   )
 }

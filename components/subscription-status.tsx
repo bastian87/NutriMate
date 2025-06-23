@@ -104,8 +104,29 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
     try {
       const res = await fetch("/api/user/subscription", { method: "GET" })
       const data = await res.json()
-      if (!res.ok || !data.url) throw new Error(data.error || "No se pudo obtener el portal de facturación.")
+      
+      if (!res.ok) {
+        if (res.status === 404) {
+          throw new Error("No tienes una suscripción activa. Primero debes suscribirte a un plan.")
+        } else if (res.status === 400 && data.isTestMode) {
+          throw new Error("Portal de facturación no disponible para suscripciones de prueba. Estás en modo de desarrollo. Para acceder a las funciones de facturación, crea una nueva suscripción en modo de producción.")
+        } else if (res.status === 500) {
+          if (data.error === "Subscription not found in LemonSqueezy") {
+            throw new Error("Tu suscripción existe en nuestra base de datos pero no en el sistema de pagos. Por favor, contacta al soporte para resolver este problema.")
+          } else {
+            throw new Error(data.details || "Error al generar el portal de facturación. Por favor, intenta nuevamente más tarde.")
+          }
+        } else {
+          throw new Error(data.error || "No se pudo obtener el portal de facturación.")
+        }
+      }
+      
+      if (!data.url) {
+        throw new Error("No se pudo generar la URL del portal de facturación.")
+      }
+      
       window.open(data.url, "_blank")
+      setMessage("Portal de facturación abierto en una nueva pestaña.")
     } catch (error: any) {
       setError(error.message || "No se pudo abrir el portal de facturación.")
     } finally {
