@@ -9,6 +9,7 @@ import { RecipeCardSkeleton } from "@/components/recipe-card-skeleton"
 import type { RecipeWithDetails } from "@/lib/services/recipe-service"
 import { useLanguage } from "@/lib/i18n/context"
 import type { TFunction } from "@/lib/i18n/context"
+import { filtrarPorTipo } from "@/lib/utils"
 
 // Categories for filtering
 const categories: { id: string; label: (t: TFunction) => string; icon: string }[] = [
@@ -31,7 +32,7 @@ export default function SavedRecipesPage() {
     if (selectedCategory === "all") {
       return favorites
     }
-    return favorites.filter((recipe) => recipe.meal_type?.toLowerCase() === selectedCategory.toLowerCase())
+    return filtrarPorTipo(favorites, selectedCategory)
   }, [favorites, selectedCategory])
 
   const renderContent = () => {

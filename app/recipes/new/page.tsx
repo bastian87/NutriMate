@@ -38,6 +38,7 @@ export default function NewRecipePage() {
     carbs: 0,
     fat: 0,
     image_url: "",
+    meal_type: "Breakfast"
   })
 
   const [ingredients, setIngredients] = useState<Ingredient[]>([{ name: "", quantity: "", unit: "" }])
@@ -165,6 +166,25 @@ export default function NewRecipePage() {
                     onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                     placeholder="https://example.com/image.jpg"
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="meal_type">Tipo de comida *</Label>
+                  <select
+                    id="meal_type"
+                    className="w-full border rounded px-3 py-2"
+                    value={formData.meal_type}
+                    onChange={e => setFormData({ ...formData, meal_type: e.target.value })}
+                    required
+                  >
+                    <option value="Breakfast">Desayuno</option>
+                    <option value="Lunch">Comida/Almuerzo</option>
+                    <option value="Dinner">Cena</option>
+                    <option value="Dessert">Postre</option>
+                    <option value="Snack">Snack/Colación</option>
+                    <option value="Sidedish">Guarnición</option>
+                    <option value="Soups">Sopa</option>
+                  </select>
                 </div>
               </div>
 
