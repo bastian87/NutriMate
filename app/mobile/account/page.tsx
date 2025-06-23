@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { User, Settings, Heart, ArrowLeft } from "lucide-react"
+import { User, Settings, Heart, ArrowLeft, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -46,6 +46,7 @@ export default function MobileAccountPage() {
     dietary_preferences: [],
     excluded_ingredients: [],
   })
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -140,17 +141,18 @@ export default function MobileAccountPage() {
               Back
             </Link>
             <h1 className="text-lg font-bold">Account</h1>
-            <div className="w-8"></div>
+            <button onClick={() => setIsMenuOpen(true)} className="w-8 h-8 flex items-center justify-center">
+              <Menu className="h-6 w-6 text-gray-600" />
+            </button>
           </div>
         </div>
-
         <div className="text-center py-12 px-4">
           <p className="text-gray-600 mb-4">Please sign in to access your account.</p>
           <Link href="/login">
             <Button className="bg-orange-600 hover:bg-orange-700">Sign In</Button>
           </Link>
         </div>
-        <MobileNavigation />
+        <MobileNavigation isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       </div>
     )
   }
@@ -166,15 +168,16 @@ export default function MobileAccountPage() {
               Back
             </Link>
             <h1 className="text-lg font-bold">Account</h1>
-            <div className="w-8"></div>
+            <button onClick={() => setIsMenuOpen(true)} className="w-8 h-8 flex items-center justify-center">
+              <Menu className="h-6 w-6 text-gray-600" />
+            </button>
           </div>
         </div>
-
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading account information...</p>
         </div>
-        <MobileNavigation />
+        <MobileNavigation isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       </div>
     )
   }
@@ -189,7 +192,9 @@ export default function MobileAccountPage() {
             Back
           </Link>
           <h1 className="text-lg font-bold">Account</h1>
-          <div className="w-8"></div>
+          <button onClick={() => setIsMenuOpen(true)} className="w-8 h-8 flex items-center justify-center">
+            <Menu className="h-6 w-6 text-gray-600" />
+          </button>
         </div>
       </div>
 
@@ -446,7 +451,7 @@ export default function MobileAccountPage() {
         )}
       </div>
 
-      <MobileNavigation />
+      <MobileNavigation isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </div>
   )
 }
