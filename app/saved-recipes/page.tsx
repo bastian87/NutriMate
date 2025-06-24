@@ -10,6 +10,7 @@ import type { RecipeWithDetails } from "@/lib/services/recipe-service"
 import { useLanguage } from "@/lib/i18n/context"
 import type { TFunction } from "@/lib/i18n/context"
 import { filtrarPorTipo } from "@/lib/utils"
+import { FeatureGate } from "@/components/feature-gate"
 
 // Categories for filtering
 const categories: { id: string; label: (t: TFunction) => string; icon: string }[] = [
@@ -130,34 +131,36 @@ export default function SavedRecipesPage() {
   }
 
   return (
-    <div className="p-6 bg-cream-50 min-h-screen">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t("savedRecipes.savedRecipes")}</h1>
-          <p className="text-gray-600">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin inline-block" /> : t("savedRecipes.recipes", { count: filteredRecipes.length })}
-          </p>
+    <FeatureGate feature="unlimited_saved_recipes">
+      <div className="p-6 bg-cream-50 min-h-screen">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{t("savedRecipes.savedRecipes")}</h1>
+            <p className="text-gray-600">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin inline-block" /> : t("savedRecipes.recipes", { count: filteredRecipes.length })}
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* Category Filters */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-        {categories.map((category) => (
-          <Button
-            key={category.id}
-            variant={selectedCategory === category.id ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedCategory(category.id)}
-            className="flex items-center gap-2 whitespace-nowrap"
-            disabled={loading || favorites.length === 0}
-          >
-            <span>{category.icon}</span>
-            <span>{category.label(t)}</span>
-          </Button>
-        ))}
-      </div>
+        {/* Category Filters */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          {categories.map((category) => (
+            <Button
+              key={category.id}
+              variant={selectedCategory === category.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedCategory(category.id)}
+              className="flex items-center gap-2 whitespace-nowrap"
+              disabled={loading || favorites.length === 0}
+            >
+              <span>{category.icon}</span>
+              <span>{category.label(t)}</span>
+            </Button>
+          ))}
+        </div>
 
-      {renderContent()}
-    </div>
+        {renderContent()}
+      </div>
+    </FeatureGate>
   )
 }

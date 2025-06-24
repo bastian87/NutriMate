@@ -257,14 +257,16 @@ export default function MealPlansPage() {
           <h1 className="text-3xl font-bold mb-2">{t("mealPlans.myMealPlans")}</h1>
           <p className="text-gray-600 dark:text-gray-400">{t("mealPlans.planYourMeals")}</p>
         </div>
-        <Button
-          onClick={handleGenerateMealPlan}
-          disabled={isGenerating || loading}
-          className="bg-orange-600 hover:bg-orange-700 min-w-[180px]"
-        >
-          {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
-          {isGenerating ? t("mealPlans.generating") : t("mealPlans.generate")}
-        </Button>
+        <FeatureGate feature="unlimited_meal_plans">
+          <Button
+            onClick={handleGenerateMealPlan}
+            disabled={isGenerating || loading}
+            className="bg-orange-600 hover:bg-orange-700 min-w-[180px]"
+          >
+            {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
+            {isGenerating ? t("mealPlans.generating") : t("mealPlans.generate")}
+          </Button>
+        </FeatureGate>
       </motion.div>
 
       <AnimatePresence>

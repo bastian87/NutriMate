@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import type { GroceryListItem } from "@/hooks/use-grocery-list"
+import { FeatureGate } from "@/components/feature-gate"
 
 export default function GroceryListPage() {
   const { groceryList, loading, error, addItem, updateItem, deleteItem, clearAllItems } = useGroceryList()
@@ -185,149 +186,151 @@ export default function GroceryListPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <Link href="/dashboard" className="inline-flex items-center text-orange-600 hover:text-orange-700">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("groceryList.backToDashboard")}
-        </Link>
-      </div>
-
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <h1 className="text-3xl font-bold">{t("groceryList.title")}</h1>
-        <div className="flex space-x-2">
-          <Button variant="outline" className="flex items-center" onClick={handlePrint}>
-            <Printer className="mr-2 h-4 w-4" />
-            {t("groceryList.print")}
-          </Button>
-          <Button variant="outline" className="flex items-center" onClick={handleDownload}>
-            <Download className="mr-2 h-4 w-4" />
-            {t("groceryList.download")}
-          </Button>
-          <Button variant="destructive" className="flex items-center" onClick={handleClearAll} disabled={isClearing || !groceryList?.items.length}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            {t("groceryList.clearList")}
-          </Button>
+    <FeatureGate feature="smart_grocery_lists">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Link href="/dashboard" className="inline-flex items-center text-orange-600 hover:text-orange-700">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {t("groceryList.backToDashboard")}
+          </Link>
         </div>
-      </div>
 
-      {/* Add New Item Form */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8">
-        <h3 className="font-semibold text-lg mb-4">{t("groceryList.addNewItem")}</h3>
-        <form onSubmit={handleAddItem} className="flex gap-4">
-          <Input
-            type="text"
-            placeholder={t("groceryList.itemName")}
-            value={newItemName}
-            onChange={(e) => setNewItemName(e.target.value)}
-            className="flex-1"
-          />
-          <Input
-            type="text"
-            placeholder={t("groceryList.quantityOptional")}
-            value={newItemQuantity}
-            onChange={(e) => setNewItemQuantity(e.target.value)}
-            className="w-32"
-          />
-          <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
-            <Plus className="h-4 w-4 mr-2" />
-            {t("groceryList.add")}
-          </Button>
-        </form>
-      </div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <h1 className="text-3xl font-bold">{t("groceryList.title")}</h1>
+          <div className="flex space-x-2">
+            <Button variant="outline" className="flex items-center" onClick={handlePrint}>
+              <Printer className="mr-2 h-4 w-4" />
+              {t("groceryList.print")}
+            </Button>
+            <Button variant="outline" className="flex items-center" onClick={handleDownload}>
+              <Download className="mr-2 h-4 w-4" />
+              {t("groceryList.download")}
+            </Button>
+            <Button variant="destructive" className="flex items-center" onClick={handleClearAll} disabled={isClearing || !groceryList?.items.length}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              {t("groceryList.clearList")}
+            </Button>
+          </div>
+        </div>
 
-      {/* Grocery List Items */}
-      <div className="space-y-8">
-        {groupKeys.map((groupKey) => {
-          const items = groupedByRecipe[groupKey];
-          if (!items || items.length === 0) return null;
-          const isOther = groupKey === "other";
-          const groupTitle = isOther ? t("groceryList.categories.other") : recipeNames[groupKey] || t("groceryList.loading");
-          return (
-            <div
-              key={groupKey}
-              className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
-            >
-              <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {/* Eliminar badge, solo mostrar el nombre */}
-                    <span className="font-semibold text-lg">{groupTitle}</span>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {items.length} {items.length !== 1 ? t("groceryList.items") : t("groceryList.item")}
-                    </span>
+        {/* Add New Item Form */}
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8">
+          <h3 className="font-semibold text-lg mb-4">{t("groceryList.addNewItem")}</h3>
+          <form onSubmit={handleAddItem} className="flex gap-4">
+            <Input
+              type="text"
+              placeholder={t("groceryList.itemName")}
+              value={newItemName}
+              onChange={(e) => setNewItemName(e.target.value)}
+              className="flex-1"
+            />
+            <Input
+              type="text"
+              placeholder={t("groceryList.quantityOptional")}
+              value={newItemQuantity}
+              onChange={(e) => setNewItemQuantity(e.target.value)}
+              className="w-32"
+            />
+            <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
+              <Plus className="h-4 w-4 mr-2" />
+              {t("groceryList.add")}
+            </Button>
+          </form>
+        </div>
+
+        {/* Grocery List Items */}
+        <div className="space-y-8">
+          {groupKeys.map((groupKey) => {
+            const items = groupedByRecipe[groupKey];
+            if (!items || items.length === 0) return null;
+            const isOther = groupKey === "other";
+            const groupTitle = isOther ? t("groceryList.categories.other") : recipeNames[groupKey] || t("groceryList.loading");
+            return (
+              <div
+                key={groupKey}
+                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+              >
+                <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {/* Eliminar badge, solo mostrar el nombre */}
+                      <span className="font-semibold text-lg">{groupTitle}</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {items.length} {items.length !== 1 ? t("groceryList.items") : t("groceryList.item")}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="space-y-4">
+                    {items.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between group">
+                        <div className="flex items-center gap-3 flex-1">
+                          <Checkbox
+                            checked={item.is_checked}
+                            onCheckedChange={(checked) => handleToggleItem(item.id, checked as boolean)}
+                          />
+                          <div className={`flex-1 ${item.is_checked ? "line-through text-gray-500" : ""}`}>
+                            <span className="font-medium">{item.name}</span>
+                            {item.quantity && (
+                              <span className="text-gray-600 dark:text-gray-400 ml-2">
+                                {item.quantity} {item.unit}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteItem(item.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between group">
-                      <div className="flex items-center gap-3 flex-1">
-                        <Checkbox
-                          checked={item.is_checked}
-                          onCheckedChange={(checked) => handleToggleItem(item.id, checked as boolean)}
-                        />
-                        <div className={`flex-1 ${item.is_checked ? "line-through text-gray-500" : ""}`}>
-                          <span className="font-medium">{item.name}</span>
-                          {item.quantity && (
-                            <span className="text-gray-600 dark:text-gray-400 ml-2">
-                              {item.quantity} {item.unit}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteItem(item.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {(!groceryList?.items || groceryList.items.length === 0) && (
-        <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <p className="text-gray-500 dark:text-gray-400 mb-4">Your grocery list is empty.</p>
-          <p className="text-sm text-gray-400">Add items manually or from recipe pages to get started.</p>
+            );
+          })}
         </div>
-      )}
 
-      {/* Clear Confirmation Dialog */}
-      <Dialog open={showClearConfirmDialog} onOpenChange={setShowClearConfirmDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("groceryList.clearListConfirm")}</DialogTitle>
-            <DialogDescription>
-              {t("groceryList.clearListDescription")}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowClearConfirmDialog(false)}
-              disabled={isClearing}
-            >
-              {t("groceryList.cancel")}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmClearAll}
-              disabled={isClearing}
-            >
-              {isClearing ? t("groceryList.deleting") : t("groceryList.deleteAll")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+        {(!groceryList?.items || groceryList.items.length === 0) && (
+          <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <p className="text-gray-500 dark:text-gray-400 mb-4">Your grocery list is empty.</p>
+            <p className="text-sm text-gray-400">Add items manually or from recipe pages to get started.</p>
+          </div>
+        )}
+
+        {/* Clear Confirmation Dialog */}
+        <Dialog open={showClearConfirmDialog} onOpenChange={setShowClearConfirmDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t("groceryList.clearListConfirm")}</DialogTitle>
+              <DialogDescription>
+                {t("groceryList.clearListDescription")}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowClearConfirmDialog(false)}
+                disabled={isClearing}
+              >
+                {t("groceryList.cancel")}
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={confirmClearAll}
+                disabled={isClearing}
+              >
+                {isClearing ? t("groceryList.deleting") : t("groceryList.deleteAll")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </FeatureGate>
   )
 }
