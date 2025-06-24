@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Search, Filter, Clock, Star, Heart, X, ChefHat, Utensils, Plus, Loader2, Bookmark } from "lucide-react"
@@ -12,6 +12,9 @@ import { useRecipes } from "@/hooks/use-recipes"
 import { useAuthContext } from "@/components/auth/auth-provider"
 import { motion, AnimatePresence } from "framer-motion"
 import type { RecipeWithDetails } from "@/lib/services/recipe-service"
+import { useUserFavorites } from "@/hooks/use-user-favorites"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
+import { useSubscription } from "@/hooks/use-subscription"
 
 export default function RecipesPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -20,6 +23,9 @@ export default function RecipesPage() {
   const [maxCookTime, setMaxCookTime] = useState([120])
   const [calorieRange, setCalorieRange] = useState([0, 1000])
   const { user } = useAuthContext()
+  const { tryAddFavorite, showLimitModal, setShowLimitModal, favorites, removeFavorite } = useUserFavorites()
+  const { isPremium } = useSubscription()
+  const [recipesState, setRecipesState] = useState<RecipeWithDetails[]>([])
 
   const filters = useMemo(
     () => ({
@@ -33,6 +39,10 @@ export default function RecipesPage() {
   )
 
   const { recipes, loading, error, toggleFavorite } = useRecipes(filters)
+
+  useEffect(() => {
+    setRecipesState(recipes)
+  }, [recipes])
 
   const allTags = useMemo(() => {
     if (!recipes || recipes.length === 0) return []
@@ -62,7 +72,7 @@ export default function RecipesPage() {
     (maxCookTime[0] !== 120 ? 1 : 0) +
     (calorieRange[0] !== 0 || calorieRange[1] !== 1000 ? 1 : 0)
 
-  const favoriteCount = recipes ? recipes.filter((recipe) => recipe.is_favorited).length : 0
+  const localFavoriteCount = recipesState.filter((r) => r.is_favorited).length
 
   if (loading && recipes.length === 0) {
     return (
@@ -107,7 +117,7 @@ export default function RecipesPage() {
           )}
           <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
             <Heart className="h-3 w-3 mr-1" />
-            {favoriteCount} Favorites
+            {localFavoriteCount} Favorites
           </Badge>
         </div>
       </motion.div>
@@ -237,8 +247,8 @@ export default function RecipesPage() {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
       >
         <AnimatePresence>
-          {recipes &&
-            recipes.map((recipe: RecipeWithDetails, index: number) => (
+          {recipesState &&
+            recipesState.map((recipe: RecipeWithDetails, index: number) => (
               <motion.div
                 key={recipe.id}
                 layout
@@ -268,7 +278,21 @@ export default function RecipesPage() {
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          onClick={() => toggleFavorite(recipe.id, user.id)}
+                          onClick={() => {
+                            const isFav = recipesState.find(r => r.id === recipe.id)?.is_favorited
+                            if (isFav) {
+                              removeFavorite(recipe.id)
+                              setRecipesState(prev => prev.map(r => r.id === recipe.id ? { ...r, is_favorited: false } : r))
+                            } else {
+                              if (!isPremium && localFavoriteCount >= 10) {
+                                setShowLimitModal(true)
+                                return
+                              }
+                              tryAddFavorite(recipe.id).then(success => {
+                                if (success) setRecipesState(prev => prev.map(r => r.id === recipe.id ? { ...r, is_favorited: true } : r))
+                              })
+                            }
+                          }}
                           className={`p-1.5 rounded-full backdrop-blur-sm transition-all duration-200 ${
                             recipe.is_favorited ? "bg-orange-500 text-white" : "bg-white/80 text-gray-600 hover:bg-white"
                           }`}
@@ -378,6 +402,25 @@ export default function RecipesPage() {
           </div>
         </motion.div>
       )}
+
+      <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Límite alcanzado</DialogTitle>
+            <DialogDescription>
+              No puedes guardar más de 10 recetas en la versión gratuita. Hazte premium para guardar recetas ilimitadas.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button autoFocus>Aceptar</Button>
+            </DialogClose>
+            <Link href="/pricing">
+              <Button variant="outline">Hazte Premium</Button>
+            </Link>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

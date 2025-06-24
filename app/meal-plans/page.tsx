@@ -15,6 +15,8 @@ import type { ExportFormat } from "@/lib/services/meal-plan-service"
 import { useLanguage } from "@/lib/i18n/context"
 import { FeatureGate } from "@/components/feature-gate"
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { useSubscription } from "@/hooks/use-subscription"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 
 export default function MealPlansPage() {
   const { user } = useAuthContext()
@@ -23,6 +25,9 @@ export default function MealPlansPage() {
   const [isExporting, setIsExporting] = useState<string | null>(null) // Store ID of plan being exported
   const { toast } = useToast()
   const { t } = useLanguage()
+  const { isPremium } = useSubscription()
+  // Estado para el modal de confirmación
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean, id: string | null }>({ open: false, id: null })
 
   const handleGenerateMealPlan = async () => {
     if (!user) return
@@ -46,22 +51,28 @@ export default function MealPlansPage() {
     }
   }
 
-  const handleDeleteMealPlan = async (id: string) => {
-    if (confirm("Are you sure you want to delete this meal plan?")) {
-      try {
-        await deleteMealPlan(id)
-        toast({
-          title: "Meal Plan Deleted",
-          description: "The meal plan has been removed.",
-        })
-      } catch (err: any) {
-        console.error("Error deleting meal plan:", err)
-        toast({
-          title: "Deletion Failed",
-          description: err.message || "Failed to delete meal plan. Please try again.",
-          variant: "destructive",
-        })
-      }
+  // Nueva función para abrir el modal
+  const openDeleteDialog = (id: string) => setDeleteDialog({ open: true, id })
+  // Nueva función para cerrar el modal
+  const closeDeleteDialog = () => setDeleteDialog({ open: false, id: null })
+  // Nueva función para confirmar borrado
+  const confirmDeleteMealPlan = async () => {
+    if (!deleteDialog.id) return
+    try {
+      await deleteMealPlan(deleteDialog.id)
+      toast({
+        title: t("mealPlans.deletedTitle"),
+        description: t("mealPlans.deletedDesc"),
+      })
+    } catch (err: any) {
+      console.error("Error deleting meal plan:", err)
+      toast({
+        title: t("mealPlans.deletionFailed"),
+        description: err.message || t("mealPlans.deletionFailedDesc"),
+        variant: "destructive",
+      })
+    } finally {
+      closeDeleteDialog()
     }
   }
 
@@ -246,6 +257,9 @@ export default function MealPlansPage() {
     )
   }
 
+  // Calcular cantidad de planes en tiempo real usando el estado local
+  const localMealPlanCount = mealPlans.length
+
   return (
     <div className="container mx-auto px-4 py-8 font-sans">
       <motion.div
@@ -257,7 +271,7 @@ export default function MealPlansPage() {
           <h1 className="text-3xl font-bold mb-2">{t("mealPlans.myMealPlans")}</h1>
           <p className="text-gray-600 dark:text-gray-400">{t("mealPlans.planYourMeals")}</p>
         </div>
-        <FeatureGate feature="unlimited_meal_plans">
+        {isPremium || localMealPlanCount === 0 ? (
           <Button
             onClick={handleGenerateMealPlan}
             disabled={isGenerating || loading}
@@ -266,7 +280,7 @@ export default function MealPlansPage() {
             {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
             {isGenerating ? t("mealPlans.generating") : t("mealPlans.generate")}
           </Button>
-        </FeatureGate>
+        ) : null}
       </motion.div>
 
       <AnimatePresence>
@@ -318,7 +332,7 @@ export default function MealPlansPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteMealPlan(mealPlan.id)}
+                        onClick={() => openDeleteDialog(mealPlan.id)}
                         className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 w-8 h-8"
                         aria-label="Delete meal plan"
                       >
@@ -388,6 +402,19 @@ export default function MealPlansPage() {
           </AnimatePresence>
         </motion.div>
       )}
+
+      <Dialog open={deleteDialog.open} onOpenChange={open => { if (!open) closeDeleteDialog() }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("mealPlans.confirmDeleteTitle")}</DialogTitle>
+            <DialogDescription>{t("mealPlans.confirmDeleteDesc")}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={closeDeleteDialog}>{t("common.cancel")}</Button>
+            <Button variant="destructive" onClick={confirmDeleteMealPlan}>{t("common.delete")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

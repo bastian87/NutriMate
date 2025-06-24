@@ -11,6 +11,8 @@ import { useRecipe } from "@/hooks/use-recipes"
 import { useGroceryList } from "@/hooks/use-grocery-list"
 import { useAuthContext } from "@/components/auth/auth-provider"
 import { useToast } from "@/hooks/use-toast"
+import { useUserFavorites } from "@/hooks/use-user-favorites"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
 
 export default function RecipePage({ params }: { params: { slug: string } }) {
   const { user } = useAuthContext()
@@ -26,6 +28,7 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
   const [copied, setCopied] = useState(false)
   const shareMenuRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
+  const { tryAddFavorite, showLimitModal, setShowLimitModal } = useUserFavorites()
 
   useEffect(() => {
     setUserRating(recipe?.user_rating || 0)
@@ -398,6 +401,25 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
           </div>
         </div>
       </div>
+
+      <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Límite alcanzado</DialogTitle>
+            <DialogDescription>
+              No puedes guardar más de 10 recetas en la versión gratuita. Hazte premium para guardar recetas ilimitadas.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button autoFocus>Aceptar</Button>
+            </DialogClose>
+            <Link href="/pricing">
+              <Button variant="outline">Hazte Premium</Button>
+            </Link>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

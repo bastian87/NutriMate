@@ -4,13 +4,16 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { recipeService, type RecipeWithDetails } from "@/lib/services/recipe-service"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
+import { useSubscription } from "@/hooks/use-subscription"
 
 export function useUserFavorites() {
   const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
+  const { isPremium } = useSubscription()
   const [favorites, setFavorites] = useState<RecipeWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showLimitModal, setShowLimitModal] = useState(false)
   const prevUserIdRef = useRef<string>()
 
   const fetchFavorites = useCallback(async () => {
@@ -78,5 +81,39 @@ export function useUserFavorites() {
     [user, toast, favorites],
   )
 
-  return { favorites, loading: loading || authLoading, error, fetchFavorites, removeFavorite }
+  const tryAddFavorite = useCallback(
+    async (recipeId: string) => {
+      if (!user) {
+        toast({ title: "Error", description: "You must be logged in.", variant: "destructive" })
+        return false
+      }
+      if (!isPremium && favorites.length >= 10) {
+        setShowLimitModal(true)
+        return false
+      }
+      try {
+        await recipeService.toggleFavorite(recipeId, user.id)
+        fetchFavorites()
+        return true
+      } catch (e) {
+        toast({ title: "Error", description: "Could not save favorite.", variant: "destructive" })
+        return false
+      }
+    },
+    [user, isPremium, favorites.length, toast, fetchFavorites]
+  )
+
+  const localFavoriteCount = favorites.filter((r) => r.is_favorited).length
+  return {
+    favorites,
+    loading: loading || authLoading,
+    error,
+    fetchFavorites,
+    removeFavorite,
+    tryAddFavorite,
+    showLimitModal,
+    setShowLimitModal,
+    localFavoriteCount,
+    syncFavorites: () => setFavorites([...favorites]),
+  }
 }

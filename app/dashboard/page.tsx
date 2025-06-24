@@ -222,7 +222,7 @@ export default function DashboardPage() {
                 <Button
                   variant="outline"
                   onClick={handleGenerateNewPlan}
-                  disabled={isGenerating}
+                  disabled={isGenerating || !!currentMealPlan}
                   className="flex items-center gap-2"
                 >
                   <RefreshCw className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} />
