@@ -10,6 +10,7 @@ import { useState, useEffect, useRef } from "react"
 import { useRecipe } from "@/hooks/use-recipes"
 import { useGroceryList } from "@/hooks/use-grocery-list"
 import { useAuthContext } from "@/components/auth/auth-provider"
+import { useToast } from "@/hooks/use-toast"
 
 export default function RecipePage({ params }: { params: { slug: string } }) {
   const { user } = useAuthContext()
@@ -24,6 +25,7 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [copied, setCopied] = useState(false)
   const shareMenuRef = useRef<HTMLDivElement>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
     setUserRating(recipe?.user_rating || 0)
@@ -65,7 +67,11 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
     try {
       await addRecipeIngredients(recipe.id, selectedIngredients.length > 0 ? selectedIngredients : undefined)
       const count = selectedIngredients.length > 0 ? selectedIngredients.length : recipe.ingredients.length
-      alert(`${count} ingredients added to grocery list!`)
+      toast({
+        title: `${count} ingredients added to grocery list!`,
+        description: "You can view them in your grocery list.",
+        variant: "default"
+      });
       setSelectedIngredients([])
     } catch (error) {
       console.error("Error adding to grocery list:", error)

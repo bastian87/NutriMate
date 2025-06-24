@@ -6,6 +6,7 @@ import { AuthProvider } from "@/components/auth/auth-provider"
 import { LanguageProvider } from "@/lib/i18n/context"
 import Script from "next/script"
 import "./globals.css"
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -40,6 +41,7 @@ export default function RootLayout({
           <LanguageProvider>
             <AuthProvider>
               {children}
+              <Toaster />
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>

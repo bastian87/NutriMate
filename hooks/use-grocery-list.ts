@@ -283,6 +283,21 @@ export function useGroceryList() {
     }
   }
 
+  const clearAllItems = async () => {
+    if (!groceryList) return
+    try {
+      const { error } = await supabase
+        .from("grocery_list_items")
+        .delete()
+        .eq("grocery_list_id", groceryList.id)
+      if (error) throw error
+      setGroceryList((prev) => ({ ...prev!, items: [] }))
+    } catch (err) {
+      console.error("Error clearing grocery list:", err)
+      throw err
+    }
+  }
+
   return {
     groceryList,
     loading,
@@ -293,5 +308,6 @@ export function useGroceryList() {
     addRecipeIngredients,
     addAllMealPlanIngredients,
     refetch: fetchGroceryList,
+    clearAllItems,
   }
 }

@@ -8,18 +8,32 @@ import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/context"
 import { useGroceryList } from "@/hooks/use-grocery-list"
 import { useAuthContext } from "@/components/auth/auth-provider"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Trash2, Plus } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { getRecipeById } from "@/lib/services/recipe-service"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 export default function GroceryListPage() {
-  const { groceryList, loading, error, addItem, updateItem, deleteItem } = useGroceryList()
+  const { groceryList, loading, error, addItem, updateItem, deleteItem, clearAllItems } = useGroceryList()
   const { user } = useAuthContext()
   const { t } = useLanguage()
+  const { toast } = useToast();
   const [newItemName, setNewItemName] = useState("")
   const [newItemQuantity, setNewItemQuantity] = useState("")
+  const [isClearing, setIsClearing] = useState(false)
+  const [recipeNames, setRecipeNames] = useState<Record<string, string>>({});
+  const [showClearConfirmDialog, setShowClearConfirmDialog] = useState(false)
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,6 +68,32 @@ export default function GroceryListPage() {
     }
   }
 
+  const handleClearAll = async () => {
+    if (!groceryList?.items.length) return;
+    setShowClearConfirmDialog(true);
+  }
+
+  const confirmClearAll = async () => {
+    setIsClearing(true);
+    try {
+      await clearAllItems();
+      toast({
+        title: t("groceryList.clearList") + "!",
+        description: t("groceryList.noItems"),
+        variant: "default"
+      });
+    } catch (err) {
+      toast({
+        title: t("groceryList.errorLoading"),
+        description: "Failed to clear grocery list.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsClearing(false);
+      setShowClearConfirmDialog(false);
+    }
+  }
+
   // Handler para imprimir
   const handlePrint = () => {
     window.print();
@@ -73,6 +113,40 @@ export default function GroceryListPage() {
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  useEffect(() => {
+    // Obtener los nombres de las recetas para los ítems con recipe_id
+    const fetchRecipeNames = async () => {
+      if (!groceryList?.items) return;
+      const uniqueRecipeIds = Array.from(new Set(
+        groceryList.items.map(item => item.recipe_id).filter(Boolean)
+      ));
+      const names: Record<string, string> = {};
+      await Promise.all(
+        uniqueRecipeIds.map(async (id) => {
+          if (!id) return;
+          try {
+            const recipe = await getRecipeById(id);
+            if (recipe) names[id] = recipe.name;
+          } catch {}
+        })
+      );
+      setRecipeNames(names);
+    };
+    fetchRecipeNames();
+  }, [groceryList?.items]);
+
+  // Agrupar ítems por receta_id (o 'other' si no tiene)
+  const groupedByRecipe = (groceryList?.items || []).reduce(
+    (acc, item) => {
+      const key = item.recipe_id || "other";
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(item);
+      return acc;
+    },
+    {} as Record<string, typeof groceryList.items>
+  );
+  const groupKeys = Object.keys(groupedByRecipe);
 
   if (!user) {
     return (
@@ -109,29 +183,6 @@ export default function GroceryListPage() {
     )
   }
 
-  // Group items by category
-  const groupedItems =
-    groceryList?.items.reduce(
-      (acc, item) => {
-        const category = item.category || "other"
-        if (!acc[category]) {
-          acc[category] = []
-        }
-        acc[category].push(item)
-        return acc
-      },
-      {} as Record<string, typeof groceryList.items>,
-    ) || {}
-
-  const categories = [
-    { key: "produce", name: "Produce", color: "bg-green-100 text-green-800" },
-    { key: "protein", name: "Protein", color: "bg-red-100 text-red-800" },
-    { key: "dairy", name: "Dairy", color: "bg-blue-100 text-blue-800" },
-    { key: "grains", name: "Grains", color: "bg-yellow-100 text-yellow-800" },
-    { key: "pantry", name: "Pantry", color: "bg-purple-100 text-purple-800" },
-    { key: "other", name: "Other", color: "bg-gray-100 text-gray-800" },
-  ]
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
@@ -151,6 +202,10 @@ export default function GroceryListPage() {
           <Button variant="outline" className="flex items-center" onClick={handleDownload}>
             <Download className="mr-2 h-4 w-4" />
             {t("groceryList.download")}
+          </Button>
+          <Button variant="destructive" className="flex items-center" onClick={handleClearAll} disabled={isClearing || !groceryList?.items.length}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            {t("groceryList.clearList")}
           </Button>
         </div>
       </div>
@@ -182,26 +237,27 @@ export default function GroceryListPage() {
 
       {/* Grocery List Items */}
       <div className="space-y-8">
-        {categories.map((category) => {
-          const items = groupedItems[category.key] || []
-          if (items.length === 0) return null
-
+        {groupKeys.map((groupKey) => {
+          const items = groupedByRecipe[groupKey];
+          if (!items || items.length === 0) return null;
+          const isOther = groupKey === "other";
+          const groupTitle = isOther ? t("groceryList.categories.other") : recipeNames[groupKey] || t("groceryList.loading");
           return (
             <div
-              key={category.key}
+              key={groupKey}
               className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
             >
               <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Badge className={category.color}>{t(`groceryList.categories.${category.key}`)}</Badge>
+                    {/* Eliminar badge, solo mostrar el nombre */}
+                    <span className="font-semibold text-lg">{groupTitle}</span>
                     <span className="text-sm text-gray-600 dark:text-gray-400">
                       {items.length} {items.length !== 1 ? t("groceryList.items") : t("groceryList.item")}
                     </span>
                   </div>
                 </div>
               </div>
-
               <div className="p-6">
                 <div className="space-y-4">
                   {items.map((item) => (
@@ -233,7 +289,7 @@ export default function GroceryListPage() {
                 </div>
               </div>
             </div>
-          )
+          );
         })}
       </div>
 
@@ -243,6 +299,34 @@ export default function GroceryListPage() {
           <p className="text-sm text-gray-400">Add items manually or from recipe pages to get started.</p>
         </div>
       )}
+
+      {/* Clear Confirmation Dialog */}
+      <Dialog open={showClearConfirmDialog} onOpenChange={setShowClearConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("groceryList.clearListConfirm")}</DialogTitle>
+            <DialogDescription>
+              {t("groceryList.clearListDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowClearConfirmDialog(false)}
+              disabled={isClearing}
+            >
+              {t("groceryList.cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmClearAll}
+              disabled={isClearing}
+            >
+              {isClearing ? t("groceryList.deleting") : t("groceryList.deleteAll")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
