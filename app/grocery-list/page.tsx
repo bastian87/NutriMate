@@ -23,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import type { GroceryListItem } from "@/hooks/use-grocery-list"
 
 export default function GroceryListPage() {
   const { groceryList, loading, error, addItem, updateItem, deleteItem, clearAllItems } = useGroceryList()
@@ -144,7 +145,7 @@ export default function GroceryListPage() {
       acc[key].push(item);
       return acc;
     },
-    {} as Record<string, typeof groceryList.items>
+    {} as Record<string, GroceryListItem[]>
   );
   const groupKeys = Object.keys(groupedByRecipe);
 
