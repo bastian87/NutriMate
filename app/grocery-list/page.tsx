@@ -54,6 +54,26 @@ export default function GroceryListPage() {
     }
   }
 
+  // Handler para imprimir
+  const handlePrint = () => {
+    window.print();
+  };
+
+  // Handler para descargar
+  const handleDownload = () => {
+    const items = groceryList?.items || [];
+    const text = items.map(item =>
+      `${item.name}${item.quantity ? ` (${item.quantity})` : ""}`
+    ).join("\n");
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "grocery-list.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -124,11 +144,11 @@ export default function GroceryListPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <h1 className="text-3xl font-bold">{t("groceryList.title")}</h1>
         <div className="flex space-x-2">
-          <Button variant="outline" className="flex items-center">
+          <Button variant="outline" className="flex items-center" onClick={handlePrint}>
             <Printer className="mr-2 h-4 w-4" />
             {t("groceryList.print")}
           </Button>
-          <Button variant="outline" className="flex items-center">
+          <Button variant="outline" className="flex items-center" onClick={handleDownload}>
             <Download className="mr-2 h-4 w-4" />
             {t("groceryList.download")}
           </Button>

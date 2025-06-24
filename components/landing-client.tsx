@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight, Users, Sparkles, ChefHat, Target, Menu, X, Check, Star, Zap } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSelector } from "@/components/language-selector"
 
@@ -36,6 +36,26 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const { t } = useLanguage()
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [mobileMenuOpen])
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
 
   const handleSubscribe = async (variantId: string, plan: string) => {
     if (!isLoggedIn) {
@@ -186,16 +206,25 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <nav className="flex space-x-8">
-                <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <button 
+                  onClick={() => scrollToSection('features')} 
+                  className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                >
+                  Features
+                </button>
+                <button 
+                  onClick={() => scrollToSection('pricing')} 
+                  className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                >
                   Pricing
-                </a>
+                </button>
               </nav>
 
               <div className="flex items-center space-x-4">
                 <LanguageSelector isCompact />
                 {isLoggedIn ? (
                   <Link href="/dashboard">
-                    <Button variant="outline">Dashboard</Button>
+                    <Button className="bg-orange-600 hover:bg-orange-700">Dashboard</Button>
                   </Link>
                 ) : (
                   <>
@@ -213,42 +242,117 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center space-x-2">
               <LanguageSelector isCompact />
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-600 hover:text-gray-900">
+              <button 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+                className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                aria-label="Toggle mobile menu"
+              >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
           </div>
 
-          {/* Mobile Navigation */}
-          {mobileMenuOpen && (
-            <div className="md:hidden border-t border-gray-200 py-4">
-              <nav className="flex flex-col space-y-4">
-                <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Pricing
-                </a>
-                <div className="pt-4 border-t border-gray-200 flex flex-col space-y-2">
-                  {isLoggedIn ? (
-                    <Link href="/dashboard">
-                      <Button variant="outline" className="w-full">
-                        Dashboard
-                      </Button>
-                    </Link>
-                  ) : (
-                    <>
-                      <Link href="/login">
-                        <Button variant="outline" className="w-full">
-                          Sign In
-                        </Button>
-                      </Link>
-                      <Link href="/signup">
-                        <Button className="w-full bg-orange-600 hover:bg-orange-700">Get Started</Button>
-                      </Link>
-                    </>
-                  )}
-                </div>
-              </nav>
-            </div>
-          )}
+          {/* Mobile Navigation Overlay */}
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <div className="md:hidden fixed inset-0 z-50">
+                {/* Backdrop */}
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute inset-0 bg-black bg-opacity-50"
+                  onClick={() => setMobileMenuOpen(false)}
+                />
+                
+                {/* Menu Panel */}
+                <motion.div
+                  initial={{ opacity: 0, x: "100%" }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: "100%" }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="absolute right-0 top-0 h-full w-80 bg-white shadow-2xl"
+                >
+                  <div className="flex flex-col h-full">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                      <div className="flex items-center space-x-2">
+                        <Image src="/logo-new.png" alt="NutriMate Logo" width={24} height={24} className="rounded-lg" />
+                        <span className="text-lg font-bold text-gray-900">NutriMate</span>
+                      </div>
+                      <button 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Menu Items */}
+                    <nav className="flex-1 p-6">
+                      <div className="space-y-6">
+                        {/* Navigation Links */}
+                        <div className="space-y-4">
+                          <button 
+                            onClick={() => {
+                              scrollToSection('pricing')
+                              setMobileMenuOpen(false)
+                            }}
+                            className="block text-lg font-medium text-gray-900 hover:text-orange-600 transition-colors text-left w-full"
+                          >
+                            Pricing
+                          </button>
+                          <button 
+                            onClick={() => {
+                              scrollToSection('features')
+                              setMobileMenuOpen(false)
+                            }}
+                            className="block text-lg font-medium text-gray-900 hover:text-orange-600 transition-colors text-left w-full"
+                          >
+                            Features
+                          </button>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="border-t border-gray-200 pt-6">
+                          <div className="space-y-4">
+                            {isLoggedIn ? (
+                              <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                                <Button className="w-full bg-orange-600 hover:bg-orange-700">
+                                  Dashboard
+                                </Button>
+                              </Link>
+                            ) : (
+                              <>
+                                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                                  <Button variant="outline" className="w-full">
+                                    Sign In
+                                  </Button>
+                                </Link>
+                                <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
+                                  <Button className="w-full bg-orange-600 hover:bg-orange-700">
+                                    Get Started
+                                  </Button>
+                                </Link>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </nav>
+
+                    {/* Footer */}
+                    <div className="p-6 border-t border-gray-200">
+                      <div className="text-center text-sm text-gray-600">
+                        <p>© 2024 NutriMate. All rights reserved.</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
         </div>
       </header>
 
@@ -283,11 +387,12 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </Link>
-                    <a href="#pricing">
-                      <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                        View Pricing
-                      </Button>
-                    </a>
+                    <button 
+                      onClick={() => scrollToSection('pricing')}
+                      className="w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      View Pricing
+                    </button>
                   </>
                 )}
               </div>
