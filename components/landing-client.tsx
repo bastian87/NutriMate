@@ -105,7 +105,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
     {
       icon: Target,
       title: t("home.nutritionTracking"),
-      description: "Track macros, calories, and nutrients with detailed analytics and insights.",
+      description: t("home.trackMacros"),
       color: "text-blue-600",
       bgColor: "bg-blue-50",
       image: "/images/nutrition-tracking-insights.png",
@@ -113,15 +113,15 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
     {
       icon: Sparkles,
       title: t("home.recipeDiscovery"),
-      description: "Discover thousands of healthy recipes with smart filtering and recommendations.",
+      description: t("home.discoverRecipesLong"),
       color: "text-purple-600",
       bgColor: "bg-purple-50",
       image: "/images/recipe-discovery-smart.png",
     },
     {
       icon: Users,
-      title: "Community Driven",
-      description: "Share recipes, meal plans, and connect with like-minded health enthusiasts.",
+      title: t("home.communityDriven"),
+      description: t("home.communityDrivenDesc"),
       color: "text-green-600",
       bgColor: "bg-green-50",
       image: "/images/community-driven.png",
@@ -130,56 +130,55 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
 
   const plans = [
     {
-      name: "Free",
+      name: t("pricing.free"),
       price: "$0",
-      period: "forever",
-      description: "Perfect for getting started with meal planning",
+      period: t("pricing.forever"),
+      description: t("pricing.freeDesc"),
       features: [
-        "Basic recipe search",
-        "Save up to 10 recipes",
-        "Simple meal planning",
-        "Basic grocery lists",
-        "Mobile app access",
+        t("pricing.basicRecipeSearch"),
+        t("pricing.saveUpTo10"),
+        t("pricing.simpleMealPlanning"),
+        t("pricing.basicGroceryLists"),
+        t("pricing.mobileAppAccess"),
       ],
-      buttonText: "Get Started",
+      buttonText: t("pricing.getStarted"),
       buttonVariant: "outline" as const,
       popular: false,
       action: (variantId?: string) => (window.location.href = isLoggedIn ? "/recipes" : "/signup"),
     },
     {
-      name: "Premium",
+      name: t("pricing.premium"),
       price: "$4.99",
-      period: "month",
-      description: "Everything you need for complete nutrition management",
+      period: t("pricing.month"),
+      description: t("pricing.premiumDesc"),
       features: [
-        "Unlimited recipe access",
-        "Advanced meal planning",
-        "Smart grocery lists",
-        "Nutritional analysis",
-        "Custom recipe creation",
-        "Export meal plans",
-        "Priority support",
+        t("pricing.unlimitedRecipeAccess"),
+        t("pricing.advancedMealPlanning"),
+        t("pricing.smartGroceryLists"),
+        t("pricing.nutritionalAnalysis"),
+        t("pricing.customRecipeCreation"),
+        t("pricing.exportMealPlans"),
+        t("pricing.prioritySupport"),
       ],
-      buttonText: "Start Premium",
+      buttonText: t("pricing.startPremium"),
       buttonVariant: "default" as const,
       popular: true,
       variantId: process.env.NEXT_PUBLIC_LEMONSQUEEZY_MONTHLY_VARIANT_ID!,
       action: (variantId?: string) => handleSubscribe(variantId!, "monthly"),
     },
     {
-      name: "Premium Annual",
+      name: t("pricing.premiumAnnual"),
       price: "$49.99",
-      period: "year",
-      description: "Best value - save 16.5% with annual billing",
+      period: t("pricing.year"),
+      description: t("pricing.premiumAnnualDesc"),
       features: [
-        "Everything in Premium",
-        "Advanced analytics",
-        "Recipe recommendations",
-        "Meal plan templates",
-        "Family sharing (up to 4 members)",
-        "Premium support",
+        t("pricing.everythingInPremium"),
+        t("pricing.advancedAnalytics"),
+        t("pricing.recipeRecommendations"),
+        t("pricing.mealPlanTemplates"),
+        t("pricing.premiumSupport"),
       ],
-      buttonText: "Start Annual",
+      buttonText: t("pricing.startAnnual"),
       buttonVariant: "default" as const,
       popular: false,
       variantId: process.env.NEXT_PUBLIC_LEMONSQUEEZY_ANNUAL_VARIANT_ID!,
@@ -398,15 +397,15 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
               </div>
               <div className="mt-8 flex items-center justify-center gap-8 lg:justify-start">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">10K+</div>
+                  <div className="text-2xl font-bold text-gray-900">{t("home.activeUsers")}</div>
                   <div className="text-sm text-gray-600">Active Users</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">50K+</div>
+                  <div className="text-2xl font-bold text-gray-900">{t("home.recipes")}</div>
                   <div className="text-sm text-gray-600">Recipes</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">4.9★</div>
+                  <div className="text-2xl font-bold text-gray-900">{t("home.userRating")}</div>
                   <div className="text-sm text-gray-600">User Rating</div>
                 </div>
               </div>
@@ -444,9 +443,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
             className="text-center"
           >
             <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">{t("home.featuresTitle")}</h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Comprehensive tools and features designed to make nutrition planning simple and effective.
-            </p>
+            <p className="mt-4 text-lg text-gray-600">{t("home.featuresSectionDesc")}</p>
           </motion.div>
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {features.map((feature, index) => {
@@ -494,9 +491,9 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">Choose Your Plan</h2>
+            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">{t("home.chooseYourPlan")}</h2>
             <p className="mt-4 text-lg text-gray-600">
-              Start your nutrition journey with the perfect plan for your needs
+              {t("home.startYourJourney")}
             </p>
           </motion.div>
 
@@ -514,7 +511,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <Badge className="bg-orange-600 text-white px-4 py-1">
                       <Star className="h-3 w-3 mr-1" />
-                      Most Popular
+                      {t("home.mostPopular")}
                     </Badge>
                   </div>
                 )}
@@ -556,7 +553,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                       {loading === plan.name.toLowerCase() ? (
                         <div className="flex items-center gap-2">
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                          Processing...
+                          {t("home.processing")}
                         </div>
                       ) : (
                         <>
@@ -619,47 +616,47 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                 <span className="text-xl font-bold">NutriMate</span>
               </div>
               <p className="text-gray-400 mb-4">
-                Transform your health journey with smart meal planning and nutrition tracking.
+                {t("home.transformHealth")}
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Product</h3>
+              <h3 className="font-semibold mb-4">{t("footer.product")}</h3>
               <ul className="space-y-2 text-gray-400">
                 <li>
                   <a href="#pricing" className="hover:text-white transition-colors">
-                    Pricing
+                    {t("footer.pricing")}
                   </a>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Company</h3>
+              <h3 className="font-semibold mb-4">{t("footer.company")}</h3>
               <ul className="space-y-2 text-gray-400">
                 <li>
                   <a href="#" className="hover:text-white transition-colors">
-                    About
+                    {t("footer.about")}
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-white transition-colors">
-                    Contact
+                    {t("footer.contact")}
                   </a>
                 </li>
                 <li>
                   <Link href="/privacy-policy" className="hover:text-white transition-colors">
-                    Privacy Policy
+                    {t("footer.privacy")}
                   </Link>
                 </li>
                 <li>
                   <Link href="/terms-of-service" className="hover:text-white transition-colors">
-                    Terms of Service
+                    {t("footer.terms")}
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 NutriMate. All rights reserved.</p>
+            <p>{t("footer.allRights")}</p>
           </div>
         </div>
       </footer>

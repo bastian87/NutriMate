@@ -125,8 +125,8 @@ const AccountSettingsPage = () => {
         transition={{ duration: 0.5 }}
         className="mb-8"
       >
-        <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
-        <p className="text-muted-foreground">Manage your account settings and update your profile information.</p>
+        <h1 className="text-3xl font-bold tracking-tight">{t("accountSettings.title")}</h1>
+        <p className="text-muted-foreground">{t("accountSettings.description")}</p>
       </motion.div>
 
       <div className="space-y-8 mb-8">

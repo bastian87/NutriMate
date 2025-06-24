@@ -99,7 +99,6 @@ export default function PricingPage() {
         t("pricing.advancedAnalytics"),
         t("pricing.recipeRecommendations"),
         t("pricing.mealPlanTemplates"),
-        t("pricing.familySharing"),
         t("pricing.premiumSupport"),
       ],
       buttonText: t("pricing.startAnnual"),

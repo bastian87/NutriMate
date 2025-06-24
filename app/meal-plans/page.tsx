@@ -13,6 +13,8 @@ import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import type { ExportFormat } from "@/lib/services/meal-plan-service"
 import { useLanguage } from "@/lib/i18n/context"
+import { FeatureGate } from "@/components/feature-gate"
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 export default function MealPlansPage() {
   const { user } = useAuthContext()
@@ -66,24 +68,121 @@ export default function MealPlansPage() {
   const handleExportMealPlan = async (id: string, formatType: ExportFormat["format"]) => {
     setIsExporting(id)
     try {
+      if (formatType === "pdf") {
+        // Obtener el mealPlan completo con meals y recetas
+        const mealPlan = await exportMealPlan(id, { format: "json", includeNutrition: true })
+        const mealPlanData = typeof mealPlan === "string" ? JSON.parse(mealPlan) : mealPlan
+        // Crear PDF visual
+        const pdfDoc = await PDFDocument.create()
+        let page = pdfDoc.addPage([595, 842]) // A4
+        const { width, height } = page.getSize()
+        const margin = 40
+        let y = height - margin
+        const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+        const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica)
+        // Título
+        page.drawText(mealPlanData.name, {
+          x: margin,
+          y: y,
+          size: 24,
+          font,
+          color: rgb(1, 0.4, 0),
+        })
+        y -= 32
+        // Fechas
+        page.drawText(`${t("mealPlans.period")}: ${mealPlanData.startDate} - ${mealPlanData.endDate}`, {
+          x: margin,
+          y: y,
+          size: 12,
+          font: fontRegular,
+          color: rgb(0.3, 0.3, 0.3),
+        })
+        y -= 28
+        // Tabla headers
+        const headers = [
+          t("mealPlans.day"),
+          t("mealPlans.mealType"),
+          t("mealPlans.recipe"),
+          t("mealPlans.prepTime"),
+          t("mealPlans.cookTime"),
+          t("mealPlans.calories"),
+          t("mealPlans.protein"),
+          t("mealPlans.carbs"),
+          t("mealPlans.fat"),
+        ]
+        let x = margin
+        headers.forEach((header, i) => {
+          page.drawText(header, {
+            x: x,
+            y: y,
+            size: 10,
+            font,
+            color: rgb(1, 0.4, 0),
+          })
+          x += 60
+        })
+        y -= 18
+        // Filas de la tabla
+        mealPlanData.meals.forEach((meal: any) => {
+          x = margin
+          const row = [
+            meal.day,
+            meal.mealType,
+            meal.recipe.name,
+            meal.recipe.prepTime + 'm',
+            meal.recipe.cookTime + 'm',
+            meal.recipe.nutrition?.calories ?? '',
+            meal.recipe.nutrition?.protein ?? '',
+            meal.recipe.nutrition?.carbs ?? '',
+            meal.recipe.nutrition?.fat ?? '',
+          ]
+          row.forEach((cell, i) => {
+            page.drawText(String(cell), {
+              x: x,
+              y: y,
+              size: 9,
+              font: fontRegular,
+              color: rgb(0.2, 0.2, 0.2),
+            })
+            x += 60
+          })
+          y -= 15
+          if (y < margin + 40) {
+            y = height - margin
+            page = pdfDoc.addPage([595, 842])
+          }
+        })
+        const pdfBytes = await pdfDoc.save()
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `meal-plan-${id}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        a.remove()
+        toast({
+          title: t("mealPlans.exportSuccess"),
+          description: t("mealPlans.exportedAsPDF"),
+        })
+        setIsExporting(null)
+        return
+      }
+      // ... resto de formatos (json, csv)
       const result = await exportMealPlan(id, { format: formatType, includeNutrition: true })
-
       const filename = `meal-plan-${id}.${formatType}`
       let mimeType = ""
       let content: string | Blob = ""
-
       if (typeof result === "string") {
-        // For JSON or simple text from PDF mock
         content = result
         if (formatType === "json") mimeType = "application/json"
         else if (formatType === "csv") mimeType = "text/csv"
-        else mimeType = "text/plain" // Fallback for PDF mock
+        else mimeType = "text/plain"
       } else if (result instanceof Blob) {
-        // For actual PDF Blob if implemented
         content = result
         mimeType = result.type
       }
-
       const blob = new Blob([content], { type: mimeType })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
@@ -93,16 +192,15 @@ export default function MealPlansPage() {
       a.click()
       window.URL.revokeObjectURL(url)
       a.remove()
-
       toast({
-        title: "Export Successful",
+        title: t("mealPlans.exportSuccess"),
         description: `Meal plan exported as ${formatType.toUpperCase()}.`,
       })
     } catch (err: any) {
       console.error("Error exporting meal plan:", err)
       toast({
-        title: "Export Failed",
-        description: err.message || "Could not export meal plan.",
+        title: t("mealPlans.exportFailed"),
+        description: err.message || t("mealPlans.exportFailedDesc"),
         variant: "destructive",
       })
     } finally {
@@ -259,20 +357,22 @@ export default function MealPlansPage() {
                     </div>
 
                     <div className="mt-auto space-y-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleExportMealPlan(mealPlan.id, "pdf")}
-                        disabled={isExporting === mealPlan.id}
-                        className="w-full text-xs"
-                      >
-                        {isExporting === mealPlan.id ? (
-                          <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
-                        ) : (
-                          <Download className="h-3 w-3 mr-1.5" />
-                        )}
-                        Export PDF
-                      </Button>
+                      <FeatureGate feature="export_meal_plans">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleExportMealPlan(mealPlan.id, "pdf")}
+                          disabled={isExporting === mealPlan.id}
+                          className="w-full text-xs"
+                        >
+                          {isExporting === mealPlan.id ? (
+                            <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
+                          ) : (
+                            <Download className="h-3 w-3 mr-1.5" />
+                          )}
+                          Export PDF
+                        </Button>
+                      </FeatureGate>
                       <Link href={`/meal-plans/${mealPlan.id}`} legacyBehavior>
                         <Button asChild className="w-full bg-orange-600 hover:bg-orange-700 text-sm py-2">
                           <a>View Details</a>
