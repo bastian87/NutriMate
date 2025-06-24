@@ -186,6 +186,13 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
     },
   ]
 
+  // KPIs destacados
+  const kpis = [
+    { value: "10K+", label: t("home.activeUsers") },
+    { value: "50K+", label: t("home.recipes") },
+    { value: "4.9★", label: t("home.userRating") },
+  ]
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation Header */}
@@ -396,18 +403,12 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                 )}
               </div>
               <div className="mt-8 flex items-center justify-center gap-8 lg:justify-start">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">{t("home.activeUsers")}</div>
-                  <div className="text-sm text-gray-600">Active Users</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">{t("home.recipes")}</div>
-                  <div className="text-sm text-gray-600">Recipes</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">{t("home.userRating")}</div>
-                  <div className="text-sm text-gray-600">User Rating</div>
-                </div>
+                {kpis.map((kpi, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-2xl font-bold text-gray-900">{kpi.value}</div>
+                    <div className="text-sm text-gray-600">{kpi.label}</div>
+                  </div>
+                ))}
               </div>
             </motion.div>
             <motion.div
