@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Check, Star, Zap } from "lucide-react"
+import { Check, Star, Zap, ArrowLeft } from "lucide-react"
 import { useAuthContext } from "@/components/auth/auth-provider"
 import { useLanguage } from "@/lib/i18n/context"
 import { motion } from "framer-motion"
@@ -111,10 +111,26 @@ export default function PricingPage() {
   ]
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 font-sans">
+      {/* Back to Dashboard Button */}
+      {user && (
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="mb-6"
+        >
+          <Link href="/dashboard">
+            <Button variant="ghost" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+              <ArrowLeft className="h-4 w-4" />
+              {t("pricing.backToDashboard")}
+            </Button>
+          </Link>
+        </motion.div>
+      )}
+
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
-        <h1 className="text-4xl font-serif font-bold mb-4">{t("pricing.chooseYourPlan")}</h1>
-        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold mb-4">{t("pricing.chooseYourPlan")}</h1>
+        <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           {t("pricing.startYourJourney")}
         </p>
       </motion.div>
@@ -130,17 +146,17 @@ export default function PricingPage() {
           >
             {plan.popular && (
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-orange-600 text-white px-4 py-1">
+                <Badge className="bg-orange-600 text-white px-3 py-1 text-xs">
                   <Star className="h-3 w-3 mr-1" />
                   {t("pricing.mostPopular")}
                 </Badge>
               </div>
             )}
 
-            <Card className={`h-full ${plan.popular ? "border-orange-600 shadow-lg scale-105" : ""}`}>
+            <Card className={`h-full ${plan.popular ? "border-orange-600 shadow-lg" : ""}`}>
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                <CardDescription className="text-sm">{plan.description}</CardDescription>
+                <CardDescription className="text-sm text-gray-600 dark:text-gray-400">{plan.description}</CardDescription>
                 <div className="mt-4">
                   <span className="text-4xl font-bold">{plan.price}</span>
                   <span className="text-gray-600 dark:text-gray-400">/{plan.period}</span>

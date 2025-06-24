@@ -9,7 +9,8 @@
     "lint": "next lint",
     "check-env": "tsx scripts/check-env.ts",
     "check-subscriptions": "tsx scripts/check-subscriptions.ts",
-    "clean-test-subscriptions": "tsx scripts/check-subscriptions.ts clean-test"
+    "clean-test-subscriptions": "tsx scripts/check-subscriptions.ts clean-test",
+    "test-delete-account": "tsx scripts/test-delete-account.ts"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",

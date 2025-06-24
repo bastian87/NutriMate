@@ -443,6 +443,7 @@ export const translations = {
     pricing: {
       chooseYourPlan: "Choose Your Plan",
       startYourJourney: "Start your nutrition journey with the perfect plan for your needs",
+      backToDashboard: "Back to Dashboard",
       free: "Free",
       forever: "forever",
       freeDesc: "Perfect for getting started with meal planning",
@@ -475,7 +476,7 @@ export const translations = {
       startAnnual: "Start Annual",
       mostPopular: "Most Popular",
       processing: "Processing...",
-      allPlansInclude: "Todos los planes incluyen acceso inmediato. Cancela cuando quieras.",
+      allPlansInclude: "All plans include immediate access. Cancel anytime.",
       privacy: "Privacy Policy",
       terms: "Terms of Service"
     },
@@ -717,7 +718,50 @@ export const translations = {
       contact: "Contact",
     },
     subscriptionStatus: {
-      freePlanDesc: "Enjoy NutriMate's basic features. Upgrade to Premium to unlock the full potential!"
+      freePlanDesc: "Enjoy NutriMate's basic features. Upgrade to Premium to unlock the full potential!",
+      upgradeMessage: "Ready for more? Upgrade to Premium to get unlimited access to recipes, advanced meal planning, smart grocery lists, and much more.",
+      upgradeButton: "Upgrade to Premium",
+      reactivateButton: "Reactivate Subscription"
+    },
+    pricing: {
+      chooseYourPlan: "Elige Tu Plan",
+      startYourJourney: "Comienza tu viaje nutricional con el plan perfecto para tus necesidades",
+      backToDashboard: "Volver al Dashboard",
+      free: "Gratis",
+      forever: "para siempre",
+      freeDesc: "Perfecto para comenzar con la planificación de comidas",
+      basicRecipeSearch: "Búsqueda básica de recetas",
+      saveUpTo10: "Guardar hasta 10 recetas",
+      simpleMealPlanning: "Planificación simple de comidas",
+      basicGroceryLists: "Listas básicas de compras",
+      mobileAppAccess: "Acceso a la aplicación móvil",
+      getStarted: "Comenzar",
+      premium: "Premium",
+      month: "mes",
+      premiumDesc: "Todo lo que necesitas para una gestión nutricional completa",
+      unlimitedRecipeAccess: "Acceso ilimitado a recetas",
+      advancedMealPlanning: "Planificación avanzada de comidas",
+      smartGroceryLists: "Listas inteligentes de compras",
+      nutritionalAnalysis: "Análisis nutricional",
+      customRecipeCreation: "Creación de recetas personalizadas",
+      exportMealPlans: "Exportar planes de comidas",
+      prioritySupport: "Soporte prioritario",
+      startPremium: "Comenzar Premium",
+      premiumAnnual: "Premium Anual",
+      year: "año",
+      premiumAnnualDesc: "Mejor valor - ahorra 16.5% con facturación anual",
+      everythingInPremium: "Todo lo de Premium",
+      advancedAnalytics: "Análisis avanzado",
+      recipeRecommendations: "Recomendaciones de recetas",
+      mealPlanTemplates: "Plantillas de planes de comidas",
+      familySharing: "Compartir en familia (hasta 4 miembros)",
+      premiumSupport: "Soporte premium",
+      startAnnual: "Comenzar Anual",
+      mostPopular: "Más Popular",
+      processing: "Procesando...",
+      allPlansInclude: "Todos los planes incluyen acceso inmediato. Cancela cuando quieras.",
+      privacy: "Política de Privacidad",
+      terms: "Términos de Servicio"
     },
     accountSettings: {
       backToAccount: "Back to Account",
@@ -756,6 +800,18 @@ export const translations = {
     },
   },
   es: {
+    language: {
+      select: "Seleccionar Idioma",
+      english: "Inglés",
+      spanish: "Español",
+      french: "Francés",
+    },
+    subscriptionStatus: {
+      freePlanDesc: "¡Disfruta de las funciones básicas de NutriMate. Actualiza a Premium para desbloquear todo el potencial!",
+      upgradeMessage: "¿Listo para más? Actualiza a Premium para obtener acceso ilimitado a recetas, planificación avanzada de comidas, listas de compras inteligentes y mucho más.",
+      upgradeButton: "Actualizar a Premium",
+      reactivateButton: "Reactivar Suscripción"
+    },
     upgradePrompt: {
       advancedMealPlanning: {
         title: "Planificación avanzada de comidas",

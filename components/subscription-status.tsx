@@ -4,10 +4,11 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Crown, Calendar, CreditCard, Settings } from "lucide-react"
+import { Crown, Calendar, CreditCard, Settings, ArrowUp } from "lucide-react"
 import { supabase } from "@/lib/supabase/client"
 import { useLanguage } from "@/lib/i18n/context"
 import { useToast } from "@/components/ui/use-toast"
+import Link from "next/link"
 
 interface SubscriptionStatusProps {
   userId?: string
@@ -219,6 +220,14 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
                 Refrescar estado
               </Button>
             </div>
+            <div className="flex justify-center mt-2">
+              <Link href="/pricing" passHref>
+                <Button className="bg-orange-600 hover:bg-orange-700 text-white">
+                  <ArrowUp className="h-4 w-4 mr-2" />
+                  {t("subscriptionStatus.reactivateButton")}
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       );
@@ -242,6 +251,17 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
           </div>
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700">
             {t("subscriptionStatus.freePlanDesc")}
+          </div>
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm text-orange-800">
+            {t("subscriptionStatus.upgradeMessage")}
+          </div>
+          <div className="flex justify-center mt-2">
+            <Link href="/pricing" passHref>
+              <Button className="bg-orange-600 hover:bg-orange-700 text-white">
+                <ArrowUp className="h-4 w-4 mr-2" />
+                {t("subscriptionStatus.upgradeButton")}
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
