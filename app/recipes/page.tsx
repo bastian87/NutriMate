@@ -15,6 +15,7 @@ import type { RecipeWithDetails } from "@/lib/services/recipe-service"
 import { useUserFavorites } from "@/hooks/use-user-favorites"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { useSubscription } from "@/hooks/use-subscription"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function RecipesPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -26,6 +27,7 @@ export default function RecipesPage() {
   const { tryAddFavorite, showLimitModal, setShowLimitModal, favorites, removeFavorite } = useUserFavorites()
   const { isPremium } = useSubscription()
   const [recipesState, setRecipesState] = useState<RecipeWithDetails[]>([])
+  const { t } = useLanguage();
 
   const filters = useMemo(
     () => ({
@@ -101,9 +103,11 @@ export default function RecipesPage() {
         className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
       >
         <div>
-          <h1 className="text-3xl font-bold mb-2">Recipes</h1>
+          <h1 className="text-3xl font-bold mb-2">{t("recipes.title")}</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {recipes.length > 0 ? `Discover ${recipes.length} delicious recipes` : "Discover delicious recipes"}
+            {recipes.length > 0
+              ? t("recipes.subtitle", { count: recipes.length })
+              : t("recipes.subtitle", { count: "" })}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -111,13 +115,13 @@ export default function RecipesPage() {
             <Link href="/recipes/new">
               <Button className="bg-orange-600 hover:bg-orange-700">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Recipe
+                {t("recipes.addRecipe")}
               </Button>
             </Link>
           )}
           <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
             <Heart className="h-3 w-3 mr-1" />
-            {localFavoriteCount} Favorites
+            {localFavoriteCount} {t("recipes.favorites")}
           </Badge>
         </div>
       </motion.div>
@@ -133,7 +137,7 @@ export default function RecipesPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               type="search"
-              placeholder="Search recipes..."
+              placeholder={t("recipes.search")}
               className="pl-10 pr-4 py-2 w-full transition-all duration-200 focus:ring-2 focus:ring-orange-500 border-gray-300 dark:border-gray-600"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -145,7 +149,7 @@ export default function RecipesPage() {
             className="flex items-center gap-2 relative transition-all duration-200 hover:bg-orange-50 dark:hover:bg-orange-950 border-gray-300 dark:border-gray-600"
           >
             <Filter className="h-4 w-4" />
-            Filter
+            {t("recipes.filter")}
             {activeFiltersCount > 0 && (
               <Badge className="ml-1 bg-orange-600 text-white text-xs px-1.5 py-0.5">{activeFiltersCount}</Badge>
             )}
@@ -170,7 +174,7 @@ export default function RecipesPage() {
                     onClick={clearFilters}
                     className="hover:bg-gray-200 dark:hover:bg-gray-700"
                   >
-                    Clear All
+                    {t("recipes.clearAll")}
                   </Button>
                   <Button
                     variant="ghost"
@@ -220,7 +224,7 @@ export default function RecipesPage() {
 
               <div>
                 <label className="block text-sm font-medium mb-3">
-                  Calorie Range: {calorieRange[0]} - {calorieRange[1]} calories
+                  {t("recipes.calorieRange")}: {calorieRange[0]} - {calorieRange[1]} {t("recipes.calories")}
                 </label>
                 <Slider
                   value={calorieRange}
@@ -237,7 +241,7 @@ export default function RecipesPage() {
       </motion.div>
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mb-6">
-        <p className="text-gray-600 dark:text-gray-400">Showing {recipes?.length || 0} recipes</p>
+        <p className="text-gray-600 dark:text-gray-400">{t("recipes.showingResults", { count: recipes?.length || 0 })}</p>
       </motion.div>
 
       <motion.div

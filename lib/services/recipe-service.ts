@@ -19,7 +19,7 @@ export interface RecipeWithDetails {
   cuisine_type?: string
   meal_type?: string
   instructions: string
-  ingredients: Array<{ id?: string; name: string; quantity: string; unit?: string }>
+  ingredients: Array<{ id?: string; name: string; quantity: string; unit?: string; original?: string }>
   created_at: string
   updated_at: string
   average_rating: number

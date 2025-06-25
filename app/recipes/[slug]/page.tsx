@@ -14,6 +14,11 @@ import { useToast } from "@/hooks/use-toast"
 import { useUserFavorites } from "@/hooks/use-user-favorites"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
 
+// Limpia los enlaces <a>...</a> de la descripción
+function cleanDescription(html: string = ""): string {
+  return html.replace(/<a [^>]+>(.*?)<\/a>/gi, "$1");
+}
+
 export default function RecipePage({ params }: { params: { slug: string } }) {
   const { user } = useAuthContext()
   const { recipe, loading, error, toggleFavorite, rateRecipe } = useRecipe(params.slug, user?.id)
@@ -176,7 +181,10 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
       {/* Recipe Header */}
       <div className="container mx-auto px-4 py-6">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">{recipe.name}</h1>
-        <p className="text-xl text-gray-700 mb-6">{recipe.description}</p>
+        <p
+          className="text-xl text-gray-700 mb-6"
+          dangerouslySetInnerHTML={{ __html: cleanDescription(recipe.description || "") }}
+        />
 
         <div className="flex flex-wrap items-center gap-6 mb-8">
           <div className="flex items-center">
@@ -297,7 +305,7 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
                       className="mt-0.5 mr-3"
                     />
                     <label htmlFor={ingredient.id || `ingredient-${index}`} className="cursor-pointer">
-                      {ingredient.quantity} {ingredient.unit} {ingredient.name}
+                      {ingredient.original ? ingredient.original : `${ingredient.quantity} ${ingredient.unit || ""} ${ingredient.name}`}
                     </label>
                   </li>
                 ))
@@ -335,36 +343,49 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
 
             <Separator className="my-8" />
 
-            <div className="space-y-4">
-              <h3 className="font-bold text-xl">Nutrition Information</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Calories</p>
-                  <p className="font-medium">{recipe.calories}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Protein</p>
-                  <p className="font-medium">{recipe.protein}g</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Carbs</p>
-                  <p className="font-medium">{recipe.carbs}g</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Fat</p>
-                  <p className="font-medium">{recipe.fat}g</p>
+            {/* Información nutricional solo si hay datos */}
+            {(recipe.calories || recipe.protein || recipe.carbs || recipe.fat) ? (
+              <div className="space-y-4">
+                <h3 className="font-bold text-xl">Nutrition Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {recipe.calories ? (
+                    <div>
+                      <p className="text-sm text-gray-500">Calories</p>
+                      <p className="font-medium">{recipe.calories}</p>
+                    </div>
+                  ) : null}
+                  {recipe.protein ? (
+                    <div>
+                      <p className="text-sm text-gray-500">Protein</p>
+                      <p className="font-medium">{recipe.protein}g</p>
+                    </div>
+                  ) : null}
+                  {recipe.carbs ? (
+                    <div>
+                      <p className="text-sm text-gray-500">Carbs</p>
+                      <p className="font-medium">{recipe.carbs}g</p>
+                    </div>
+                  ) : null}
+                  {recipe.fat ? (
+                    <div>
+                      <p className="text-sm text-gray-500">Fat</p>
+                      <p className="font-medium">{recipe.fat}g</p>
+                    </div>
+                  ) : null}
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="text-gray-500">No nutrition information available</div>
+            )}
           </div>
 
           {/* Right Column - Instructions */}
           <div className="lg:col-span-2">
             <h2 className="text-2xl font-bold mb-6">Preparation</h2>
 
-            <ol className="space-y-8">
-              {recipe.instructions ? (
-                recipe.instructions
+            {recipe.instructions && recipe.instructions.trim() ? (
+              <ol className="space-y-8">
+                {recipe.instructions
                   .split("\n")
                   .map((step, index) => {
                     const cleanStep = step.replace(/^\d+\.\s*/, "")
@@ -378,26 +399,29 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
                           </div>
                         </div>
                         <div>
-                          <p className="text-gray-800">{cleanStep}</p>
+                          <p className="text-gray-800" dangerouslySetInnerHTML={{ __html: cleanDescription(cleanStep) }} />
                         </div>
                       </li>
                     )
                   })
-                  .filter(Boolean)
-              ) : (
-                <li className="text-gray-500">No instructions available</li>
-              )}
-            </ol>
+                  .filter(Boolean)}
+              </ol>
+            ) : (
+              <div className="text-gray-500">No instructions available for this recipe.</div>
+            )}
 
             <Separator className="my-10" />
 
-            <div>
-              <h3 className="font-bold text-xl mb-4">Notes</h3>
-              <p className="text-gray-700">
-                This recipe can be prepared ahead of time and refrigerated for up to 3 days. For dietary modifications,
-                feel free to substitute ingredients based on your preferences.
-              </p>
-            </div>
+            {/* Notas, solo si hay descripción */}
+            {recipe.description ? (
+              <div>
+                <h3 className="font-bold text-xl mb-4">Notes</h3>
+                <p
+                  className="text-gray-700"
+                  dangerouslySetInnerHTML={{ __html: cleanDescription(recipe.description || "") }}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

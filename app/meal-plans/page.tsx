@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Plus, Calendar, Users, Trash2, ChefHat, Loader2, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,7 @@ import { FeatureGate } from "@/components/feature-gate"
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { useSubscription } from "@/hooks/use-subscription"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { useRouter } from "next/navigation"
 
 export default function MealPlansPage() {
   const { user } = useAuthContext()
@@ -28,6 +29,23 @@ export default function MealPlansPage() {
   const { isPremium } = useSubscription()
   // Estado para el modal de confirmación
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean, id: string | null }>({ open: false, id: null })
+  const [customMealPlan, setCustomMealPlan] = useState<any>(null);
+  const [distribution, setDistribution] = useState<{
+    breakfast: number;
+    lunch: number;
+    dinner: number;
+    snack: number;
+  }>({
+    breakfast: 0.3,
+    lunch: 0.4,
+    dinner: 0.3,
+    snack: 0,
+  });
+  const [customError, setCustomError] = useState<string | null>(null);
+
+  const total = Object.values(distribution).reduce((a, b) => a + b, 0);
+
+  const router = useRouter();
 
   const handleGenerateMealPlan = async () => {
     if (!user) return
@@ -50,6 +68,17 @@ export default function MealPlansPage() {
       setIsGenerating(false)
     }
   }
+
+  const handleGenerateCustomMealPlan = () => {
+    setCustomError(null);
+    if (!user || !user.id) {
+      setCustomError("Debes iniciar sesión para generar un meal plan.");
+      return;
+    }
+    // Pasar la distribución como query param codificado en base64
+    const distStr = btoa(encodeURIComponent(JSON.stringify(distribution)));
+    router.push(`/meal-plans/custom?distribution=${distStr}`);
+  };
 
   // Nueva función para abrir el modal
   const openDeleteDialog = (id: string) => setDeleteDialog({ open: true, id })
@@ -218,6 +247,36 @@ export default function MealPlansPage() {
       setIsExporting(null)
     }
   }
+
+  // Handler para regenerar una comida
+  const handleRegenerar = async (mealType: keyof typeof distribution) => {
+    setCustomError(null);
+    if (!user || !user.id || !customMealPlan) return;
+    try {
+      const recetasUsadas = Object.entries(customMealPlan.comidas)
+        .filter(([k]) => k !== mealType)
+        .map(([, r]: any) => r?.id)
+        .filter(Boolean);
+      const res = await fetch("/api/mealplan/regenerate", {
+        method: "POST",
+        body: JSON.stringify({
+          userId: user.id,
+          mealType,
+          caloriasObjetivo: customMealPlan.distribucion[mealType],
+          recetasUsadas,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (data.error) setCustomError(data.error);
+      else setCustomMealPlan((prev: any) => ({
+        ...prev,
+        comidas: { ...prev.comidas, [mealType]: data },
+      }));
+    } catch (e: any) {
+      setCustomError("No hay recetas suficientes para este tipo de comida.");
+    }
+  };
 
   if (!user && !loading) {
     // Avoid showing login prompt while initial auth check might be loading
@@ -415,6 +474,78 @@ export default function MealPlansPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* UI para distribución personalizada */}
+      <div className="mb-8 p-4 bg-orange-50 rounded border border-orange-200 max-w-xl mx-auto">
+        <h2 className="font-bold mb-2">Distribución de calorías (%)</h2>
+        {(Object.keys(distribution) as Array<keyof typeof distribution>).map((meal) => (
+          <div key={meal} className="flex items-center gap-2 mb-2">
+            <label className="w-24 capitalize">{meal}</label>
+            <input
+              type="number"
+              min={0}
+              max={1}
+              step={0.01}
+              value={distribution[meal]}
+              onChange={e => {
+                const value = parseFloat(e.target.value);
+                setDistribution(d => ({ ...d, [meal]: isNaN(value) ? 0 : value }));
+              }}
+              className="w-20 border rounded px-2 py-1"
+            />
+          </div>
+        ))}
+        <div>Total: {Math.round(total * 100)}%</div>
+        <Button
+          disabled={Math.abs(total - 1) > 0.01 || !user}
+          onClick={handleGenerateCustomMealPlan}
+          className="mt-2"
+        >
+          Generar Meal Plan Personalizado
+        </Button>
+        {customError && (
+          <div className="text-red-600 mt-4 text-center font-semibold">
+            {customError}
+            <div className="text-sm text-gray-500 mt-1">
+              ¿No encuentras recetas? Prueba ampliando tus filtros o agregando más recetas a la base de datos.
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Mostrar el meal plan personalizado generado */}
+      {customMealPlan && (
+        <div className="max-w-2xl mx-auto bg-white rounded shadow p-6 mb-8 border border-gray-200">
+          <h2 className="font-bold text-xl mb-4">Tu Meal Plan Personalizado</h2>
+          {Object.entries(customMealPlan.comidas).map(([mealType, recipe]) => {
+            const receta = recipe as { name?: string };
+            return (
+              <div key={mealType} className="mb-6">
+                <h3 className="font-bold text-lg capitalize">{mealType}</h3>
+                <p>Calorías objetivo: {customMealPlan.distribucion[mealType]}</p>
+                <div className="flex items-center gap-4 mt-2">
+                  <span>{receta?.name || <span className="text-gray-400">Sin receta disponible</span>}</span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleRegenerar(mealType as keyof typeof distribution)}
+                  >
+                    Regenerar
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+          {customError && (
+            <div className="text-red-600 mt-4 text-center font-semibold">
+              {customError}
+              <div className="text-sm text-gray-500 mt-1">
+                ¿No encuentras recetas? Prueba ampliando tus filtros o agregando más recetas a la base de datos.
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

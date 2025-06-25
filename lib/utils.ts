@@ -27,3 +27,51 @@ export function agruparPorTipo(recetas: any[]) {
     return acc;
   }, {} as Record<string, any[]>);
 }
+
+export function calcularCaloriasDiarias({
+  gender,
+  age,
+  weight,
+  height,
+  activityLevel,
+  goal,
+}: {
+  gender: "male" | "female";
+  age: number;
+  weight: number;
+  height: number;
+  activityLevel: string;
+  goal: string;
+}): number {
+  let tmb =
+    gender === "male"
+      ? 10 * weight + 6.25 * height - 5 * age + 5
+      : 10 * weight + 6.25 * height - 5 * age - 161;
+  const activityFactors: Record<string, number> = {
+    sedentary: 1.2,
+    light: 1.375,
+    moderate: 1.55,
+    active: 1.725,
+    very_active: 1.9,
+  };
+  tmb *= activityFactors[activityLevel] || 1.2;
+  if (goal === "weight_loss") tmb *= 0.8;
+  if (goal === "muscle_gain") tmb *= 1.1;
+  return Math.round(tmb);
+}
+
+export function distribuirCalorias(total: number, snacks: boolean) {
+  if (snacks) {
+    return {
+      breakfast: Math.round(total * 0.25),
+      lunch: Math.round(total * 0.35),
+      dinner: Math.round(total * 0.35),
+      snack: Math.round(total * 0.05),
+    };
+  }
+  return {
+    breakfast: Math.round(total * 0.3),
+    lunch: Math.round(total * 0.4),
+    dinner: Math.round(total * 0.3),
+  };
+}
