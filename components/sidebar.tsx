@@ -25,6 +25,7 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
+  Calculator,
 } from "lucide-react"
 
 export function Sidebar() {
@@ -63,6 +64,7 @@ export function Sidebar() {
     { name: t("navigation.groceryList"), href: "/grocery-list", icon: ShoppingCart },
     { name: t("navigation.mealPlans"), href: "/meal-plans", icon: Calendar },
     { name: t("navigation.savedRecipes"), href: "/saved-recipes", icon: Heart },
+    { name: "Calculadora de Calorías", href: "/calorie-calculator", icon: Calculator },
   ]
 
   const accountItems = user ? [{ name: t("navigation.account"), href: "/account", icon: User }] : []

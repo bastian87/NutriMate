@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, BookOpen, ShoppingCart, User, Sparkles } from "lucide-react"
+import { Home, BookOpen, ShoppingCart, User, Sparkles, Calculator } from "lucide-react"
 import Image from "next/image"
 import { useLanguage } from "@/lib/i18n/context"
 
@@ -16,6 +16,7 @@ export function Navigation() {
     { href: "/grocery-list", label: t("navigation.groceryList"), icon: ShoppingCart },
     { href: "/ai-assistant", label: t("navigation.aiAssistant"), icon: Sparkles },
     { href: "/profile", label: t("navigation.profile"), icon: User },
+    { label: "Calculadora de Calorías", href: "/calorie-calculator", icon: Calculator },
   ]
 
   return (

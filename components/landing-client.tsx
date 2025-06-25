@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Users, Sparkles, ChefHat, Target, Menu, X, Check, Star, Zap } from "lucide-react"
+import { ArrowRight, Users, Sparkles, ChefHat, Target, Menu, X, Check, Star, Zap, Calculator } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
@@ -224,6 +224,10 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                 >
                   Pricing
                 </button>
+                <Link href="/calorie-calculator" className="text-gray-600 hover:text-gray-900 transition-colors font-medium flex items-center gap-1">
+                  <Calculator className="h-4 w-4" />
+                  Calculadora de Calorías
+                </Link>
               </nav>
 
               <div className="flex items-center space-x-4">
@@ -318,6 +322,9 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                           >
                             Features
                           </button>
+                          <Link href="/calorie-calculator" className="block text-lg font-medium text-gray-900 hover:text-orange-600 transition-colors text-left w-full">
+                            Calculadora de Calorías
+                          </Link>
                         </div>
 
                         {/* Divider */}
