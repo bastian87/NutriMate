@@ -276,12 +276,14 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
 
       {/* Recipe Image */}
       <div className="container mx-auto px-4 py-6">
-        <div className="relative h-[500px] rounded-lg overflow-hidden">
+        <div className="w-full max-w-3xl mx-auto aspect-[16/9] rounded-lg overflow-hidden relative">
           <Image
             src={recipe.image_url || "/placeholder.svg?height=500&width=1000"}
             alt={recipe.name}
-            fill
-            className="object-cover"
+            width={1000}
+            height={562}
+            className="object-cover w-full h-full"
+            priority
           />
         </div>
       </div>
