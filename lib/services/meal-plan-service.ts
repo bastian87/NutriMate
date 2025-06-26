@@ -41,13 +41,10 @@ export class MealPlanService {
           data: { user },
         } = await this.supabase.auth.getUser()
         if (!user) {
-          console.log("No authenticated user found")
           return []
         }
         userId = user.id
       }
-
-      console.log("Fetching meal plans for user:", userId)
 
       const { data, error } = await this.supabase
         .from("meal_plans")
@@ -56,13 +53,11 @@ export class MealPlanService {
         .order("created_at", { ascending: false })
 
       if (error) {
-        console.error("Error fetching meal plans:", error)
         throw error
       }
 
       return data || []
     } catch (error) {
-      console.error("Error in getUserMealPlans:", error)
       throw error
     }
   }
@@ -107,7 +102,6 @@ export class MealPlanService {
         })),
       }
     } catch (error) {
-      console.error("Error in getMealPlanById:", error)
       throw error
     }
   }
@@ -152,7 +146,6 @@ export class MealPlanService {
 
       return mealPlan
     } catch (error) {
-      console.error("Error in createMealPlan:", error)
       throw error
     }
   }
@@ -183,29 +176,45 @@ export class MealPlanService {
     const allRecipes = await recipeService.getRecipes({
       tags: prefs.dietary_preferences ?? undefined,
       maxCookTime: prefs.max_prep_time ?? undefined,
-      userId,
+        userId,
     });
 
     const filtrarIngredientes = (receta: any) => {
-      const ingredientes = (receta.ingredients || []).map((i: any) => i.name.toLowerCase());
-      const excluidos = (prefs.excluded_ingredients ?? []).map((i: string) => i.toLowerCase());
-      const alergias = (prefs.allergies ?? []).map((i: string) => i.toLowerCase());
-      const intolerancias = (prefs.intolerances ?? []).map((i: string) => i.toLowerCase());
-      return (
-        !excluidos.some((e: string) => ingredientes.includes(e)) &&
-        !alergias.some((a: string) => ingredientes.includes(a)) &&
-        !intolerancias.some((i: string) => ingredientes.includes(i))
+      const ingredientes = (receta.ingredients || []).map((i: any) =>
+        ((i.original ? i.original.toLowerCase() : "") + " " + (i.name ? i.name.toLowerCase() : "")).trim()
       );
+      const excluidos = (prefs.excluded_ingredients ?? []).map((i: string) => i.toLowerCase().trim());
+      // Excluir si algún ingrediente o el nombre de la receta contiene la palabra de un excluido
+      const contieneExcluido = excluidos.some((e: string) =>
+        ingredientes.some((ing: string) => ing.includes(e)) || (receta.name?.toLowerCase().includes(e))
+      );
+      const alergias = (prefs.allergies ?? []).map((i: string) => i.toLowerCase().trim());
+      const contieneAlergia = alergias.some((a: string) =>
+        ingredientes.some((ing: string) => ing.includes(a)) || (receta.name?.toLowerCase().includes(a))
+      );
+      const intolerancias = (prefs.intolerances ?? []).map((i: string) => i.toLowerCase().trim());
+      const contieneIntolerancia = intolerancias.some((i: string) =>
+        ingredientes.some((ing: string) => ing.includes(i)) || (receta.name?.toLowerCase().includes(i))
+      );
+      return !contieneExcluido && !contieneAlergia && !contieneIntolerancia;
     };
 
     let recetasFiltradas = allRecipes.filter(filtrarIngredientes);
     if (Array.isArray(prefs.dietary_preferences) && prefs.dietary_preferences.length > 0) {
-      recetasFiltradas = recetasFiltradas.filter(recipe =>
-        recipe.tags && recipe.tags.length > 0 &&
-        (prefs.dietary_preferences ?? []).some(diet =>
-          recipe.tags.map(t => typeof t === 'string' ? t : t.name).includes(diet)
-        )
-      );
+      const recipeTags = (recipe: any) => Array.isArray(recipe.tags) ? recipe.tags : [];
+      const userDiets = Array.isArray(prefs.dietary_preferences) ? prefs.dietary_preferences : [];
+      if (
+        userDiets.length === 1 &&
+        userDiets[0] === "No Restrictions"
+      ) {
+        recetasFiltradas = recetasFiltradas.filter(recipe =>
+          recipeTags(recipe).includes("No Restrictions")
+        );
+      } else {
+        recetasFiltradas = recetasFiltradas.filter(recipe =>
+          userDiets.some(diet => recipeTags(recipe).includes(diet))
+        );
+      }
     }
 
     // 5. Seleccionar recetas para cada comida de cada día, forzando variedad semanal por tipo de comida
@@ -233,7 +242,7 @@ export class MealPlanService {
         let minDiff = mejor ? Math.abs((mejor.calories || 0) - objetivo) : Infinity;
         for (const receta of candidatas) {
           const diff = Math.abs((receta.calories || 0) - objetivo);
-          if (diff < minDiff) {
+              if (diff < minDiff) {
             mejor = receta;
             minDiff = diff;
           }
@@ -267,15 +276,17 @@ export class MealPlanService {
     });
 
     const filtrarIngredientes = (receta: any) => {
-      const ingredientes = (receta.ingredients || []).map((i: any) => i.name.toLowerCase());
+      const ingredientes = (receta.ingredients || []).map((i: any) =>
+        ((i.original ? i.original.toLowerCase() : "") + " " + (i.name ? i.name.toLowerCase() : "")).trim()
+      );
       const excluidos = (prefs.excluded_ingredients ?? []).map((i: string) => i.toLowerCase());
       const alergias = (prefs.allergies ?? []).map((i: string) => i.toLowerCase());
       const intolerancias = (prefs.intolerances ?? []).map((i: string) => i.toLowerCase());
-      return (
-        !excluidos.some((e: string) => ingredientes.includes(e)) &&
-        !alergias.some((a: string) => ingredientes.includes(a)) &&
-        !intolerancias.some((i: string) => ingredientes.includes(i))
-      );
+      // Excluir si algún ingrediente contiene el texto de un excluido
+      const contieneExcluido = excluidos.some((e: string) => ingredientes.some((ing: string) => ing.includes(e)));
+      const contieneAlergia = alergias.some((a: string) => ingredientes.some((ing: string) => ing.includes(a)));
+      const contieneIntolerancia = intolerancias.some((i: string) => ingredientes.some((ing: string) => ing.includes(i)));
+      return !contieneExcluido && !contieneAlergia && !contieneIntolerancia;
     };
 
     const recetasFiltradas = allRecipes
@@ -304,7 +315,6 @@ export class MealPlanService {
 
       if (error) throw error
     } catch (error) {
-      console.error("Error in deleteMealPlan:", error)
       throw error
     }
   }
@@ -328,7 +338,6 @@ export class MealPlanService {
           throw new Error("Unsupported export format")
       }
     } catch (error) {
-      console.error("Error in exportMealPlan:", error)
       throw error
     }
   }

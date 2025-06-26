@@ -38,11 +38,9 @@ export default function TestUserPanel() {
     setIsCreating(true)
     try {
       // In a real implementation, this would call your test user creation API
-      console.log("Creating test users...")
       await new Promise((resolve) => setTimeout(resolve, 2000)) // Simulate API call
       alert("Test users created successfully! Check console for login credentials.")
     } catch (error) {
-      console.error("Error creating test users:", error)
       alert("Error creating test users. Check console for details.")
     } finally {
       setIsCreating(false)
@@ -57,11 +55,9 @@ export default function TestUserPanel() {
     setIsDeleting(true)
     try {
       // In a real implementation, this would call your test user deletion API
-      console.log("Deleting test users...")
       await new Promise((resolve) => setTimeout(resolve, 1500)) // Simulate API call
       alert("Test users deleted successfully!")
     } catch (error) {
-      console.error("Error deleting test users:", error)
       alert("Error deleting test users. Check console for details.")
     } finally {
       setIsDeleting(false)

@@ -58,7 +58,7 @@ export const slugToName = (slug: string): string => {
 // Individual functions
 export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDetails[]> => {
   try {
-    let query = supabase.from("recipes").select("*")
+    let query = supabase.from("recipes").select("*, tags")
 
     if (filters?.search) {
       query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
@@ -78,21 +78,24 @@ export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDet
     const recipeIds = recipes.map((r) => r.id)
     if (recipeIds.length === 0) return []
 
-    const [{ data: ingredientsData }, { data: ratingsData }, { data: favoritesData }, { data: tagAssociationsData }] =
-      await Promise.all([
-        supabase.from("recipe_ingredients").select("*").in("recipe_id", recipeIds),
-        supabase.from("recipe_ratings").select("recipe_id, rating, user_id").in("recipe_id", recipeIds),
-        filters?.userId
-          ? supabase.from("user_favorites").select("recipe_id").eq("user_id", filters.userId).in("recipe_id", recipeIds)
-          : Promise.resolve({ data: [] }),
-        supabase
-          .from("recipe_tag_associations")
-          .select(`recipe_id, tag_id, recipe_tags!inner(id, name)`)
-          .in("recipe_id", recipeIds),
-      ])
+    const [ingredientsResult, ratingsResult, favoritesResult] = await Promise.all([
+      supabase.from("recipe_ingredients").select("*").in("recipe_id", recipeIds),
+      supabase.from("recipe_ratings").select("recipe_id, rating, user_id").in("recipe_id", recipeIds),
+      filters?.userId
+        ? supabase.from("user_favorites").select("recipe_id").eq("user_id", filters.userId).in("recipe_id", recipeIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+    const ingredientsData = ingredientsResult.data;
+    const ratingsData = ratingsResult.data;
+    const favoritesData = favoritesResult.data;
+
+    // Función para normalizar IDs (quita guiones, minúsculas, trim)
+    const normalize = (id: string) => id.replace(/-/g, "").toLowerCase().trim();
 
     return recipes.map((recipe: any) => {
-      const recipeIngredients = ingredientsData?.filter((ing) => ing.recipe_id === recipe.id) || []
+      const recipeIngredients = (ingredientsData || []).filter(
+        (ing) => normalize(String(ing.recipe_id)) === normalize(String(recipe.id))
+      );
       const recipeRatings = ratingsData?.filter((r) => r.recipe_id === recipe.id) || []
       const averageRating =
         recipeRatings.length > 0
@@ -100,11 +103,10 @@ export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDet
           : 0
       const isFavorited = favoritesData?.some((fav) => fav.recipe_id === recipe.id) || false
       const userRating = filters?.userId ? recipeRatings.find((r) => r.user_id === filters.userId)?.rating : undefined
-      const recipeTags =
-        tagAssociationsData
-          ?.filter((ta) => ta.recipe_id === recipe.id)
-          .map((ta) => ta.recipe_tags)
-          .filter(Boolean) || []
+
+      const ingredientes = recipeIngredients.map((i: any) =>
+        ((i.original ? i.original.toLowerCase() : "") + " " + (i.name ? i.name.toLowerCase() : "")).trim()
+      );
 
       return {
         ...recipe,
@@ -113,13 +115,14 @@ export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDet
           name: ing.name,
           quantity: ing.quantity,
           unit: ing.unit,
+          original: ing.original,
         })),
         average_rating: Number(averageRating.toFixed(1)),
         rating_count: recipeRatings.length,
         total_ratings: recipeRatings.length,
         is_favorited: isFavorited,
         user_rating: userRating,
-        tags: recipeTags,
+        tags: recipe.tags || [],
         prep_time_minutes: recipe.prep_time_minutes || 0,
         cook_time_minutes: recipe.cook_time_minutes || 0,
         servings: recipe.servings || 1,

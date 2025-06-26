@@ -55,11 +55,6 @@ class Analytics {
 
     // Send to our custom analytics endpoint
     this.sendToCustomAnalytics({ event, properties, userId })
-
-    // Console log in development
-    if (process.env.NODE_ENV === "development") {
-      console.log("📊 Analytics Event:", { event, properties, userId })
-    }
   }
 
   // Send to custom analytics endpoint

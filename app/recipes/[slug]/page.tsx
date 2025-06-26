@@ -50,10 +50,6 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
     }
   }, [recipe, user])
 
-  console.log("Recipe data:", recipe)
-  console.log("User:", user)
-  console.log("Ingredients:", recipe?.ingredients)
-
   const toggleIngredient = (ingredientId: string) => {
     setSelectedIngredients((prev) =>
       prev.includes(ingredientId) ? prev.filter((id) => id !== ingredientId) : [...prev, ingredientId],

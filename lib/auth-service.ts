@@ -23,21 +23,14 @@ export async function getCurrentUser(): Promise<User | null> {
 
 export async function login(email: string, password: string): Promise<User | null> {
   // In a real app, this would validate credentials
-  console.log("Login attempt:", email)
-
-  // For demo purposes, always return the mock user
   return mockUsers[0]
 }
 
 export async function register(name: string, email: string, password: string): Promise<User> {
   // In a real app, this would create a new user
-  console.log("Register attempt:", name, email)
-
-  // For demo purposes, always return the mock user
   return mockUsers[0]
 }
 
 export async function logout(): Promise<void> {
   // In a real app, this would clear the session
-  console.log("User logged out")
 }

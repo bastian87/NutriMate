@@ -28,29 +28,20 @@ export default function SignupForm() {
     try {
       const { data, error: signUpError } = await signUp(email, password, fullName)
 
-      console.log("Signup attempt result:", { data, signUpError }) // DEBUG LOG
-
       if (signUpError) {
         throw signUpError
       }
 
       if (data?.session) {
-        console.log("Session found, redirecting to /onboarding") // DEBUG LOG
         router.push("/onboarding")
       } else if (data?.user && !data?.session) {
-        console.warn(
-          // DEBUG LOG
-          "Signup successful, user created, but no active session. Email confirmation might still be ON in Supabase, or there's a session propagation delay.",
-        )
         setError(
           "Account created, but failed to start a session. Please ensure email confirmation is OFF in Supabase and try logging in.",
         )
       } else {
-        console.error("Signup response unclear:", { data }) // DEBUG LOG
         throw new Error("Signup failed or user session is unclear.")
       }
     } catch (err) {
-      console.error("Signup handleSubmit catch block error:", err) // DEBUG LOG
       setError(err instanceof Error ? err.message : "Failed to sign up. Please try again.")
     } finally {
       setLoading(false)
