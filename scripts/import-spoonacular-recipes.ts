@@ -157,4 +157,14 @@ export async function importRecipesFromSpoonacular(
   }
 
   return result;
+}
+
+function mapSpoonacularToMealType(dishTypes: string[]): "breakfast" | "lunch" | "dinner" | "snack" | null {
+  const types = dishTypes.map(t => t.toLowerCase());
+  if (types.includes("breakfast") || types.includes("brunch")) return "breakfast";
+  if (types.includes("lunch")) return "lunch";
+  if (types.includes("main course") || types.includes("dinner") || types.includes("side dish")) return "dinner";
+  if (types.includes("snack") || types.includes("appetizer") || types.includes("dessert") || types.includes("fingerfood")) return "snack";
+  // Si no matchea, puedes devolver null o asignar un valor por defecto
+  return null;
 } 
