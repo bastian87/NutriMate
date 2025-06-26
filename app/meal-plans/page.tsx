@@ -410,8 +410,12 @@ export default function MealPlansPage() {
                         days
                       </div>
                       <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1 text-orange-600" />
-                        {(mealPlan as any).meals?.length || 0} meals
+                        {(mealPlan as any).meals?.length > 0 && (
+                          <>
+                            <Users className="h-4 w-4 mr-1 text-orange-600" />
+                            {(mealPlan as any).meals.length} meals
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -476,7 +480,7 @@ export default function MealPlansPage() {
       </Dialog>
 
       {/* UI para distribución personalizada */}
-      <div className="mb-8 p-4 bg-orange-50 rounded border border-orange-200 max-w-xl mx-auto">
+      <div className="mb-8 mt-16 p-4 bg-orange-50 rounded border border-orange-200 max-w-xl mx-auto">
         <h2 className="font-bold mb-2">Distribución de calorías (%)</h2>
         {(Object.keys(distribution) as Array<keyof typeof distribution>).map((meal) => (
           <div key={meal} className="flex items-center gap-2 mb-2">
@@ -515,7 +519,7 @@ export default function MealPlansPage() {
 
       {/* Mostrar el meal plan personalizado generado */}
       {customMealPlan && (
-        <div className="max-w-2xl mx-auto bg-white rounded shadow p-6 mb-8 border border-gray-200">
+        <div className="max-w-2xl mx-auto bg-white rounded shadow p-6 mb-8 border border-gray-200 mt-10">
           <h2 className="font-bold text-xl mb-4">Tu Meal Plan Personalizado</h2>
           {Object.entries(customMealPlan.comidas).map(([mealType, recipe]) => {
             const receta = recipe as { name?: string };
