@@ -179,7 +179,7 @@ export class MealPlanService {
       ? Object.fromEntries(Object.entries(distribution).map(([k, v]) => [k, Math.round(v * calorias)]))
       : distribuirCalorias(calorias, !!prefs.include_snacks);
 
-    // 4. Filtrar recetas según preferencias
+    // 4. Filtrar recetas según preferencias y tags de dieta
     const allRecipes = await recipeService.getRecipes({
       tags: prefs.dietary_preferences ?? undefined,
       maxCookTime: prefs.max_prep_time ?? undefined,
@@ -198,7 +198,15 @@ export class MealPlanService {
       );
     };
 
-    const recetasFiltradas = allRecipes.filter(filtrarIngredientes);
+    let recetasFiltradas = allRecipes.filter(filtrarIngredientes);
+    if (Array.isArray(prefs.dietary_preferences) && prefs.dietary_preferences.length > 0) {
+      recetasFiltradas = recetasFiltradas.filter(recipe =>
+        recipe.tags && recipe.tags.length > 0 &&
+        (prefs.dietary_preferences ?? []).some(diet =>
+          recipe.tags.map(t => typeof t === 'string' ? t : t.name).includes(diet)
+        )
+      );
+    }
 
     // 5. Seleccionar recetas para cada comida de cada día, forzando variedad semanal por tipo de comida
     const DAYS = 7;

@@ -7,16 +7,16 @@ export async function POST(req: NextRequest) {
     // Construir meals: array de { recipeId, dayNumber, mealType }
     const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
     const MEALS = ["breakfast", "lunch", "dinner", "snack"];
-    const meals = [];
+    const meals: { recipeId: string; dayNumber: number; mealType: "breakfast" | "lunch" | "dinner" | "snack" }[] = [];
     for (let dayIdx = 0; dayIdx < DAYS.length; dayIdx++) {
       for (const mealType of MEALS) {
         const key = `${DAYS[dayIdx]}-${mealType}`;
         const recipeId = selectedRecipes[key];
-        if (recipeId) {
+        if (typeof recipeId === "string" && recipeId) {
           meals.push({
             recipeId,
             dayNumber: dayIdx + 1,
-            mealType,
+            mealType: mealType as "breakfast" | "lunch" | "dinner" | "snack",
           });
         }
       }

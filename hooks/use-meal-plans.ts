@@ -164,8 +164,10 @@ export const useMealPlan = (id: string | null): UseMealPlanReturn => {
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) throw new Error("Authentication required")
-
-      await mealPlanService.regenerateMeal(mealId, user.id)
+      // Buscar el meal correspondiente
+      const meal = mealPlan?.meals.find(m => m.id === mealId)
+      if (!meal) throw new Error("Meal not found")
+      await mealPlanService.regenerateMeal(user.id, meal.meal_type, meal.recipe.calories ?? 0)
       await loadMealPlan()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to regenerate meal")

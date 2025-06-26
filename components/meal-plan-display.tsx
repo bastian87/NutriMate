@@ -8,6 +8,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/context"
 import { mealPlanService } from "@/lib/services/meal-plan-service"
+import useAuth from "@/hooks/use-auth"
 
 // Define types locally since we removed mock data
 interface Recipe {
@@ -45,6 +46,7 @@ export default function MealPlanDisplay({ mealPlan }: MealPlanDisplayProps) {
   const [activeDay, setActiveDay] = useState(1)
   const [regeneratingMealId, setRegeneratingMealId] = useState<string | null>(null)
   const { t } = useLanguage()
+  const { user } = useAuth()
 
   // Format dates
   const startDate = new Date(mealPlan.startDate)
@@ -67,14 +69,11 @@ export default function MealPlanDisplay({ mealPlan }: MealPlanDisplayProps) {
   const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
   // Handle meal regeneration (placeholder for now)
-  const handleRegenerateMeal = async (mealId: string) => {
+  const handleRegenerateMeal = async (mealId: string, mealType: "breakfast" | "lunch" | "dinner" | "snack", caloriasObjetivo: number) => {
     setRegeneratingMealId(mealId)
     try {
-      // Regenerar la comida usando mealPlanService
-      await mealPlanService.regenerateMeal(mealId)
-      // Recargar el meal plan después de regenerar
-      // Si tienes un método para recargar desde el padre, llama a ese método aquí
-      // Si no, puedes forzar un reload de la página como fallback:
+      if (!user) throw new Error("Usuario no autenticado")
+      await mealPlanService.regenerateMeal(user.id, mealType, caloriasObjetivo)
       window.location.reload()
     } catch (error) {
       console.error("Error regenerando la comida:", error)
@@ -168,7 +167,7 @@ export default function MealPlanDisplay({ mealPlan }: MealPlanDisplayProps) {
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => handleRegenerateMeal(meal.id)}
+                    onClick={() => handleRegenerateMeal(meal.id, meal.meal_type, meal.recipe.calories)}
                     disabled={regeneratingMealId === meal.id}
                     className="border-orange-600 text-orange-600 hover:bg-orange-50"
                   >
