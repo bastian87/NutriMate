@@ -36,6 +36,7 @@ export interface RecipeFilters {
   maxCookTime?: number
   calorieRange?: [number, number]
   userId?: string
+  limit?: number
 }
 
 // Helper function to create a URL-friendly slug from recipe name
@@ -68,6 +69,9 @@ export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDet
     }
     if (filters?.calorieRange) {
       query = query.gte("calories", filters.calorieRange[0]).lte("calories", filters.calorieRange[1])
+    }
+    if (filters?.limit) {
+      query = query.limit(filters.limit)
     }
 
     const { data: recipes, error } = await query

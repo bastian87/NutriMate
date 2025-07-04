@@ -47,7 +47,8 @@ interface UseMealPlanReturn {
   mealPlan: MealPlanWithMeals | null
   loading: boolean
   error: string | null
-  regenerateMeal: (mealId: string) => Promise<void>
+  setMealPlan: (mealPlan: MealPlanWithMeals | null) => void
+  regenerateMeal: (mealId: string, mealType?: string, caloriasObjetivo?: number, recetasUsadas?: string[], updateMealId?: string) => Promise<void>
 }
 
 // Hook for multiple meal plans
@@ -156,7 +157,7 @@ export const useMealPlan = (id: string | null): UseMealPlanReturn => {
     }
   }, [id, supabase])
 
-  const regenerateMeal = async (mealId: string) => {
+  const regenerateMeal = async (mealId: string, mealType?: string, caloriasObjetivo?: number, recetasUsadas: string[] = [], updateMealId?: string) => {
     try {
       setError(null)
       setLoading(true)
@@ -167,7 +168,15 @@ export const useMealPlan = (id: string | null): UseMealPlanReturn => {
       // Buscar el meal correspondiente
       const meal = mealPlan?.meals.find(m => m.id === mealId)
       if (!meal) throw new Error("Meal not found")
-      await mealPlanService.regenerateMeal(user.id, meal.meal_type, meal.recipe.calories ?? 0)
+      await mealPlanService.regenerateMeal(
+        user.id,
+        mealType || meal.meal_type,
+        caloriasObjetivo ?? meal.recipe.calories ?? 0,
+        recetasUsadas,
+        updateMealId || mealId
+      )
+      // Espera 300ms antes de recargar el meal plan
+      await new Promise(res => setTimeout(res, 300));
       await loadMealPlan()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to regenerate meal")
@@ -180,5 +189,5 @@ export const useMealPlan = (id: string | null): UseMealPlanReturn => {
     loadMealPlan()
   }, [id, loadMealPlan])
 
-  return { mealPlan, loading, error, regenerateMeal }
+  return { mealPlan, loading, error, setMealPlan, regenerateMeal }
 }

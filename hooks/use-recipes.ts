@@ -10,7 +10,7 @@ const areFiltersEqual = (a?: RecipeFilters, b?: RecipeFilters) => {
   return JSON.stringify(a) === JSON.stringify(b)
 }
 
-export function useRecipes(filters?: RecipeFilters) {
+export function useRecipes(filters?: RecipeFilters, limit?: number) {
   const [recipes, setRecipes] = useState<RecipeWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -18,7 +18,7 @@ export function useRecipes(filters?: RecipeFilters) {
   const prevFiltersRef = useRef<RecipeFilters>()
   const isInitialLoadRef = useRef(true)
 
-  const fetchRecipes = useCallback(async (currentFilters?: RecipeFilters) => {
+  const fetchRecipes = useCallback(async (currentFilters?: RecipeFilters, currentLimit?: number) => {
     // Only fetch if filters have actually changed
     if (areFiltersEqual(prevFiltersRef.current, currentFilters)) {
       return
@@ -28,7 +28,7 @@ export function useRecipes(filters?: RecipeFilters) {
     setLoading(true)
     setError(null)
     try {
-      const data = await recipeService.getRecipes(currentFilters)
+      const data = await recipeService.getRecipes({ ...(currentFilters || {}), limit: currentLimit })
       setRecipes(data || [])
     } catch (err) {
       console.error("Error fetching recipes:", err)
@@ -43,9 +43,9 @@ export function useRecipes(filters?: RecipeFilters) {
   useEffect(() => {
     // Only fetch on initial load or when filters actually change
     if (isInitialLoadRef.current || !areFiltersEqual(prevFiltersRef.current, filters)) {
-      fetchRecipes(filters)
+      fetchRecipes(filters, limit)
     }
-  }, [filters, fetchRecipes])
+  }, [filters, limit, fetchRecipes])
 
   const toggleFavorite = async (recipeId: string, userId?: string) => {
     if (!userId) {
@@ -65,7 +65,7 @@ export function useRecipes(filters?: RecipeFilters) {
     }
   }
 
-  return { recipes, loading, error, toggleFavorite, refetch: () => fetchRecipes(filters) }
+  return { recipes, loading, error, toggleFavorite, refetch: () => fetchRecipes(filters, limit) }
 }
 
 export function useRecipe(slugOrId: string, userId?: string) {

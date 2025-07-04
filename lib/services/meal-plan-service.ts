@@ -266,7 +266,7 @@ export class MealPlanService {
     return mealPlan;
   }
 
-  async regenerateMeal(userId: string, mealType: string, caloriasObjetivo: number, recetasUsadas: string[] = []) {
+  async regenerateMeal(userId: string, mealType: string, caloriasObjetivo: number, recetasUsadas: string[] = [], mealId?: string) {
     const prefs = await userService.getUserPreferences(userId);
     if (!prefs) throw new Error("Faltan datos de usuario o preferencias");
     const allRecipes = await recipeService.getRecipes({
@@ -306,6 +306,21 @@ export class MealPlanService {
         minDiff = diff;
       }
     }
+
+    // LOGS DE DEPURACIÓN
+    console.log("[regenerateMeal] mealId recibido:", mealId);
+    console.log("[regenerateMeal] Receta seleccionada (mejor):", mejor);
+
+    // Si se pasa mealId, actualiza el meal en la base de datos
+    if (mealId) {
+      const { error, data } = await this.supabase
+        .from("meal_plan_meals")
+        .update({ recipe_id: mejor.id })
+        .eq("id", mealId);
+      console.log("[regenerateMeal] Resultado update meal_plan_meals:", { error, data });
+      if (error) throw error;
+    }
+
     return mejor;
   }
 
