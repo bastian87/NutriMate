@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase/client"
 import type { User, Session, AuthError } from "@supabase/supabase-js"
 import { authService } from "@/lib/services/auth-service" // Import the service
+import { useRouter } from "next/navigation"
 
 // Define a more specific type for the signup/signin response
 interface AuthResponse {
@@ -114,7 +115,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     )
   }
 
-  return <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthRedirector />
+    {children}
+  </AuthContext.Provider>
+}
+
+function AuthRedirector() {
+  const router = useRouter();
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        // Consultar si el usuario ya tiene perfil
+        const { data } = await supabase
+          .from("users")
+          .select("id")
+          .eq("id", session.user.id)
+          .single();
+        if (data) {
+          router.push("/dashboard");
+        } else {
+          router.push("/onboarding");
+        }
+      }
+    });
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, [router]);
+  return null;
 }
 
 export function useAuthContext() {
