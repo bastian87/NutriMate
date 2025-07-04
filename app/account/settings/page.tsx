@@ -13,6 +13,7 @@ import { useAuthContext } from "@/components/auth/auth-provider"
 import { userService } from "@/lib/services/user-service"
 import type { UserPreferences } from "@/lib/types/database"
 import { useLanguage } from "@/lib/i18n/context"
+import { useUserPreferences } from "@/components/auth/user-preferences-provider";
 
 import ProfileForm from "@/components/forms/ProfileForm"
 import HealthForm from "@/components/forms/HealthForm"
@@ -24,34 +25,20 @@ const AccountSettingsPage = () => {
   const { toast } = useToast()
   const { user } = useAuthContext()
   const { t } = useLanguage()
-
-  const [preferences, setPreferences] = useState<UserPreferences | null>(null)
-  const [loadingPreferences, setLoadingPreferences] = useState(true)
+  const { preferences, loading, fetchPreferences } = useUserPreferences();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
-  const fetchUserPreferences = useCallback(async () => {
-    if (!user) return
-    setLoadingPreferences(true)
-    try {
-      const data = await userService.getUserPreferences(user.id)
-      if (!data) throw new Error("Could not load preferences")
-      setPreferences(data as UserPreferences)
-    } catch (error) {
-      console.error("Failed to fetch user preferences:", error)
-      toast({
-        title: "Error",
-        description: "Could not load your preferences. Please try again later.",
-        variant: "destructive",
-      })
-    } finally {
-      setLoadingPreferences(false)
-    }
-  }, [user, toast])
-
-  useEffect(() => {
-    fetchUserPreferences()
-  }, [fetchUserPreferences])
+  // Cuando uses preferences, asegúrate de que los campos de arrays nunca sean null
+  const safePreferences = preferences
+    ? {
+        ...preferences,
+        dietary_preferences: preferences.dietary_preferences ?? [],
+        excluded_ingredients: preferences.excluded_ingredients ?? [],
+        allergies: preferences.allergies ?? [],
+        intolerances: preferences.intolerances ?? [],
+      }
+    : null;
 
   const handleUpdatePreferences = async (updatedPrefs: Partial<UserPreferences>) => {
     if (!user) return
@@ -59,12 +46,11 @@ const AccountSettingsPage = () => {
       const newPreferences = { ...preferences, ...updatedPrefs } as UserPreferences
       const result = await userService.saveUserPreferences(user.id, newPreferences)
       if (!result) throw new Error("Could not save preferences")
-
-      setPreferences(newPreferences)
       toast({
         title: "Preferences Updated",
         description: "Your settings have been successfully saved.",
       })
+      await fetchPreferences();
     } catch (error) {
       console.error("Failed to update preferences:", error)
       toast({
@@ -101,7 +87,7 @@ const AccountSettingsPage = () => {
     }
   }
 
-  if (loadingPreferences) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

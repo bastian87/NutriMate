@@ -364,7 +364,22 @@ export interface Database {
 }
 
 export type UserPreferences = {
-  dietary_preferences: string[]
-  excluded_ingredients: string[]
-  // Agrega otros campos si los necesitas
-}
+  id: string;
+  user_id: string;
+  age: number | null;
+  gender: string | null;
+  height: number | null;
+  weight: number | null;
+  activity_level: string | null;
+  health_goal: string | null;
+  calorie_target: number | null;
+  dietary_preferences: string[];
+  excluded_ingredients: string[];
+  include_snacks: boolean | null;
+  allergies: string[];
+  intolerances: string[];
+  max_prep_time: number | null;
+  macro_priority: string | null;
+  created_at: string;
+  updated_at: string;
+};

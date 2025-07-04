@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -14,23 +14,12 @@ import { Settings, Target, Heart } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import SubscriptionStatus from "@/components/subscription-status"
+import { useUserPreferences } from "@/components/auth/user-preferences-provider";
+import { useEffect } from "react";
+import type { UserPreferences } from "@/lib/types/database";
 
-interface UserPreferences {
-  age?: number
-  gender?: string
-  height?: number
-  weight?: number
-  activity_level?: string
-  health_goal?: string
-  calorie_target?: number
-  dietary_preferences?: string[]
-  excluded_ingredients?: string[]
-  include_snacks?: boolean
-  allergies?: string[]
-  intolerances?: string[]
-  max_prep_time?: number
-  macro_priority?: string
-}
+// Eliminar la interfaz local UserPreferences y usar el tipo global importado
+// import type { UserPreferences } from "@/lib/types/database"
 
 // Lista unificada de preferencias dietarias (igual que en el onboarding)
 const dietTypes = [
@@ -49,71 +38,34 @@ const dietTypes = [
 export default function AccountPage() {
   const { user } = useAuthContext()
   const { t } = useLanguage()
-  const [loading, setLoading] = useState(true)
+  const { preferences, loading, fetchPreferences } = useUserPreferences();
   const [saving, setSaving] = useState(false)
-  const [preferences, setPreferences] = useState<UserPreferences>({
-    age: 30,
-    gender: "male",
-    height: 175,
-    weight: 70,
-    activity_level: "moderate",
-    health_goal: "maintenance",
-    calorie_target: 2000,
-    dietary_preferences: [],
-    excluded_ingredients: [],
-    include_snacks: false,
-    allergies: [],
-    intolerances: [],
-    max_prep_time: 60,
-    macro_priority: "balanced",
-  })
+  const [formPrefs, setFormPrefs] = useState<UserPreferences | null>(null);
 
   useEffect(() => {
-    if (user) {
-      loadUserData()
+    if (preferences) setFormPrefs(preferences);
+  }, [preferences]);
+
+  // Asegurarse de que todos los campos estén presentes al inicializar o actualizar formPrefs
+  useEffect(() => {
+    if (preferences) {
+      setFormPrefs({
+        ...preferences,
+        dietary_preferences: preferences.dietary_preferences ?? [],
+        excluded_ingredients: preferences.excluded_ingredients ?? [],
+        allergies: preferences.allergies ?? [],
+        intolerances: preferences.intolerances ?? [],
+      });
     }
-  }, [user])
-
-  const loadUserData = async () => {
-    if (!user) return
-
-    try {
-      setLoading(true)
-
-      // Load preferences from API
-      const userPrefs = await userService.getUserPreferences(user.id)
-      if (userPrefs) {
-        setPreferences({
-          age: userPrefs.age || 30,
-          gender: userPrefs.gender || "male",
-          height: userPrefs.height || 175,
-          weight: userPrefs.weight || 70,
-          activity_level: userPrefs.activity_level || "moderate",
-          health_goal: userPrefs.health_goal || "maintenance",
-          calorie_target: userPrefs.calorie_target || 2000,
-          dietary_preferences: userPrefs.dietary_preferences || [],
-          excluded_ingredients: userPrefs.excluded_ingredients || [],
-          include_snacks: userPrefs.include_snacks ?? false,
-          allergies: userPrefs.allergies || [],
-          intolerances: userPrefs.intolerances || [],
-          max_prep_time: userPrefs.max_prep_time || 60,
-          macro_priority: userPrefs.macro_priority || "balanced",
-        })
-      }
-    } catch (error) {
-      console.error("Error loading user data:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [preferences]);
 
   const handleSavePreferences = async () => {
-    if (!user) return
-
+    if (!user || !formPrefs) return
     try {
       setSaving(true)
-      await userService.saveUserPreferences(user.id, preferences)
+      await userService.saveUserPreferences(user.id, formPrefs)
       alert("Preferences updated successfully!")
+      await fetchPreferences();
     } catch (error) {
       console.error("Error saving preferences:", error)
       alert("Failed to update preferences")
@@ -123,12 +75,12 @@ export default function AccountPage() {
   }
 
   const toggleDietaryPreference = (preference: string) => {
-    setPreferences((prev) => ({
+    setFormPrefs((prev: UserPreferences | null) => prev ? {
       ...prev,
-      dietary_preferences: prev.dietary_preferences?.includes(preference)
-        ? prev.dietary_preferences.filter((p) => p !== preference)
-        : [...(prev.dietary_preferences || []), preference],
-    }))
+      dietary_preferences: prev.dietary_preferences.includes(preference)
+        ? prev.dietary_preferences.filter((p: string) => p !== preference)
+        : [...prev.dietary_preferences, preference],
+    } : prev);
   }
 
   if (!user) {
@@ -141,7 +93,7 @@ export default function AccountPage() {
     )
   }
 
-  if (loading) {
+  if (loading || !formPrefs) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
@@ -190,13 +142,13 @@ export default function AccountPage() {
                   <Input
                     id="age"
                     type="number"
-                    value={preferences.age}
-                    onChange={(e) => setPreferences((prev) => ({ ...prev, age: Number.parseInt(e.target.value) }))}
+                    value={formPrefs.age ?? ""}
+                    onChange={(e) => setFormPrefs((prev) => prev ? { ...prev, age: Number.parseInt(e.target.value) } : prev)}
                   />
                 </div>
                 <div>
                   <Label htmlFor="gender">{t("accountPage.gender")}</Label>
-                  <Select value={preferences.gender} onValueChange={(value) => setPreferences((prev) => ({ ...prev, gender: value }))}>
+                  <Select value={formPrefs.gender ?? ""} onValueChange={(value) => setFormPrefs((prev) => prev ? { ...prev, gender: value } : prev)}>
                     <SelectTrigger>
                       <SelectValue placeholder={t("accountPage.selectGender")} />
                     </SelectTrigger>
@@ -215,8 +167,8 @@ export default function AccountPage() {
                   <Input
                     id="height"
                     type="number"
-                    value={preferences.height}
-                    onChange={(e) => setPreferences((prev) => ({ ...prev, height: Number.parseInt(e.target.value) }))}
+                    value={formPrefs.height ?? ""}
+                    onChange={(e) => setFormPrefs((prev) => prev ? { ...prev, height: Number.parseInt(e.target.value) } : prev)}
                   />
                 </div>
                 <div>
@@ -224,15 +176,15 @@ export default function AccountPage() {
                   <Input
                     id="weight"
                     type="number"
-                    value={preferences.weight}
-                    onChange={(e) => setPreferences((prev) => ({ ...prev, weight: Number.parseInt(e.target.value) }))}
+                    value={formPrefs.weight ?? ""}
+                    onChange={(e) => setFormPrefs((prev) => prev ? { ...prev, weight: Number.parseInt(e.target.value) } : prev)}
                   />
                 </div>
               </div>
 
               <div>
                 <Label htmlFor="activity_level">{t("accountPage.activityLevel")}</Label>
-                <Select value={preferences.activity_level} onValueChange={(value) => setPreferences((prev) => ({ ...prev, activity_level: value }))}>
+                <Select value={formPrefs.activity_level ?? ""} onValueChange={(value) => setFormPrefs((prev) => prev ? { ...prev, activity_level: value } : prev)}>
                   <SelectTrigger>
                     <SelectValue placeholder={t("accountPage.selectActivityLevel")} />
                   </SelectTrigger>
@@ -248,7 +200,7 @@ export default function AccountPage() {
 
               <div>
                 <Label htmlFor="health_goal">{t("accountPage.healthGoal")}</Label>
-                <Select value={preferences.health_goal} onValueChange={(value) => setPreferences((prev) => ({ ...prev, health_goal: value }))}>
+                <Select value={formPrefs.health_goal ?? ""} onValueChange={(value) => setFormPrefs((prev) => prev ? { ...prev, health_goal: value } : prev)}>
                   <SelectTrigger>
                     <SelectValue placeholder={t("accountPage.selectHealthGoal")} />
                   </SelectTrigger>
@@ -266,8 +218,8 @@ export default function AccountPage() {
                 <Input
                   id="calorie_target"
                   type="number"
-                  value={preferences.calorie_target}
-                  onChange={(e) => setPreferences((prev) => ({ ...prev, calorie_target: Number.parseInt(e.target.value) }))}
+                  value={formPrefs.calorie_target ?? ""}
+                  onChange={(e) => setFormPrefs((prev) => prev ? { ...prev, calorie_target: Number.parseInt(e.target.value) } : prev)}
                 />
               </div>
             </CardContent>
@@ -292,7 +244,7 @@ export default function AccountPage() {
                     <div key={diet} className="flex items-center space-x-2">
                       <Checkbox
                         id={`diet-${diet}`}
-                        checked={preferences.dietary_preferences?.includes(diet)}
+                        checked={formPrefs.dietary_preferences?.includes(diet)}
                         onCheckedChange={() => toggleDietaryPreference(diet)}
                       />
                       <Label htmlFor={`diet-${diet}`} className="text-sm font-normal">
@@ -308,12 +260,12 @@ export default function AccountPage() {
                 <Input
                   id="excluded_ingredients"
                   placeholder={t("accountPage.excludedIngredientsPlaceholder")}
-                  value={preferences.excluded_ingredients?.join(", ") || ""}
+                  value={formPrefs.excluded_ingredients?.join(", ") || ""}
                   onChange={(e) =>
-                    setPreferences((prev) => ({
+                    setFormPrefs((prev) => prev ? {
                       ...prev,
                       excluded_ingredients: e.target.value.split(",").map((item) => item.trim()).filter(Boolean),
-                    }))
+                    } : prev)
                   }
                 />
                 <p className="text-sm text-gray-500 mt-1">{t("accountPage.separateIngredients")}</p>
@@ -341,8 +293,8 @@ export default function AccountPage() {
                 <Label htmlFor="include_snacks">{t("accountPage.includeSnacks")}</Label>
                 <Checkbox
                   id="include_snacks"
-                  checked={preferences.include_snacks}
-                  onCheckedChange={(checked) => setPreferences((prev) => ({ ...prev, include_snacks: checked as boolean }))}
+                  checked={!!formPrefs.include_snacks}
+                  onCheckedChange={(checked) => setFormPrefs((prev) => prev ? { ...prev, include_snacks: checked as boolean } : prev)}
                   className="ml-2"
                 />
               </div>
@@ -351,8 +303,8 @@ export default function AccountPage() {
                 <Input
                   id="allergies"
                   placeholder={t("accountPage.allergies")}
-                  value={preferences.allergies?.join(", ") || ""}
-                  onChange={(e) => setPreferences((prev) => ({ ...prev, allergies: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) }))}
+                  value={formPrefs.allergies?.join(", ") || ""}
+                  onChange={(e) => setFormPrefs((prev) => prev ? { ...prev, allergies: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) } : prev)}
                 />
               </div>
               <div>
@@ -360,8 +312,8 @@ export default function AccountPage() {
                 <Input
                   id="intolerances"
                   placeholder={t("accountPage.intolerances")}
-                  value={preferences.intolerances?.join(", ") || ""}
-                  onChange={(e) => setPreferences((prev) => ({ ...prev, intolerances: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) }))}
+                  value={formPrefs.intolerances?.join(", ") || ""}
+                  onChange={(e) => setFormPrefs((prev) => prev ? { ...prev, intolerances: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) } : prev)}
                 />
               </div>
               <div>
@@ -371,15 +323,15 @@ export default function AccountPage() {
                   type="number"
                   min={5}
                   max={180}
-                  value={preferences.max_prep_time || 60}
-                  onChange={(e) => setPreferences((prev) => ({ ...prev, max_prep_time: Number.parseInt(e.target.value) }))}
+                  value={formPrefs.max_prep_time || 60}
+                  onChange={(e) => setFormPrefs((prev) => prev ? { ...prev, max_prep_time: Number.parseInt(e.target.value) } : prev)}
                 />
               </div>
               <div>
                 <Label htmlFor="macro_priority">{t("accountPage.macroPriority")}</Label>
                 <Select
-                  value={preferences.macro_priority || "balanced"}
-                  onValueChange={(value) => setPreferences((prev) => ({ ...prev, macro_priority: value }))}
+                  value={formPrefs.macro_priority || "balanced"}
+                  onValueChange={(value) => setFormPrefs((prev) => prev ? { ...prev, macro_priority: value } : prev)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={t("accountPage.selectMacroPriority")} />

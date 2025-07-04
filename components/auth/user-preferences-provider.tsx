@@ -27,6 +27,8 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
               ...data,
               dietary_preferences: data.dietary_preferences ?? [],
               excluded_ingredients: data.excluded_ingredients ?? [],
+              allergies: data.allergies ?? [],
+              intolerances: data.intolerances ?? [],
             }
           : null
       );
