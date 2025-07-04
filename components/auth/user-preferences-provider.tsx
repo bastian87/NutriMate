@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { userService } from "@/lib/services/user-service";
