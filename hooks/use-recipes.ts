@@ -16,15 +16,12 @@ export function useRecipes(filters?: RecipeFilters, limit?: number) {
   const [error, setError] = useState<string | null>(null)
 
   const prevFiltersRef = useRef<RecipeFilters>()
+  const prevLimitRef = useRef<number>()
   const isInitialLoadRef = useRef(true)
 
   const fetchRecipes = useCallback(async (currentFilters?: RecipeFilters, currentLimit?: number) => {
-    // Only fetch if filters have actually changed
-    if (areFiltersEqual(prevFiltersRef.current, currentFilters)) {
-      return
-    }
-    prevFiltersRef.current = currentFilters
-
+    prevFiltersRef.current = currentFilters;
+    prevLimitRef.current = currentLimit;
     setLoading(true)
     setError(null)
     try {
@@ -41,11 +38,9 @@ export function useRecipes(filters?: RecipeFilters, limit?: number) {
   }, [])
 
   useEffect(() => {
-    // Only fetch on initial load or when filters actually change
-    if (isInitialLoadRef.current || !areFiltersEqual(prevFiltersRef.current, filters)) {
-      fetchRecipes(filters, limit)
-    }
-  }, [filters, limit, fetchRecipes])
+    fetchRecipes(filters, limit)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, limit])
 
   const toggleFavorite = async (recipeId: string, userId?: string) => {
     if (!userId) {
