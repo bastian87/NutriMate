@@ -18,12 +18,14 @@ import { Input } from "@/components/ui/input";
 import "keen-slider/keen-slider.min.css";
 import { useKeenSlider } from "keen-slider/react";
 import { useSubscription } from "@/hooks/use-subscription";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function CustomMealPlanPage() {
   const searchParams = useSearchParams();
   const [distribution, setDistribution] = useState<Record<string, number>>({});
   const { user, loading: authLoading } = useAuth();
   const { isPremium, loading: subLoading } = useSubscription();
+  const { t } = useLanguage();
 
   const {
     selectedRecipes,
@@ -211,8 +213,8 @@ export default function CustomMealPlanPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="bg-white p-8 rounded-xl shadow text-center max-w-md mx-auto">
-          <h2 className="text-2xl font-bold mb-4 text-orange-600">Solo para miembros premium</h2>
-          <p className="text-gray-600 mb-4">El Meal Plan personalizado es una función exclusiva para usuarios premium. ¡Actualiza tu suscripción para acceder!</p>
+          <h2 className="text-2xl font-bold mb-4 text-orange-600">{t("mealPlans.custom.onlyPremium")}</h2>
+          <p className="text-gray-600 mb-4">{t("mealPlans.custom.onlyPremiumDesc")}</p>
         </div>
       </div>
     );
@@ -220,7 +222,7 @@ export default function CustomMealPlanPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 font-sans flex flex-col min-h-screen">
-      <h1 className="text-2xl font-bold mb-6 text-center">Meal Plan Personalizado</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">{t("mealPlans.custom.title")}</h1>
       {/* Carrusel de días del Meal Plan */}
       <div className="w-full max-w-3xl mx-auto mb-4 bg-white rounded-xl shadow-md p-4">
         <div className="flex items-center justify-between mb-2">
@@ -228,7 +230,7 @@ export default function CustomMealPlanPage() {
             className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-40"
             onClick={() => goToDay(Math.max(0, currentDayIdx - 1))}
             disabled={currentDayIdx === 0}
-            aria-label="Día anterior"
+            aria-label={t("mealPlans.custom.prevDay")}
           >
             <ArrowUp className="rotate-[-90deg] w-5 h-5" />
           </button>
@@ -239,7 +241,7 @@ export default function CustomMealPlanPage() {
             className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-40"
             onClick={() => goToDay(Math.min(DAYS.length - 1, currentDayIdx + 1))}
             disabled={currentDayIdx === DAYS.length - 1}
-            aria-label="Día siguiente"
+            aria-label={t("mealPlans.custom.nextDay")}
           >
             <ArrowUp className="rotate-90 w-5 h-5" />
           </button>
@@ -271,7 +273,7 @@ export default function CustomMealPlanPage() {
                         </Card>
                       ) : (
                         <div className="flex flex-col items-center justify-center h-24 w-full max-w-[120px] bg-gray-100 border border-gray-200 rounded-lg text-gray-400">
-                          <span className="text-xs">Sin receta</span>
+                          <span className="text-xs">{t("mealPlans.custom.noRecipe")}</span>
                         </div>
                       )}
                     </div>
@@ -289,26 +291,26 @@ export default function CustomMealPlanPage() {
           <DialogTrigger asChild>
             <Button variant="ghost" size="sm" className="flex items-center gap-2">
               <BarChart2 className="w-5 h-5" />
-              <span className="hidden sm:inline">Resumen Nutricional</span>
+              <span className="hidden sm:inline">{t("mealPlans.custom.nutritionSummary")}</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="w-80 p-4 rounded-xl shadow-lg">
-            <h3 className="font-bold text-base mb-2 text-center">Resumen Nutricional</h3>
+            <h3 className="font-bold text-base mb-2 text-center">{t("mealPlans.custom.nutritionSummary")}</h3>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-              <span className="font-medium">Calorías totales:</span>
+              <span className="font-medium">{t("mealPlans.custom.totalCalories")}</span>
               <span className="text-right">{resumenNutricional.calorias.toLocaleString()} kcal</span>
-              <span className="font-medium">Proteínas:</span>
+              <span className="font-medium">{t("mealPlans.custom.protein")}</span>
               <span className="text-right">{resumenNutricional.proteinas.toLocaleString()} g</span>
-              <span className="font-medium">Carbohidratos:</span>
+              <span className="font-medium">{t("mealPlans.custom.carbs")}</span>
               <span className="text-right">{resumenNutricional.carbohidratos.toLocaleString()} g</span>
-              <span className="font-medium">Grasas:</span>
+              <span className="font-medium">{t("mealPlans.custom.fat")}</span>
               <span className="text-right">{resumenNutricional.grasas.toLocaleString()} g</span>
-              <span className="font-medium">Fibra:</span>
+              <span className="font-medium">{t("mealPlans.custom.fiber")}</span>
               <span className="text-right">{resumenNutricional.fibra.toLocaleString()} g</span>
-              <span className="font-medium">Sodio:</span>
+              <span className="font-medium">{t("mealPlans.custom.sodium")}</span>
               <span className="text-right">{resumenNutricional.sodio.toLocaleString()} mg</span>
             </div>
-            <div className="text-xs text-gray-500 mt-3 text-center">Actualizado automáticamente según tus selecciones.</div>
+            <div className="text-xs text-gray-500 mt-3 text-center">{t("mealPlans.custom.nutritionAuto")}</div>
           </DialogContent>
         </Dialog>
         <div className="w-full sm:w-auto">
@@ -317,7 +319,7 @@ export default function CustomMealPlanPage() {
             disabled={!allSelected || !user || saving}
             onClick={handleSave}
           >
-            {saving ? "Guardando..." : "Guardar Meal Plan Personalizado"}
+            {saving ? t("mealPlans.custom.saving") : t("mealPlans.custom.save")}
           </Button>
         </div>
       </div>
@@ -325,12 +327,12 @@ export default function CustomMealPlanPage() {
       <div className="max-w-2xl mx-auto">
         {!allSelected && (
           <div className="text-red-600 text-center mt-2 font-semibold">
-            Debes seleccionar una receta para cada comida de cada día antes de guardar.
+            {t("mealPlans.custom.mustSelectAll")}
           </div>
         )}
         {!user && (
           <div className="text-red-600 text-center mt-2 font-semibold">
-            Debes iniciar sesión para guardar tu meal plan.
+            {t("mealPlans.custom.mustLogin")}
           </div>
         )}
         {saveError && <div className="text-red-500 mt-2">{saveError}</div>}
@@ -338,14 +340,14 @@ export default function CustomMealPlanPage() {
 
       {/* Grilla de recetas sugeridas */}
       <div className="mt-8">
-        <h2 className="text-lg font-bold mb-2 text-center">Recetas sugeridas</h2>
+        <h2 className="text-lg font-bold mb-2 text-center">{t("mealPlans.custom.suggestedRecipes")}</h2>
         
         {/* Search Bar */}
         <div className="max-w-md mx-auto mb-4 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
             type="text"
-            placeholder="Buscar recetas..."
+            placeholder={t("mealPlans.custom.searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 pr-4"
@@ -354,10 +356,10 @@ export default function CustomMealPlanPage() {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {recipesLoading ? (
-            <div className="col-span-full text-center text-gray-500">Cargando recetas...</div>
+            <div className="col-span-full text-center text-gray-500">{t("mealPlans.custom.loadingRecipes")}</div>
           ) : visibleRecipes.length === 0 ? (
             <div className="col-span-full text-center text-gray-500">
-              {searchTerm.trim() !== "" ? "No se encontraron recetas con ese nombre" : "No se encontraron recetas"}
+              {searchTerm.trim() !== "" ? t("mealPlans.custom.noRecipesFoundWithName") : t("mealPlans.custom.noRecipesFound")}
             </div>
           ) : (
             visibleRecipes.map((receta) => (
@@ -385,7 +387,7 @@ export default function CustomMealPlanPage() {
               onClick={() => setVisibleCount((prev) => prev + 24)}
               className="px-6"
             >
-              Ver más recetas
+              {t("mealPlans.custom.seeMore")}
             </Button>
           )}
           {visibleCount > 24 && !recipesLoading && (
@@ -394,7 +396,7 @@ export default function CustomMealPlanPage() {
               onClick={() => setVisibleCount(24)}
               className="px-6"
             >
-              Ver menos
+              {t("mealPlans.custom.seeLess")}
             </Button>
           )}
         </div>
@@ -406,7 +408,7 @@ export default function CustomMealPlanPage() {
           onClick={scrollToTop}
           size="sm"
           className="fixed bottom-6 right-6 z-50 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-orange-500 hover:bg-orange-600 text-white"
-          aria-label="Volver arriba"
+          aria-label={t("mealPlans.custom.scrollTop")}
         >
           <ArrowUp className="w-4 h-4" />
         </Button>
