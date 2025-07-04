@@ -3,16 +3,18 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar, RefreshCw, TrendingUp, Home, AlertCircle } from "lucide-react"
+import { Calendar, RefreshCw, TrendingUp, Home, AlertCircle, Crown } from "lucide-react"
 import Link from "next/link"
 import MealPlanDisplay from "@/components/meal-plan-display"
 import { NutritionSummary } from "@/components/nutrition-summary"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
 import { useAuthContext } from "@/components/auth/auth-provider"
+import { useUserProfile, useIsPremium, useAccountType } from "@/components/auth/user-profile-provider"
 import { useMealPlans } from "@/hooks/use-meal-plans"
 import { useToast } from "@/hooks/use-toast"
 import { mealPlanService } from "@/lib/services/meal-plan-service"
+import { Badge } from "@/components/ui/badge"
 
 interface MappedMealPlan {
   id: string
@@ -41,6 +43,9 @@ export default function DashboardPage() {
   const { t } = useLanguage()
   const { toast } = useToast()
   const { user, loading: authLoading } = useAuthContext()
+  const { userData, loading: profileLoading } = useUserProfile()
+  const isPremium = useIsPremium()
+  const accountType = useAccountType()
   const { mealPlans, loading: mealPlansLoading, error: mealPlansError, generateMealPlan } = useMealPlans()
 
   const [currentMealPlan, setCurrentMealPlan] = useState<MappedMealPlan | null>(null)
@@ -104,7 +109,7 @@ export default function DashboardPage() {
     }
   }
 
-  if (authLoading) {
+  if (authLoading || profileLoading) {
     return (
       <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[calc(100vh-200px)]">
         <div className="text-center">
@@ -161,7 +166,27 @@ export default function DashboardPage() {
       >
         <div>
           <h1 className="text-3xl font-bold mb-2">{t("dashboard.welcome")}</h1>
-          <p className="text-gray-600 dark:text-gray-400">{t("dashboard.subtitle")}</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-2">{t("dashboard.subtitle")}</p>
+          {userData?.profile?.full_name && (
+            <p className="text-sm text-gray-500">Welcome back, {userData.profile.full_name}!</p>
+          )}
+          <div className="flex items-center gap-2 mt-2">
+            <Badge variant={isPremium ? "default" : "secondary"} className={isPremium ? "bg-orange-100 text-orange-800" : ""}>
+              {isPremium ? (
+                <>
+                  <Crown className="h-3 w-3 mr-1" />
+                  Premium Account
+                </>
+              ) : (
+                "Free Account"
+              )}
+            </Badge>
+            {userData?.usage && (
+              <div className="text-xs text-gray-500">
+                {userData.usage.mealPlans.created}/{userData.usage.mealPlans.maxCreated} meal plans
+              </div>
+            )}
+          </div>
         </div>
       </motion.div>
 

@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Crown, Lock, AlertTriangle } from "lucide-react"
-import { useSubscription } from "@/hooks/use-subscription"
+import { useFeatureAccess } from "@/components/auth/user-profile-provider"
 import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/context"
 
@@ -25,18 +25,10 @@ export function FeatureGate({
   description,
   showUsageLimit = false,
 }: FeatureGateProps) {
-  const { isPremium, loading } = useSubscription()
+  const { canAccess, reason } = useFeatureAccess(feature)
   const { t } = useLanguage()
 
-  if (loading) {
-    return (
-      <div className="animate-pulse bg-gray-200 dark:bg-gray-700 rounded-lg h-32 flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
-      </div>
-    )
-  }
-
-  if (isPremium) {
+  if (canAccess) {
     return <>{children}</>
   }
 
@@ -73,7 +65,7 @@ export function FeatureGate({
           {title || (isPremiumOnly ? t("featureGate.premiumFeature") : t("featureGate.upgradeRequired"))}
         </CardTitle>
         <CardDescription>
-          {description ||
+          {description || reason ||
             (isPremiumOnly
               ? t("featureGate.availableForPremium", { feature: feature.replace(/_/g, " ") })
               : t("featureGate.freeLimitReached", { feature: feature.replace(/_/g, " ") }))}

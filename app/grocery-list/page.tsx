@@ -8,11 +8,12 @@ import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/context"
 import { useGroceryList } from "@/hooks/use-grocery-list"
 import { useAuthContext } from "@/components/auth/auth-provider"
+import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider"
 import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Trash2, Plus } from "lucide-react"
+import { Trash2, Plus, Crown } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { getRecipeById } from "@/lib/services/recipe-service"
 import {
@@ -29,6 +30,8 @@ import { FeatureGate } from "@/components/feature-gate"
 export default function GroceryListPage() {
   const { groceryList, loading, error, addItem, updateItem, deleteItem, clearAllItems } = useGroceryList()
   const { user } = useAuthContext()
+  const { userData, loading: profileLoading } = useUserProfile()
+  const isPremium = useIsPremium()
   const { t } = useLanguage()
   const { toast } = useToast();
   const [newItemName, setNewItemName] = useState("")
@@ -163,7 +166,45 @@ export default function GroceryListPage() {
     )
   }
 
-  if (loading) {
+  // Mostrar información de cuenta inmediatamente si no es premium
+  if (!profileLoading && !isPremium) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Link href="/dashboard" className="inline-flex items-center text-orange-600 hover:text-orange-700">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {t("groceryList.backToDashboard")}
+          </Link>
+        </div>
+
+        <div className="text-center py-12">
+          <div className="mx-auto w-16 h-16 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mb-6">
+            <Crown className="h-8 w-8 text-orange-600" />
+          </div>
+          <h2 className="text-2xl font-bold mb-4">Smart Grocery Lists</h2>
+          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            Upgrade to Premium to unlock smart grocery lists with automatic categorization, 
+            recipe integration, and advanced features.
+          </p>
+          <div className="space-y-4">
+            <Button asChild className="bg-orange-600 hover:bg-orange-700">
+              <Link href="/pricing">
+                <Crown className="h-4 w-4 mr-2" />
+                Upgrade to Premium
+              </Link>
+            </Button>
+            <div>
+              <p className="text-sm text-gray-500">
+                Free users can still create basic grocery lists manually
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading || profileLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
@@ -196,7 +237,17 @@ export default function GroceryListPage() {
         </div>
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <h1 className="text-3xl font-bold">{t("groceryList.title")}</h1>
+          <div>
+            <h1 className="text-3xl font-bold">{t("groceryList.title")}</h1>
+            {isPremium && (
+              <div className="flex items-center gap-2 mt-2">
+                <Crown className="h-4 w-4 text-orange-600" />
+                <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                  Premium Feature
+                </Badge>
+              </div>
+            )}
+          </div>
           <div className="flex space-x-2">
             <Button variant="outline" className="flex items-center" onClick={handlePrint}>
               <Printer className="mr-2 h-4 w-4" />

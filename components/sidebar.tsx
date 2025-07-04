@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSelector } from "./language-selector"
 import { useAuthContext } from "@/components/auth/auth-provider"
-import { useSubscription } from "@/hooks/use-subscription"
+import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { ThemeToggle } from "./theme-toggle"
@@ -27,6 +27,7 @@ import {
   ChevronRight,
   User,
   Calculator,
+  Crown,
 } from "lucide-react"
 
 export function Sidebar() {
@@ -34,7 +35,8 @@ export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, loading: authLoading, signOut } = useAuthContext()
-  const { subscription, loading: subLoading } = useSubscription()
+  const { userData, loading: profileLoading } = useUserProfile()
+  const isPremium = useIsPremium()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -132,7 +134,7 @@ export function Sidebar() {
   )
 
   // Mostrar loading state mientras se cargan los datos
-  if (authLoading) {
+  if (authLoading || profileLoading) {
     return (
       <>
         <MobileMenuButton />
@@ -199,7 +201,7 @@ export function Sidebar() {
         )}
       </AnimatePresence>
 
-      {/* Sidebar for desktop */}
+      {/* Desktop Sidebar */}
       <motion.aside
         variants={sidebarVariants}
         initial={false}
@@ -207,91 +209,121 @@ export function Sidebar() {
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className="hidden lg:flex flex-col sticky top-0 h-screen bg-orange-50 dark:bg-gray-900 border-r border-orange-200 dark:border-gray-800 shadow-sm overflow-hidden"
       >
-        <div className="flex items-center justify-center h-16 border-b border-orange-200 dark:border-gray-800">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo-new.png" alt="NutriMate" width={32} height={32} className="rounded-lg" />
+        {/* Header */}
+        <div className="flex items-center justify-between h-16 px-3 border-b border-orange-200 dark:border-gray-800">
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">N</span>
+            </div>
             <AnimatePresence>
               {!isCollapsed && (
                 <motion.span
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="font-bold text-xl"
+                  className="font-bold text-lg text-gray-900 dark:text-white"
                 >
-                  {t("navigation.brand")}
+                  NutriMate
                 </motion.span>
               )}
             </AnimatePresence>
           </Link>
+          <button
+            onClick={toggleSidebar}
+            className="p-1 rounded-lg hover:bg-orange-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
         </div>
 
+        {/* Navigation */}
         <div className="flex flex-col flex-1 overflow-y-auto py-4 px-2 space-y-1">
           {navigationItems.map((item) => (
             <NavItem key={item.href} item={item} isCollapsed={isCollapsed} />
           ))}
-
-          {user && accountItems.length > 0 && (
-            <>
-              <div className="h-px bg-orange-200 dark:bg-gray-800 my-2"></div>
-              {accountItems.map((item) => (
-                <NavItem key={item.href} item={item} isCollapsed={isCollapsed} />
-              ))}
-            </>
-          )}
         </div>
 
-        <div className="p-2 border-t border-orange-200 dark:border-gray-800">
-          {user ? (
-            <button
-              onClick={async () => {
-                await signOut()
-                // La redirección se maneja automáticamente en ConditionalLayout
-              }}
-              className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
-            >
-              <LogOut size={20} />
-              <AnimatePresence>
-                {!isCollapsed && (
-                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    {t("auth.signOut")}
-                  </motion.span>
+        {/* Account Section */}
+        <div className="border-t border-orange-200 dark:border-gray-800 p-2">
+          {accountItems.map((item) => (
+            <NavItem key={item.href} item={item} isCollapsed={isCollapsed} />
+          ))}
+          
+          {/* Account Info */}
+          {user && !isCollapsed && (
+            <div className="px-3 py-2 mb-2">
+              <div className="flex items-center gap-2 mb-1">
+                {isPremium ? (
+                  <Crown className="h-4 w-4 text-orange-600" />
+                ) : (
+                  <User className="h-4 w-4 text-gray-500" />
                 )}
-              </AnimatePresence>
-            </button>
-          ) : (
-            <Link
-              href="/login"
-              className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
-            >
-              <LogIn size={20} />
-              <AnimatePresence>
-                {!isCollapsed && (
-                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    {t("auth.signIn")}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </Link>
+                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                  {isPremium ? "Premium" : "Free"}
+                </span>
+              </div>
+              {userData?.profile?.full_name && (
+                <p className="text-xs text-gray-500 truncate">
+                  {userData.profile.full_name}
+                </p>
+              )}
+            </div>
           )}
 
-          <div className={cn("mt-2", isCollapsed ? "flex justify-center" : "")}>
-            <LanguageSelector isCompact={isCollapsed} />
-            <div className={isCollapsed ? "flex justify-center mt-2" : "mt-2"}>
-              <ThemeToggle />
+          {/* Logout/Login */}
+          <div className="p-4 border-t border-orange-200 dark:border-gray-800">
+            {user ? (
+              <button
+                onClick={async () => {
+                  await signOut()
+                  // La redirección se maneja automáticamente en ConditionalLayout
+                }}
+                className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
+              >
+                <LogOut size={20} />
+                <AnimatePresence>
+                  {!isCollapsed && (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      {t("auth.signOut")}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
+              >
+                <LogIn size={20} />
+                <AnimatePresence>
+                  {!isCollapsed && (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      {t("auth.signIn")}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </Link>
+            )}
+
+            <div className="mt-2">
+              <LanguageSelector isCompact={false} />
+              <div className="mt-2">
+                <ThemeToggle />
+              </div>
             </div>
           </div>
-
-          <button
-            onClick={toggleSidebar}
-            className="flex items-center justify-center w-full mt-2 p-2 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
-            aria-label={isCollapsed ? t("navigation.expandSidebar") : t("navigation.collapseSidebar")}
-          >
-            {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-          </button>
         </div>
       </motion.aside>
 
-      {/* Mobile sidebar */}
+      {/* Mobile Sidebar */}
       <AnimatePresence>
         {isMobileOpen && (
           <motion.aside
@@ -300,58 +332,61 @@ export function Sidebar() {
             exit="closed"
             variants={mobileSidebarVariants}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed top-0 left-0 z-50 w-64 h-screen bg-orange-50 dark:bg-gray-900 border-r border-orange-200 dark:border-gray-800 shadow-lg lg:hidden"
+            className="fixed top-0 left-0 z-50 h-full w-64 bg-orange-50 dark:bg-gray-900 border-r border-orange-200 dark:border-gray-800 shadow-lg lg:hidden"
           >
+            {/* Mobile Header */}
             <div className="flex items-center justify-between h-16 px-4 border-b border-orange-200 dark:border-gray-800">
-              <Link href="/" className="flex items-center gap-2">
-                <Image src="/logo-new.png" alt="NutriMate" width={32} height={32} className="rounded-lg" />
-                <span className="font-bold text-xl">NutriMate</span>
+              <Link href="/dashboard" className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">N</span>
+                </div>
+                <span className="font-bold text-lg text-gray-900 dark:text-white">NutriMate</span>
               </Link>
               <button
                 onClick={() => setIsMobileOpen(false)}
-                className="p-1 rounded-full hover:bg-orange-100 dark:hover:bg-orange-200"
+                className="p-1 rounded-lg hover:bg-orange-100 dark:hover:bg-gray-800 transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
 
+            {/* Mobile Navigation */}
             <div className="flex flex-col flex-1 overflow-y-auto py-4 px-2 space-y-1">
               {navigationItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                    pathname === item.href ? "bg-primary text-white" : "hover:bg-orange-100 dark:hover:bg-orange-200",
-                  )}
-                >
-                  <item.icon size={20} />
-                  <span>{item.name}</span>
-                </Link>
+                <NavItem key={item.href} item={item} isCollapsed={false} />
               ))}
-
-              {user && accountItems.length > 0 && (
-                <>
-                  <div className="h-px bg-orange-200 dark:bg-gray-800 my-2"></div>
-                  {accountItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                        pathname === item.href
-                          ? "bg-primary text-white"
-                          : "hover:bg-orange-100 dark:hover:bg-orange-200",
-                      )}
-                    >
-                      <item.icon size={20} />
-                      <span>{item.name}</span>
-                    </Link>
-                  ))}
-                </>
-              )}
+              {accountItems.map((item) => (
+                <NavItem key={item.href} item={item} isCollapsed={false} />
+              ))}
             </div>
 
+            {/* Mobile Account Info */}
+            {user && (
+              <div className="p-4 border-t border-orange-200 dark:border-gray-800">
+                <div className="flex items-center gap-2 mb-2">
+                  {isPremium ? (
+                    <Crown className="h-4 w-4 text-orange-600" />
+                  ) : (
+                    <User className="h-4 w-4 text-gray-500" />
+                  )}
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {isPremium ? "Premium Account" : "Free Account"}
+                  </span>
+                </div>
+                {userData?.profile?.full_name && (
+                  <p className="text-sm text-gray-500 mb-2">
+                    {userData.profile.full_name}
+                  </p>
+                )}
+                {userData?.usage && (
+                  <div className="text-xs text-gray-500 mb-2">
+                    {userData.usage.mealPlans.created}/{userData.usage.mealPlans.maxCreated} meal plans
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Mobile Logout/Login */}
             <div className="p-4 border-t border-orange-200 dark:border-gray-800">
               {user ? (
                 <button

@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/auth/auth-provider"
+import { UserProfileProvider } from "@/components/auth/user-profile-provider"
 import { LanguageProvider } from "@/lib/i18n/context"
 import Script from "next/script"
 import "./globals.css"
@@ -44,13 +45,15 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <LanguageProvider>
             <AuthProvider>
-              <UserPreferencesProvider>
-                <ConditionalLayout>
-                  {children}
-                </ConditionalLayout>
-                <Toaster />
-                <AuthDebug />
-              </UserPreferencesProvider>
+              <UserProfileProvider>
+                <UserPreferencesProvider>
+                  <ConditionalLayout>
+                    {children}
+                  </ConditionalLayout>
+                  <Toaster />
+                  <AuthDebug />
+                </UserPreferencesProvider>
+              </UserProfileProvider>
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
