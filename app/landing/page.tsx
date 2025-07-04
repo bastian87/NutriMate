@@ -19,11 +19,7 @@ interface Recipe {
 
 export default async function LandingPage() {
   const supabase = createServerSupabaseClient()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  const isLoggedIn = !!session
-
+  
   // Get featured recipes using the existing getRecipes function
   let featuredRecipes: RecipeWithDetails[] = []
   try {
@@ -49,5 +45,5 @@ export default async function LandingPage() {
     reviews: recipe.total_ratings || 0
   }))
 
-  return <LandingClient isLoggedIn={isLoggedIn} featuredRecipes={transformedRecipes} />
+  return <LandingClient featuredRecipes={transformedRecipes} />
 }

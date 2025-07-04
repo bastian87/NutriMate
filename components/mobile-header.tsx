@@ -2,8 +2,16 @@
 import Link from "next/link"
 import { Search } from "lucide-react"
 import Image from "next/image"
+import { useAuthContext } from "@/components/auth/auth-provider"
+import { Button } from "@/components/ui/button"
 
 export default function MobileHeader() {
+  const { user } = useAuthContext()
+  const isLoggedIn = !!user
+  
+  // Obtener el nombre del usuario o usar un valor por defecto
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'USER'
+
   return (
     <header className="bg-background px-4 py-3 sticky top-0 z-50">
       <div className="flex items-center justify-between">
@@ -61,7 +69,18 @@ export default function MobileHeader() {
 
         {/* Greeting */}
         <div className="text-center mt-5">
-          <h1 className="text-xl font-semibold">HI, SAM</h1>
+          {isLoggedIn ? (
+            <h1 className="text-xl font-semibold">HI, {userName.toUpperCase()}</h1>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link href="/login">
+                <Button variant="outline" size="sm">Sign In</Button>
+              </Link>
+              <Link href="/signup">
+                <Button size="sm" className="bg-orange-600 hover:bg-orange-700">Get Started</Button>
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Search Icon */}

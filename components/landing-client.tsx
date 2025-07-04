@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSelector } from "@/components/language-selector"
 import { ThemeToggle } from "./theme-toggle"
+import { useAuthContext } from "@/components/auth/auth-provider"
 
 interface Recipe {
   id: string
@@ -28,15 +29,18 @@ interface Recipe {
 }
 
 interface LandingClientProps {
-  isLoggedIn: boolean
   featuredRecipes: Recipe[]
 }
 
-export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingClientProps) {
+export default function LandingClient({ featuredRecipes }: LandingClientProps) {
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const { t } = useLanguage()
+  const { user, loading: authLoading } = useAuthContext()
+  
+  // Determinar si el usuario está logueado basado en el contexto de autenticación
+  const isLoggedIn = !!user
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {

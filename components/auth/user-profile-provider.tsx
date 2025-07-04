@@ -124,9 +124,9 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
       const usage = usageResult.status === 'fulfilled' ? usageResult.value : null
 
       // Determinar si es premium
-      const isPremium = subscription && 
+      const isPremium = !!(subscription && 
         subscription.plan === "premium" && 
-        (subscription.status === "active" || subscription.status === "trialing")
+        (subscription.status === "active" || subscription.status === "trialing"))
 
       const accountType = isPremium ? "premium" : "free"
 

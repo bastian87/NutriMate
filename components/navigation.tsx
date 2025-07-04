@@ -5,10 +5,14 @@ import { usePathname } from "next/navigation"
 import { Home, BookOpen, ShoppingCart, User, Sparkles, Calculator } from "lucide-react"
 import Image from "next/image"
 import { useLanguage } from "@/lib/i18n/context"
+import { useAuthContext } from "@/components/auth/auth-provider"
+import { Button } from "@/components/ui/button"
 
 export function Navigation() {
   const pathname = usePathname()
   const { t } = useLanguage()
+  const { user } = useAuthContext()
+  const isLoggedIn = !!user
 
   const navItems = [
     { href: "/", label: t("navigation.home"), icon: Home },
@@ -48,6 +52,24 @@ export function Navigation() {
                 </Link>
               )
             })}
+            
+            {/* Auth buttons */}
+            <div className="flex items-center gap-2">
+              {isLoggedIn ? (
+                <Link href="/dashboard">
+                  <Button className="bg-orange-600 hover:bg-orange-700">Dashboard</Button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button variant="outline">Sign In</Button>
+                  </Link>
+                  <Link href="/signup">
+                    <Button className="bg-orange-600 hover:bg-orange-700">Get Started</Button>
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Mobile menu button */}
@@ -81,6 +103,24 @@ export function Navigation() {
               </Link>
             )
           })}
+          
+          {/* Mobile auth buttons */}
+          <div className="pt-4 border-t border-gray-200">
+            {isLoggedIn ? (
+              <Link href="/dashboard">
+                <Button className="w-full bg-orange-600 hover:bg-orange-700">Dashboard</Button>
+              </Link>
+            ) : (
+              <div className="space-y-2">
+                <Link href="/login">
+                  <Button variant="outline" className="w-full">Sign In</Button>
+                </Link>
+                <Link href="/signup">
+                  <Button className="w-full bg-orange-600 hover:bg-orange-700">Get Started</Button>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </nav>
