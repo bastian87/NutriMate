@@ -64,7 +64,7 @@ export function Sidebar() {
     { name: t("navigation.groceryList"), href: "/grocery-list", icon: ShoppingCart },
     { name: t("navigation.mealPlans"), href: "/meal-plans", icon: Calendar },
     { name: t("navigation.savedRecipes"), href: "/saved-recipes", icon: Heart },
-    { name: "Calculadora", href: "/calorie-calculator", icon: Calculator },
+    { name: t("navigation.calorieCalculator"), href: "/calorie-calculator", icon: Calculator },
   ]
 
   const accountItems = user ? [{ name: t("navigation.account"), href: "/account", icon: User }] : []

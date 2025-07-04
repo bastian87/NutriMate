@@ -216,17 +216,17 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                   onClick={() => scrollToSection('features')} 
                   className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
                 >
-                  Features
+                  {t('home.features')}
                 </button>
                 <button 
                   onClick={() => scrollToSection('pricing')} 
                   className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
                 >
-                  Pricing
+                  {t('home.pricing')}
                 </button>
                 <Link href="/calorie-calculator" className="text-gray-600 hover:text-gray-900 transition-colors font-medium flex items-center gap-1">
                   <Calculator className="h-4 w-4" />
-                  Calculadora de Calorías
+                  {t('navigation.calorieCalculator')}
                 </Link>
               </nav>
 
@@ -311,7 +311,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                             }}
                             className="block text-lg font-medium text-gray-900 hover:text-orange-600 transition-colors text-left w-full"
                           >
-                            Pricing
+                            {t('home.pricing')}
                           </button>
                           <button 
                             onClick={() => {
@@ -320,10 +320,10 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                             }}
                             className="block text-lg font-medium text-gray-900 hover:text-orange-600 transition-colors text-left w-full"
                           >
-                            Features
+                            {t('home.features')}
                           </button>
                           <Link href="/calorie-calculator" className="block text-lg font-medium text-gray-900 hover:text-orange-600 transition-colors text-left w-full">
-                            Calculadora de Calorías
+                            {t('navigation.calorieCalculator')}
                           </Link>
                         </div>
 

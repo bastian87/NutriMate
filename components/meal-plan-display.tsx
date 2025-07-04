@@ -196,7 +196,7 @@ export default function MealPlanDisplay({ mealPlan }: MealPlanDisplayProps) {
             <div className="flex justify-between mb-1">
               <span className="text-sm font-medium">Calorie Progress</span>
               <span className="text-sm font-medium">
-                {dailyCalories} / {calorieTarget}
+                {dailyCalories.toFixed(2)} / {calorieTarget}
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
@@ -210,24 +210,24 @@ export default function MealPlanDisplay({ mealPlan }: MealPlanDisplayProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
               <p className="text-sm text-gray-500 dark:text-gray-400">Total Calories</p>
-              <p className="text-2xl font-bold">{dailyCalories}</p>
+              <p className="text-2xl font-bold">{dailyCalories.toFixed(2)}</p>
             </div>
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
               <p className="text-sm text-gray-500 dark:text-gray-400">Protein</p>
               <p className="text-2xl font-bold">
-                {mealsByDay[activeDay]?.reduce((sum, meal) => sum + meal.recipe.protein, 0) || 0}g
+                {(mealsByDay[activeDay]?.reduce((sum, meal) => sum + meal.recipe.protein, 0) || 0).toFixed(2)}g
               </p>
             </div>
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
               <p className="text-sm text-gray-500 dark:text-gray-400">Carbs</p>
               <p className="text-2xl font-bold">
-                {mealsByDay[activeDay]?.reduce((sum, meal) => sum + meal.recipe.carbs, 0) || 0}g
+                {(mealsByDay[activeDay]?.reduce((sum, meal) => sum + meal.recipe.carbs, 0) || 0).toFixed(2)}g
               </p>
             </div>
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
               <p className="text-sm text-gray-500 dark:text-gray-400">Fat</p>
               <p className="text-2xl font-bold">
-                {mealsByDay[activeDay]?.reduce((sum, meal) => sum + meal.recipe.fat, 0) || 0}g
+                {(mealsByDay[activeDay]?.reduce((sum, meal) => sum + meal.recipe.fat, 0) || 0).toFixed(2)}g
               </p>
             </div>
           </div>

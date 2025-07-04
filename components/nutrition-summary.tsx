@@ -32,10 +32,13 @@ interface NutritionSummaryProps {
 export function NutritionSummary({
   data,
   targets = { calories: 2000, protein: 150, carbs: 250, fat: 65 },
-  title = "Nutrition Summary",
-  period = "Today",
+  title,
+  period,
 }: NutritionSummaryProps) {
   const { t } = useLanguage()
+
+  const resolvedTitle = title || t("nutritionSummary.title")
+  const resolvedPeriod = period || t("nutritionSummary.period")
 
   const calculatePercentage = (value: number, target: number) => {
     return Math.min(Math.round((value / target) * 100), 100)
@@ -58,7 +61,7 @@ export function NutritionSummary({
   const macros = [
     {
       name: "Calories",
-      value: data.calories,
+      value: Number(data.calories?.toFixed(2)),
       target: targets.calories,
       unit: "kcal",
       icon: TrendingUp,
@@ -66,7 +69,7 @@ export function NutritionSummary({
     },
     {
       name: "Protein",
-      value: data.protein,
+      value: Number(data.protein?.toFixed(2)),
       target: targets.protein,
       unit: "g",
       icon: Target,
@@ -74,7 +77,7 @@ export function NutritionSummary({
     },
     {
       name: "Carbs",
-      value: data.carbs,
+      value: Number(data.carbs?.toFixed(2)),
       target: targets.carbs,
       unit: "g",
       icon: Award,
@@ -82,7 +85,7 @@ export function NutritionSummary({
     },
     {
       name: "Fat",
-      value: data.fat,
+      value: Number(data.fat?.toFixed(2)),
       target: targets.fat,
       unit: "g",
       icon: AlertCircle,
@@ -97,8 +100,8 @@ export function NutritionSummary({
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="font-bold">{title}</CardTitle>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{period}</p>
+            <CardTitle className="font-bold">{resolvedTitle}</CardTitle>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{resolvedPeriod}</p>
           </div>
           <Badge
             variant={totalCaloriesPercentage <= 100 ? "default" : "destructive"}
@@ -114,13 +117,13 @@ export function NutritionSummary({
         {/* Main Calorie Progress */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
           <div className="text-3xl font-bold mb-2">
-            {data.calories} <span className="text-lg text-gray-500">/ {targets.calories} kcal</span>
+            {Number(data.calories.toFixed(2))} <span className="text-lg text-gray-500">/ {targets.calories} kcal</span>
           </div>
           <Progress value={totalCaloriesPercentage} className="h-3 mb-2" />
           <p className="text-sm text-gray-600 dark:text-gray-400">
             {targets.calories - data.calories > 0
-              ? `${targets.calories - data.calories} calories remaining`
-              : `${data.calories - targets.calories} calories over target`}
+              ? `${Number((targets.calories - data.calories).toFixed(2))} calories remaining`
+              : `${Number((data.calories - targets.calories).toFixed(2))} calories over target`}
           </p>
         </motion.div>
 
@@ -142,11 +145,11 @@ export function NutritionSummary({
                   <Icon className={`h-5 w-5 ${macro.color}`} />
                 </div>
                 <div className="text-lg font-bold mb-1">
-                  {macro.value}
+                  {macro.value.toFixed(2)}
                   {macro.unit}
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  of {macro.target}
+                  {t(`nutritionSummary.of`)} {macro.target}
                   {macro.unit}
                 </div>
                 <Progress value={percentage} className="h-2" />
@@ -169,19 +172,19 @@ export function NutritionSummary({
               {data.fiber && (
                 <div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Fiber</div>
-                  <div className="font-semibold">{data.fiber}g</div>
+                  <div className="font-semibold">{Number(data.fiber.toFixed(2))}g</div>
                 </div>
               )}
               {data.sugar && (
                 <div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Sugar</div>
-                  <div className="font-semibold">{data.sugar}g</div>
+                  <div className="font-semibold">{Number(data.sugar.toFixed(2))}g</div>
                 </div>
               )}
               {data.sodium && (
                 <div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Sodium</div>
-                  <div className="font-semibold">{data.sodium}mg</div>
+                  <div className="font-semibold">{Number(data.sodium.toFixed(2))}mg</div>
                 </div>
               )}
             </div>

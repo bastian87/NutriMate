@@ -181,25 +181,25 @@ export default function DashboardPage() {
         <Card>
           <CardContent className="p-4 text-center">
             <TrendingUp className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold">{todaysNutrition.calories}</div>
+            <div className="text-2xl font-bold">{todaysNutrition.calories.toFixed(2)}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t("dashboard.caloriesToday")}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{todaysNutrition.protein}g</div>
+            <div className="text-2xl font-bold text-blue-600">{todaysNutrition.protein.toFixed(2)}g</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t("recipes.protein")}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">{todaysNutrition.carbs}g</div>
+            <div className="text-2xl font-bold text-green-600">{todaysNutrition.carbs.toFixed(2)}g</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t("recipes.carbs")}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600">{todaysNutrition.fat}g</div>
+            <div className="text-2xl font-bold text-purple-600">{todaysNutrition.fat.toFixed(2)}g</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t("recipes.fat")}</div>
           </CardContent>
         </Card>
