@@ -31,6 +31,11 @@ export default function MealPlansPage() {
   const [customError, setCustomError] = useState<string | null>(null);
   const router = useRouter();
 
+  // Filtrar meal plans personalizados para usuarios no premium
+  const filteredMealPlans = isPremium
+    ? mealPlans
+    : mealPlans.filter(plan => !plan.name.toLowerCase().includes("personalizado"));
+
   const handleGenerateMealPlan = async () => {
     if (!user) return
     setIsGenerating(true)
@@ -155,14 +160,14 @@ export default function MealPlansPage() {
             )}
           </div>
           <div className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto pr-2">
-            {mealPlans.length === 0 && (
+            {filteredMealPlans.length === 0 && (
               <Card className="text-center py-12 bg-gray-50 border border-dashed">
                 <ChefHat className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                 <p className="text-gray-600">No tienes Meal Plans guardados.</p>
               </Card>
             )}
             <AnimatePresence>
-              {mealPlans.map((plan, index) => (
+              {filteredMealPlans.map((plan, index) => (
                 <motion.div
                   key={plan.id}
                   layout
@@ -181,7 +186,9 @@ export default function MealPlansPage() {
                       </CardDescription>
                       <div className="flex gap-2 mt-2">
                         <Badge variant="outline">7 días</Badge>
-                        <Badge variant="outline">Personalizado</Badge>
+                        {plan.name.toLowerCase().includes("personalizado") && (
+                          <Badge variant="outline">Personalizado</Badge>
+                        )}
                       </div>
                     </div>
                     <div className="flex flex-col md:flex-row gap-2 mt-4 md:mt-0 md:ml-4">
@@ -205,25 +212,27 @@ export default function MealPlansPage() {
         </div>
         {/* Columna derecha: Crear nuevo Meal Plan */}
         <div className="w-full md:w-1/3 flex flex-col items-center justify-center">
-          <Card className="w-full p-6 bg-orange-50 border-orange-200 shadow-md flex flex-col items-center">
-            <CardTitle className="text-xl mb-2 text-center">Crea tu Meal Plan Personalizado</CardTitle>
-            <CardDescription className="mb-4 text-center text-gray-600">
-              Genera un plan de comidas adaptado a tus preferencias y objetivos.
-            </CardDescription>
-            <Button
-              size="lg"
-              className="w-full bg-orange-600 hover:bg-orange-700 text-lg font-bold py-4 rounded-xl shadow"
-              onClick={handleGenerateCustomMealPlan}
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Crear Meal Plan Personalizado
-            </Button>
-            {customError && (
-              <div className="text-red-600 mt-4 text-center font-semibold">
-                {customError}
-              </div>
-            )}
-          </Card>
+          {isPremium && (
+            <Card className="w-full p-6 bg-orange-50 border-orange-200 shadow-md flex flex-col items-center">
+              <CardTitle className="text-xl mb-2 text-center">Crea tu Meal Plan Personalizado</CardTitle>
+              <CardDescription className="mb-4 text-center text-gray-600">
+                Genera un plan de comidas adaptado a tus preferencias y objetivos.
+              </CardDescription>
+              <Button
+                size="lg"
+                className="w-full bg-orange-600 hover:bg-orange-700 text-lg font-bold py-4 rounded-xl shadow"
+                onClick={handleGenerateCustomMealPlan}
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Crear Meal Plan Personalizado
+              </Button>
+              {customError && (
+                <div className="text-red-600 mt-4 text-center font-semibold">
+                  {customError}
+                </div>
+              )}
+            </Card>
+          )}
         </div>
       </div>
       {/* Dialog de confirmación de borrado */}

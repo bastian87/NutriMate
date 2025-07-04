@@ -17,11 +17,13 @@ import {
 import { Input } from "@/components/ui/input";
 import "keen-slider/keen-slider.min.css";
 import { useKeenSlider } from "keen-slider/react";
+import { useSubscription } from "@/hooks/use-subscription";
 
 export default function CustomMealPlanPage() {
   const searchParams = useSearchParams();
   const [distribution, setDistribution] = useState<Record<string, number>>({});
   const { user, loading: authLoading } = useAuth();
+  const { isPremium, loading: subLoading } = useSubscription();
 
   const {
     selectedRecipes,
@@ -197,6 +199,24 @@ export default function CustomMealPlanPage() {
     instanceRef.current?.moveToIdx(idx);
     setCurrentDayIdx(idx);
   };
+
+  if (subLoading || authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-orange-600" />
+      </div>
+    );
+  }
+  if (!isPremium) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="bg-white p-8 rounded-xl shadow text-center max-w-md mx-auto">
+          <h2 className="text-2xl font-bold mb-4 text-orange-600">Solo para miembros premium</h2>
+          <p className="text-gray-600 mb-4">El Meal Plan personalizado es una función exclusiva para usuarios premium. ¡Actualiza tu suscripción para acceder!</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 font-sans flex flex-col min-h-screen">
