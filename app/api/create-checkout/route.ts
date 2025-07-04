@@ -36,6 +36,8 @@ export async function POST(request: NextRequest) {
       redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success`,
     }
 
+    console.log("Checkout data:", checkoutData)
+
     let checkoutUrl: string | null = null
     try {
       checkoutUrl = await createCheckout(checkoutData)

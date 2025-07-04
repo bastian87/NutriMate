@@ -72,8 +72,7 @@ export async function createCheckout(data: CreateCheckoutData) {
       },
     }
 
-    // LOG antes de la petición
-    console.log("[LemonSqueezy] Payload enviado:", JSON.stringify(checkoutData, null, 2));
+    console.log("Sending checkout creation request to LemonSqueezy with:", checkoutData)
 
     const response = await makeRequest("/checkouts", {
       method: "POST",
