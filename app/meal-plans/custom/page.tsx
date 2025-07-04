@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuthContext } from "@/components/auth/auth-provider";
 import { useMealPlanRecipeSelection } from "@/hooks/use-meal-plan-recipe-selection";
 import { useMealPlanSave } from "@/hooks/use-meal-plan-save";
 import { useRecipes } from "@/hooks/use-recipes";
@@ -23,7 +23,7 @@ import { useLanguage } from "@/lib/i18n/context";
 export default function CustomMealPlanPage() {
   const searchParams = useSearchParams();
   const [distribution, setDistribution] = useState<Record<string, number>>({});
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuthContext();
   const { isPremium, loading: subLoading } = useSubscription();
   const { t } = useLanguage();
 

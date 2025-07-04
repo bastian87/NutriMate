@@ -8,7 +8,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/context"
 import { mealPlanService } from "@/lib/services/meal-plan-service"
-import useAuth from "@/hooks/use-auth"
+import { useAuthContext } from "@/components/auth/auth-provider"
 
 // Define types locally since we removed mock data
 interface Recipe {
@@ -46,7 +46,7 @@ export default function MealPlanDisplay({ mealPlan }: MealPlanDisplayProps) {
   const [activeDay, setActiveDay] = useState(1)
   const [regeneratingMealId, setRegeneratingMealId] = useState<string | null>(null)
   const { t } = useLanguage()
-  const { user } = useAuth()
+  const { user } = useAuthContext()
 
   // Format dates
   const startDate = new Date(mealPlan.startDate)

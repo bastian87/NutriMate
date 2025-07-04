@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSelector } from "./language-selector"
-import useAuth from "@/hooks/use-auth"
+import { useAuthContext } from "@/components/auth/auth-provider"
 import { useSubscription } from "@/hooks/use-subscription"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
@@ -33,7 +33,7 @@ export function Sidebar() {
   const { t } = useLanguage()
   const pathname = usePathname()
   const router = useRouter()
-  const { user, signOut } = useAuth()
+  const { user, signOut } = useAuthContext()
   const { subscription } = useSubscription()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)

@@ -9,7 +9,7 @@ import MealPlanDisplay from "@/components/meal-plan-display"
 import { NutritionSummary } from "@/components/nutrition-summary"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
-import useAuth from "@/hooks/use-auth"
+import { useAuthContext } from "@/components/auth/auth-provider"
 import { useMealPlans } from "@/hooks/use-meal-plans"
 import { useToast } from "@/hooks/use-toast"
 import { mealPlanService } from "@/lib/services/meal-plan-service"
@@ -40,7 +40,7 @@ interface MappedMealPlan {
 export default function DashboardPage() {
   const { t } = useLanguage()
   const { toast } = useToast()
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading } = useAuthContext()
   const { mealPlans, loading: mealPlansLoading, error: mealPlansError, generateMealPlan } = useMealPlans()
 
   const [currentMealPlan, setCurrentMealPlan] = useState<MappedMealPlan | null>(null)
