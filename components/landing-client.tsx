@@ -69,17 +69,23 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
 
       const response = await fetch("/api/create-checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ variantId, plan }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // 👈 MUY IMPORTANTE: envía cookies al backend
+        body: JSON.stringify({
+          variantId,
+          plan,
+        }),
       })
 
       const data = await response.json()
+      console.log("API Response:", data) // 👈 Para ver la respuesta real en consola
 
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl
       } else {
-        throw new Error("Failed to create checkout")
+        throw new Error(data.error || "Failed to create checkout")
       }
     } catch (error) {
       console.error("Subscription error:", error)
@@ -208,14 +214,14 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <nav className="flex space-x-8">
-                <button 
-                  onClick={() => scrollToSection('features')} 
+                <button
+                  onClick={() => scrollToSection('features')}
                   className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
                 >
                   {t('home.features')}
                 </button>
-                <button 
-                  onClick={() => scrollToSection('pricing')} 
+                <button
+                  onClick={() => scrollToSection('pricing')}
                   className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
                 >
                   {t('home.pricing')}
@@ -248,8 +254,8 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center space-x-2">
               <LanguageSelector isCompact />
-              <button 
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
                 aria-label="Toggle mobile menu"
               >
@@ -263,7 +269,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
             {mobileMenuOpen && (
               <div className="md:hidden fixed inset-0 z-50">
                 {/* Backdrop */}
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -271,7 +277,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                   className="absolute inset-0 bg-black bg-opacity-50"
                   onClick={() => setMobileMenuOpen(false)}
                 />
-                
+
                 {/* Menu Panel */}
                 <motion.div
                   initial={{ opacity: 0, x: "100%" }}
@@ -287,7 +293,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                         <Image src="/logo-new.png" alt="NutriMate Logo" width={24} height={24} className="rounded-lg" />
                         <span className="text-lg font-bold text-gray-900">NutriMate</span>
                       </div>
-                      <button 
+                      <button
                         onClick={() => setMobileMenuOpen(false)}
                         className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                       >
@@ -300,7 +306,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                       <div className="space-y-6">
                         {/* Navigation Links */}
                         <div className="space-y-4">
-                          <button 
+                          <button
                             onClick={() => {
                               scrollToSection('pricing')
                               setMobileMenuOpen(false)
@@ -309,7 +315,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                           >
                             {t('home.pricing')}
                           </button>
-                          <button 
+                          <button
                             onClick={() => {
                               scrollToSection('features')
                               setMobileMenuOpen(false)
@@ -396,7 +402,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </Link>
-                    <button 
+                    <button
                       onClick={() => scrollToSection('pricing')}
                       className="w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                     >
@@ -542,9 +548,8 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
 
                     <Button
                       variant={plan.buttonVariant}
-                      className={`w-full mt-6 ${
-                        plan.buttonVariant === "default" ? "bg-orange-600 hover:bg-orange-700" : ""
-                      }`}
+                      className={`w-full mt-6 ${plan.buttonVariant === "default" ? "bg-orange-600 hover:bg-orange-700" : ""
+                        }`}
                       onClick={() => {
                         if (plan.variantId) {
                           plan.action(plan.variantId)
