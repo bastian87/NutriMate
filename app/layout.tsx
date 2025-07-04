@@ -7,6 +7,7 @@ import { LanguageProvider } from "@/lib/i18n/context"
 import Script from "next/script"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
+import { UserPreferencesProvider } from "@/components/auth/user-preferences-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -40,8 +41,10 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <LanguageProvider>
             <AuthProvider>
-              {children}
-              <Toaster />
+              <UserPreferencesProvider>
+                {children}
+                <Toaster />
+              </UserPreferencesProvider>
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
