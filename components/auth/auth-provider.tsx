@@ -98,9 +98,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await authService.signOut()
       setUser(null) // Explicitly set user to null
+      
+      // Limpiar localStorage
+      localStorage.removeItem("userPreferences")
+      
+      // Limpiar cualquier otro estado local que pueda existir
+      if (typeof window !== 'undefined') {
+        // Limpiar otros datos de sesión si existen
+        sessionStorage.clear()
+      }
     } catch (error) {
       console.error("Error signing out (AuthProvider):", error)
-      // Optionally rethrow or handle
+      // Asegurar que el usuario se marque como null incluso si hay error
+      setUser(null)
+      localStorage.removeItem("userPreferences")
     } finally {
       setLoading(false)
     }

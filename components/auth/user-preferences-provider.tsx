@@ -73,11 +73,15 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
 
   useEffect(() => {
     if (user && preferences === null) {
+      // Cargar en background sin bloquear la UI
       fetchPreferences();
     } else if (!user && preferences !== null) {
       setPreferences(null);
       setLoading(false);
     } else if (!user) {
+      setLoading(false);
+    } else {
+      // Si ya tenemos preferencias del localStorage, no mostrar loading
       setLoading(false);
     }
   }, [user, fetchPreferences, preferences]);

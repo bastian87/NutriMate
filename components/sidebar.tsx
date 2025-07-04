@@ -33,8 +33,8 @@ export function Sidebar() {
   const { t } = useLanguage()
   const pathname = usePathname()
   const router = useRouter()
-  const { user, signOut } = useAuthContext()
-  const { subscription } = useSubscription()
+  const { user, loading: authLoading, signOut } = useAuthContext()
+  const { subscription, loading: subLoading } = useSubscription()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -130,6 +130,55 @@ export function Sidebar() {
       </AnimatePresence>
     </Link>
   )
+
+  // Mostrar loading state mientras se cargan los datos
+  if (authLoading) {
+    return (
+      <>
+        <MobileMenuButton />
+        <motion.aside
+          variants={sidebarVariants}
+          initial={false}
+          animate={isCollapsed ? "collapsed" : "expanded"}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="hidden lg:flex flex-col sticky top-0 h-screen bg-orange-50 dark:bg-gray-900 border-r border-orange-200 dark:border-gray-800 shadow-sm overflow-hidden"
+        >
+          <div className="flex items-center justify-center h-16 border-b border-orange-200 dark:border-gray-800">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="w-24 h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+          <div className="flex flex-col flex-1 overflow-y-auto py-4 px-2 space-y-1">
+            {navigationItems.map((item) => (
+              <div key={item.href} className="flex items-center gap-3 px-3 py-2 rounded-lg">
+                <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <AnimatePresence>
+                  {!isCollapsed && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
+                    />
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </div>
+        </motion.aside>
+      </>
+    )
+  }
 
   return (
     <>
