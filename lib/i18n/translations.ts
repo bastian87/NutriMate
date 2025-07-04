@@ -666,6 +666,7 @@ export const translations = {
       twitter: "Twitter",
       facebook: "Facebook",
       instagram: "Instagram",
+      allRights: "All rights reserved.",
     },
     navigation: {
       home: "Home",
@@ -1616,6 +1617,7 @@ export const translations = {
       twitter: "Twitter",
       facebook: "Facebook",
       instagram: "Instagram",
+      allRights: "Todos los derechos reservados."
     },
     navigation: {
       home: "Inicio",
@@ -2477,6 +2479,7 @@ export const translations = {
       twitter: "Twitter",
       facebook: "Facebook",
       instagram: "Instagram",
+      allRights: "Tous droits réservés."
     },
     navigation: {
       home: "Accueil",

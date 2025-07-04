@@ -645,16 +645,6 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
               <h3 className="font-semibold mb-4">{t("footer.company")}</h3>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    {t("footer.about")}
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    {t("footer.contact")}
-                  </a>
-                </li>
-                <li>
                   <Link href="/privacy-policy" className="hover:text-white transition-colors">
                     {t("footer.privacy")}
                   </Link>
