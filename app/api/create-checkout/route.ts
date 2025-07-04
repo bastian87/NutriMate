@@ -18,6 +18,9 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createServerSupabaseClient()
+    console.log("Supabase session check")
+    console.log(await supabase.auth.getSession())
+
     const {
       data: { user },
     } = await supabase.auth.getUser()

@@ -28,6 +28,12 @@ async function makeRequest(endpoint: string, options: RequestInit = {}) {
 
 export async function createCheckout(data: CreateCheckoutData) {
   try {
+    // LOGS DE DEPURACIÓN
+    console.log("[LemonSqueezy] Store ID:", process.env.NEXT_PUBLIC_LEMONSQUEEZY_STORE_ID);
+    console.log("[LemonSqueezy] API Key exists:", !!process.env.LEMONSQUEEZY_API_KEY);
+    console.log("[LemonSqueezy] Variant ID:", data.variantId);
+    console.log("[LemonSqueezy] Checkout data:", JSON.stringify(data, null, 2));
+
     const checkoutData = {
       data: {
         type: "checkouts",
@@ -66,10 +72,16 @@ export async function createCheckout(data: CreateCheckoutData) {
       },
     }
 
+    // LOG antes de la petición
+    console.log("[LemonSqueezy] Payload enviado:", JSON.stringify(checkoutData, null, 2));
+
     const response = await makeRequest("/checkouts", {
       method: "POST",
       body: JSON.stringify(checkoutData),
     })
+
+    // LOG de la respuesta
+    console.log("[LemonSqueezy] Respuesta:", JSON.stringify(response, null, 2));
 
     const checkoutUrl = response.data?.attributes?.url
     if (!checkoutUrl) {
@@ -78,6 +90,8 @@ export async function createCheckout(data: CreateCheckoutData) {
 
     return checkoutUrl
   } catch (error) {
+    // LOG del error
+    console.error("[LemonSqueezy] Error al crear checkout:", error);
     throw new Error(`Failed to create checkout session: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }

@@ -69,13 +69,9 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
 
       const response = await fetch("/api/create-checkout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          variantId,
-          plan,
-        }),
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ variantId, plan }),
       })
 
       const data = await response.json()
