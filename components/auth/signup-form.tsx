@@ -35,7 +35,7 @@ export default function SignupForm() {
       }
 
       if (data?.session) {
-        router.push("/onboarding")
+        // La redirección se maneja automáticamente en ConditionalLayout
       } else if (data?.user && !data?.session) {
         setError(
           "Account created, but failed to start a session. Please ensure email confirmation is OFF in Supabase and try logging in.",

@@ -30,7 +30,7 @@ export default function LoginForm() {
 
     try {
       await signIn(email, password)
-      router.push("/dashboard")
+      // La redirección se maneja automáticamente en ConditionalLayout
     } catch (err) {
       console.error("Login error:", err)
 
