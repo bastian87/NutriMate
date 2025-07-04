@@ -50,11 +50,11 @@ export async function getUserUsage(userId: string): Promise<UsageLimit | null> {
     },
     mealPlans: {
       created: 0,
-      maxCreated: 2, // Free users can create up to 2 meal plans
+      maxCreated: 1, // Free users can create up to 1 meal plan
     },
     customRecipes: {
       created: 0,
-      maxCreated: 3, // Free users can create up to 3 custom recipes
+      maxCreated: 0, // Free users can create up to 3 custom recipes
     },
     exports: {
       used: 0,

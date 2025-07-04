@@ -6,7 +6,7 @@ import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 
-export function ThemeToggle() {
+export function ThemeToggle({ className = "" }: { className?: string }) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
@@ -21,7 +21,7 @@ export function ThemeToggle() {
       isDark = document.body.classList.contains('dark');
     }
     return (
-      <Button variant="ghost" size="icon" className="w-9 h-9">
+      <Button variant="ghost" size="icon" className={`w-9 h-9 ${className}`}>
         {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
       </Button>
     )
@@ -32,7 +32,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="w-9 h-9 relative overflow-hidden bg-gray-200/80 dark:bg-gray-700/80 border border-gray-300 dark:border-gray-600 shadow"
+      className={`w-9 h-9 relative overflow-hidden bg-gray-200/80 dark:bg-gray-700/80 border border-gray-300 dark:border-gray-600 shadow ${className}`}
     >
       <motion.div
         initial={false}

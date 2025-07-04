@@ -147,7 +147,7 @@ export default function MealPlansPage() {
         {/* Columna izquierda: Meal Plans guardados */}
         <div className="w-full md:w-2/3">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">Mis Meal Plans</h2>
+            <h2 className="text-2xl font-bold">{t("mealPlans.myMealPlans")}</h2>
             {(isPremium || mealPlans.length === 0) && (
               <Button
                 onClick={handleGenerateMealPlan}
@@ -155,7 +155,7 @@ export default function MealPlansPage() {
                 className="bg-orange-500 hover:bg-orange-600 shadow-sm"
               >
                 {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
-                Generar Meal Plan Automático
+                {t("mealPlans.generate")}
               </Button>
             )}
           </div>
@@ -163,7 +163,7 @@ export default function MealPlansPage() {
             {filteredMealPlans.length === 0 && (
               <Card className="text-center py-12 bg-gray-50 border border-dashed">
                 <ChefHat className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-600">No tienes Meal Plans guardados.</p>
+                <p className="text-gray-600">{t("mealPlans.noMealPlansYet")}</p>
               </Card>
             )}
             <AnimatePresence>

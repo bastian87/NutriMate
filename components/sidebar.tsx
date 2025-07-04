@@ -147,15 +147,17 @@ export function Sidebar() {
         >
           <div className="flex items-center justify-center h-16 border-b border-orange-200 dark:border-gray-800">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
+              <Image src="/logo-new.png" alt="NutriMate Logo" width={32} height={32} className="rounded-lg" />
               <AnimatePresence>
                 {!isCollapsed && (
-                  <motion.div
+                  <motion.span
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="w-24 h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
-                  />
+                    className="font-bold text-lg text-gray-900 dark:text-white"
+                  >
+                    NutriMate
+                  </motion.span>
                 )}
               </AnimatePresence>
             </div>
@@ -212,9 +214,7 @@ export function Sidebar() {
         {/* Header */}
         <div className="flex items-center justify-between h-16 px-3 border-b border-orange-200 dark:border-gray-800">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">N</span>
-            </div>
+            <Image src="/logo-new.png" alt="NutriMate Logo" width={32} height={32} className="rounded-lg" />
             <AnimatePresence>
               {!isCollapsed && (
                 <motion.span
@@ -244,7 +244,7 @@ export function Sidebar() {
         </div>
 
         {/* Account Section */}
-        <div className="border-t border-orange-200 dark:border-gray-800 p-2">
+        <div className="border-t border-orange-200 dark:border-gray-800 p-2 flex flex-col h-auto">
           {accountItems.map((item) => (
             <NavItem key={item.href} item={item} isCollapsed={isCollapsed} />
           ))}
@@ -270,8 +270,16 @@ export function Sidebar() {
             </div>
           )}
 
-          {/* Logout/Login */}
-          <div className="p-4 border-t border-orange-200 dark:border-gray-800">
+          {/* Selectores de idioma y tema */}
+          <div className="px-3 pb-2 flex flex-col gap-2 mt-auto">
+            <LanguageSelector isCompact={false} />
+            <div>
+              <ThemeToggle className="w-full h-10 rounded-md border bg-white dark:bg-gray-800 flex items-center justify-center" />
+            </div>
+          </div>
+
+          {/* Logout/Login al fondo */}
+          <div className="p-4 border-t border-orange-200 dark:border-gray-800 mt-2">
             {user ? (
               <button
                 onClick={async () => {
@@ -312,13 +320,6 @@ export function Sidebar() {
                 </AnimatePresence>
               </Link>
             )}
-
-            <div className="mt-2">
-              <LanguageSelector isCompact={false} />
-              <div className="mt-2">
-                <ThemeToggle />
-              </div>
-            </div>
           </div>
         </div>
       </motion.aside>
@@ -337,9 +338,7 @@ export function Sidebar() {
             {/* Mobile Header */}
             <div className="flex items-center justify-between h-16 px-4 border-b border-orange-200 dark:border-gray-800">
               <Link href="/dashboard" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">N</span>
-                </div>
+                <Image src="/logo-new.png" alt="NutriMate Logo" width={32} height={32} className="rounded-lg" />
                 <span className="font-bold text-lg text-gray-900 dark:text-white">NutriMate</span>
               </Link>
               <button
