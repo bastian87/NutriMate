@@ -18,7 +18,7 @@ export const translations = {
       title: "Your Personal Nutrition Assistant",
       subtitle:
         "Transform your health journey with meal planning, smart nutrition tracking, and personalized recipe recommendations. Make healthy eating effortless and enjoyable.",
-      getStarted: "Comenzar",
+      getStarted: "Get Started",
       exploreRecipes: "View Pricing",
       goToDashboard: "Go to Dashboard",
       featuresTitle: "Everything you need for a healthier lifestyle",

@@ -483,8 +483,8 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
                           className="object-contain"
                         />
                       </div>
-                      <h3 className="text-lg font-bold text-gray-900">{feature.title}</h3>
-                      <p className="mt-2 text-sm text-gray-600">{feature.description}</p>
+                      <h3 className="text-lg font-bold text-card-foreground">{feature.title}</h3>
+                      <p className="mt-2 text-sm text-muted-foreground">{feature.description}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
