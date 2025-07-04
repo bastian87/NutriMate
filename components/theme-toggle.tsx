@@ -15,9 +15,14 @@ export function ThemeToggle() {
   }, [])
 
   if (!mounted) {
+    // Detectar el tema actual leyendo la clase de body
+    let isDark = false;
+    if (typeof window !== 'undefined') {
+      isDark = document.body.classList.contains('dark');
+    }
     return (
       <Button variant="ghost" size="icon" className="w-9 h-9">
-        <div className="h-4 w-4" />
+        {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
       </Button>
     )
   }

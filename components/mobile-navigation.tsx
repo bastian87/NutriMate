@@ -44,18 +44,8 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isOpen, onClose }) 
             </Link>
           </li>
           <li className="py-2">
-            <Link href="/about" onClick={onClose} className="block text-gray-700 hover:text-gray-900">
-              {t("mobileNavigation.about")}
-            </Link>
-          </li>
-          <li className="py-2">
             <Link href="/services" onClick={onClose} className="block text-gray-700 hover:text-gray-900">
               {t("mobileNavigation.services")}
-            </Link>
-          </li>
-          <li className="py-2">
-            <Link href="/contact" onClick={onClose} className="block text-gray-700 hover:text-gray-900">
-              {t("mobileNavigation.contact")}
             </Link>
           </li>
         </ul>

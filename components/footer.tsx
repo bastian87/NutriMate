@@ -39,18 +39,8 @@ export default function Footer() {
             <h4 className="text-md font-medium mb-4">{t("footer.company")}</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/about" className="text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-500">
-                  {t("footer.about")}
-                </Link>
-              </li>
-              <li>
                 <Link href="/blog" className="text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-500">
                   {t("footer.blog")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-500">
-                  {t("footer.contact")}
                 </Link>
               </li>
             </ul>
