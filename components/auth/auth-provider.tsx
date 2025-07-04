@@ -106,13 +106,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  if (loading && user === null) {
-    // Show loading spinner only on initial load when user is not yet determined
+  if (loading) {
+    // Mostrar loader global y bloquear renderizado de hijos mientras loading sea true
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
       </div>
-    )
+    );
   }
 
   return <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
