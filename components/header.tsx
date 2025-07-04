@@ -1,5 +1,6 @@
 "use client"
 import { useLanguage } from "@/lib/i18n/context"
+import { ThemeToggle } from "./theme-toggle"
 
 export default function Header() {
   const { t } = useLanguage()
@@ -17,6 +18,9 @@ export default function Header() {
               <a href="/calorie-calculator" className="hover:text-orange-600 font-medium transition-colors">Calculadora de Calorías</a>
             </li>
           </ul>
+        </div>
+        <div className="flex items-center gap-4">
+          <ThemeToggle />
         </div>
       </nav>
     </header>

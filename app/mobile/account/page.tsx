@@ -132,7 +132,7 @@ export default function MobileAccountPage() {
 
   if (!user) {
     return (
-      <div className="bg-cream-50 min-h-screen pb-20">
+      <div className="bg-background min-h-screen pb-20">
         {/* Mobile Header */}
         <div className="bg-white shadow-sm px-4 py-4">
           <div className="flex items-center justify-between">
@@ -159,7 +159,7 @@ export default function MobileAccountPage() {
 
   if (loading) {
     return (
-      <div className="bg-cream-50 min-h-screen pb-20">
+      <div className="bg-background min-h-screen pb-20">
         {/* Mobile Header */}
         <div className="bg-white shadow-sm px-4 py-4">
           <div className="flex items-center justify-between">
@@ -183,7 +183,7 @@ export default function MobileAccountPage() {
   }
 
   return (
-    <div className="bg-cream-50 min-h-screen pb-20">
+    <div className="bg-background min-h-screen pb-20">
       {/* Mobile Header */}
       <div className="bg-white shadow-sm px-4 py-4">
         <div className="flex items-center justify-between">

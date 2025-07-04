@@ -25,7 +25,7 @@ export default function OnboardingPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-cream-50 p-4">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
         <Loader2 className="h-12 w-12 animate-spin text-orange-600" />
         <p className="mt-4 text-lg text-gray-700">{t("onboarding.loadingUserSession")}</p>
       </div>
@@ -36,7 +36,7 @@ export default function OnboardingPage() {
     // This case should ideally be handled by the useEffect redirect,
     // but it's a fallback.
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-cream-50 p-4">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
         <p className="text-lg text-gray-700">{t("onboarding.redirectingToLogin")}</p>
       </div>
     )
@@ -44,7 +44,7 @@ export default function OnboardingPage() {
 
   // User is authenticated, show the onboarding form
   return (
-    <div className="min-h-screen bg-cream-50 py-8 lg:py-12">
+    <div className="min-h-screen bg-background py-8 lg:py-12">
       <div className="container mx-auto max-w-2xl px-4">
         <OnboardingForm />
       </div>

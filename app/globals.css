@@ -45,51 +45,49 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 225 15% 12%;              /* Fondo general: azul/lila pastel MUY oscuro */
+    --foreground: 0 0% 100%;                /* Blanco */
+    --card: 225 16% 22%;                    /* Tarjetas: lila/azul pastel oscuro */
+    --card-foreground: 0 0% 100%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --popover: 225 16% 24%;
+    --popover-foreground: 0 0% 100%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --primary: 24 100% 70%;                 /* Naranja pastel suave */
+    --primary-foreground: 0 0% 100%;
 
-    --primary: 16 100% 50%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 160 24% 28%;               /* Verde pastel oscuro */
+    --secondary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --muted: 220 16% 24%;                   /* Azul pastel más claro */
+    --muted-foreground: 220 16% 80%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 280 24% 40%;                  /* Lila pastel */
+    --accent-foreground: 0 0% 100%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --destructive: 0 70% 40%;               /* Rojo oscuro para errores */
+    --destructive-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --border: 220 16% 24%;                  /* Bordes: azul pastel */
+    --input: 220 16% 24%;
+    --ring: 24 100% 70%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 16 100% 50%;
-
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 240 5.9% 10%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 250 12% 18%;      /* Sidebar: lila pastel oscuro (menos azul) */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 24 100% 70%;         /* Naranja pastel */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 280 24% 40%;          /* Lila pastel */
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 220 16% 24%;
+    --sidebar-ring: 24 100% 70%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-family:
       var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   }

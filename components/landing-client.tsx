@@ -10,6 +10,7 @@ import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSelector } from "@/components/language-selector"
+import { ThemeToggle } from "./theme-toggle"
 
 interface Recipe {
   id: string
@@ -234,6 +235,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
 
               <div className="flex items-center space-x-4">
                 <LanguageSelector isCompact />
+                <ThemeToggle />
                 {isLoggedIn ? (
                   <Link href="/dashboard">
                     <Button className="bg-orange-600 hover:bg-orange-700">Dashboard</Button>
@@ -254,6 +256,7 @@ export default function LandingClient({ isLoggedIn, featuredRecipes }: LandingCl
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center space-x-2">
               <LanguageSelector isCompact />
+              <ThemeToggle />
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"

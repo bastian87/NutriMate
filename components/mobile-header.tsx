@@ -5,7 +5,7 @@ import Image from "next/image"
 
 export default function MobileHeader() {
   return (
-    <header className="bg-cream-50 px-4 py-3 sticky top-0 z-50">
+    <header className="bg-background px-4 py-3 sticky top-0 z-50">
       <div className="flex items-center justify-between">
         {/* Status Bar */}
         <div className="absolute top-0 left-0 right-0 flex justify-between px-4 py-1 text-xs text-gray-700">

@@ -15,7 +15,7 @@ export default function AppLayout({
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 p-4 lg:p-6 overflow-auto bg-cream-50">
+      <main className="flex-1 p-4 lg:p-6 overflow-auto bg-background">
         {children}
       </main>
     </div>

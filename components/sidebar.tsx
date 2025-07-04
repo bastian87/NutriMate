@@ -10,6 +10,7 @@ import useAuth from "@/hooks/use-auth"
 import { useSubscription } from "@/hooks/use-subscription"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
+import { ThemeToggle } from "./theme-toggle"
 
 // Icons
 import {
@@ -226,6 +227,9 @@ export function Sidebar() {
 
           <div className={cn("mt-2", isCollapsed ? "flex justify-center" : "")}>
             <LanguageSelector isCompact={isCollapsed} />
+            <div className={isCollapsed ? "flex justify-center mt-2" : "mt-2"}>
+              <ThemeToggle />
+            </div>
           </div>
 
           <button
@@ -323,6 +327,9 @@ export function Sidebar() {
 
               <div className="mt-2">
                 <LanguageSelector isCompact={false} />
+                <div className="mt-2">
+                  <ThemeToggle />
+                </div>
               </div>
             </div>
           </motion.aside>
