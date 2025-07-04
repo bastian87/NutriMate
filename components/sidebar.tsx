@@ -245,7 +245,7 @@ export function Sidebar() {
             <button
               onClick={async () => {
                 await signOut()
-                router.push("/landing")
+                // La redirección se maneja automáticamente en ConditionalLayout
               }}
               className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
             >
@@ -357,7 +357,7 @@ export function Sidebar() {
                 <button
                   onClick={async () => {
                     await signOut()
-                    router.push("/landing")
+                    // La redirección se maneja automáticamente en ConditionalLayout
                   }}
                   className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-orange-100 dark:hover:bg-orange-200 transition-colors"
                 >

@@ -94,27 +94,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async (): Promise<void> => {
-    setLoading(true)
+    // No mostrar loading global durante logout para evitar pantallas en blanco
     try {
-      await authService.signOut()
-      setUser(null) // Explicitly set user to null
-      
-      // Limpiar localStorage
+      // Limpiar estado inmediatamente
+      setUser(null)
       localStorage.removeItem("userPreferences")
       
       // Limpiar cualquier otro estado local que pueda existir
       if (typeof window !== 'undefined') {
-        // Limpiar otros datos de sesión si existen
         sessionStorage.clear()
       }
+      
+      // Hacer logout en Supabase
+      await authService.signOut()
     } catch (error) {
       console.error("Error signing out (AuthProvider):", error)
       // Asegurar que el usuario se marque como null incluso si hay error
       setUser(null)
       localStorage.removeItem("userPreferences")
-    } finally {
-      setLoading(false)
     }
+    // No usar finally para evitar setLoading(false) que podría causar problemas
   }
 
   if (loading) {

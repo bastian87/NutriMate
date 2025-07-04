@@ -1,8 +1,9 @@
 "use client"
 
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useAuthContext } from "@/components/auth/auth-provider"
 import { Sidebar } from "@/components/sidebar"
+import { useEffect } from "react"
 
 interface ConditionalLayoutProps {
   children: React.ReactNode
@@ -24,7 +25,15 @@ const PUBLIC_ROUTES = [
 
 export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const { user, loading } = useAuthContext()
+
+  // Redirigir a landing si no hay usuario y está en ruta protegida
+  useEffect(() => {
+    if (!loading && !user && !PUBLIC_ROUTES.includes(pathname)) {
+      router.push("/landing")
+    }
+  }, [user, loading, pathname, router])
 
   // Si está cargando, mostrar solo el contenido sin sidebar
   if (loading) {

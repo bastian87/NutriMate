@@ -75,11 +75,12 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
     if (user && preferences === null) {
       // Cargar en background sin bloquear la UI
       fetchPreferences();
-    } else if (!user && preferences !== null) {
+    } else if (!user) {
+      // Limpiar inmediatamente cuando no hay usuario (logout)
       setPreferences(null);
       setLoading(false);
-    } else if (!user) {
-      setLoading(false);
+      // Limpiar localStorage también
+      localStorage.removeItem("userPreferences");
     } else {
       // Si ya tenemos preferencias del localStorage, no mostrar loading
       setLoading(false);
