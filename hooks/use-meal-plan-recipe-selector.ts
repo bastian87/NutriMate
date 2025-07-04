@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRecipes } from "@/hooks/use-recipes";
 import { useMealPlan } from "@/hooks/use-meal-plans";
 
@@ -15,22 +15,20 @@ export interface RecipeSelectorProps {
   setSelectedRecipe: (recipe: any | null) => void;
 }
 
-export function useMealPlanRecipeSelector() {
+export function useMealPlanRecipeSelector(mealPlan?: any) {
   const [modalOpen, setModalOpen] = useState(false);
   const [currentMeal, setCurrentMeal] = useState<any | null>(null);
   const [search, setSearch] = useState("");
   const [limit, setLimit] = useState(20);
   const [selectedRecipe, setSelectedRecipe] = useState<any | null>(null);
-
-  // Obtener el meal plan actual para calcular recetas usadas
-  const { mealPlan } = useMealPlan(null);
+  const [filters, setFilters] = useState<any | undefined>(undefined);
 
   // Calcular recetas usadas en el mismo día
   const getUsedRecipesInDay = useCallback((dayNumber: number, excludeMealId?: string) => {
     if (!mealPlan) return [];
     return mealPlan.meals
-      .filter((meal) => meal.day_number === dayNumber && meal.id !== excludeMealId)
-      .map((meal) => meal.recipe.id)
+      .filter((meal: any) => meal.day_number === dayNumber && meal.id !== excludeMealId)
+      .map((meal: any) => meal.recipe.id)
       .filter(Boolean);
   }, [mealPlan]);
 
@@ -56,12 +54,15 @@ export function useMealPlanRecipeSelector() {
     return filters;
   }, [limit, search]);
 
-  // Obtener recetas filtradas
-  const filters = currentMeal 
-    ? createFilters(currentMeal.meal_type, currentMeal.recipe.calories ?? 0)
-    : undefined;
-  
-  const { recipes, loading } = useRecipes(filters, limit);
+  // Actualizar filtros solo al abrir el modal y cuando currentMeal cambia
+  useEffect(() => {
+    if (modalOpen && currentMeal) {
+      setFilters(createFilters(currentMeal.meal_type, currentMeal.recipe.calories ?? 0));
+    }
+  }, [modalOpen, currentMeal, createFilters]);
+
+  // Hook de recetas: solo se inicializa cuando hay filtros válidos
+  const { recipes, loading } = useRecipes(modalOpen && filters ? filters : undefined, limit);
 
   // Filtrar recetas ya usadas en el mismo día
   const filteredRecipes = currentMeal 
@@ -78,6 +79,8 @@ export function useMealPlanRecipeSelector() {
     setSearch("");
     setSelectedRecipe(null);
     setLimit(20); // Resetear el límite al abrir el modal
+    // Setea los filtros inmediatamente para el primer render
+    setFilters(createFilters(meal.meal_type, meal.recipe.calories ?? 0));
   };
 
   // Confirmar selección de receta
@@ -98,7 +101,7 @@ export function useMealPlanRecipeSelector() {
     open: modalOpen,
     onOpenChange: setModalOpen,
     recipes: filteredRecipes,
-    loading,
+    loading: modalOpen && filters ? loading : false,
     search,
     setSearch,
     limit,

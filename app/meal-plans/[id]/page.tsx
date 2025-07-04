@@ -21,7 +21,7 @@ const DAYS_ES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"
 export default function MealPlanDetailPage({ params }: { params: { id: string } }) {
   const { mealPlan, loading, error, setMealPlan, regenerateMeal } = useMealPlan(params.id)
   const { addAllMealPlanIngredients } = useGroceryList()
-  const { openRecipeSelector, confirmRecipeSelection, modalProps, currentMeal } = useMealPlanRecipeSelector()
+  const { openRecipeSelector, confirmRecipeSelection, modalProps, currentMeal } = useMealPlanRecipeSelector(mealPlan)
   const [isAddingToGrocery, setIsAddingToGrocery] = useState(false)
   const { t } = useLanguage()
   const [changingMealId, setChangingMealId] = useState<string | null>(null)

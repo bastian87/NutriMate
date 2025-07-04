@@ -38,6 +38,7 @@
     "crypto": "latest",
     "date-fns": "latest",
     "framer-motion": "latest",
+    "keen-slider": "^6.8.6",
     "lucide-react": "^0.454.0",
     "next": "14.2.16",
     "next-themes": "latest",

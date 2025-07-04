@@ -16,6 +16,7 @@ import { useUserFavorites } from "@/hooks/use-user-favorites"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { useSubscription } from "@/hooks/use-subscription"
 import { useLanguage } from "@/lib/i18n/context"
+import { Select, SelectItem, SelectTrigger, SelectContent } from "@/components/ui/select";
 
 export default function RecipesPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -46,16 +47,81 @@ export default function RecipesPage() {
     setRecipesState(recipes)
   }, [recipes])
 
+  // Definir tipos de comida
+  const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
+
+  // Unir tags y tipos de comida para los filtros
   const allTags = useMemo(() => {
-    if (!recipes || recipes.length === 0) return []
-    const tags = new Set<string>()
+    if (!recipes || recipes.length === 0) return [];
+    const tags = new Set<string>();
     recipes.forEach((recipe) => {
       if (recipe.tags && Array.isArray(recipe.tags)) {
-        recipe.tags.forEach((tag) => tags.add(tag.name))
+        recipe.tags.forEach((tag) => {
+          if (tag && tag.name) tags.add(tag.name);
+        });
       }
-    })
-    return Array.from(tags).sort()
-  }, [recipes])
+      if (recipe.meal_type && MEAL_TYPES.includes(recipe.meal_type)) {
+        tags.add(recipe.meal_type);
+      }
+    });
+    return Array.from(tags).filter(Boolean).sort();
+  }, [recipes]);
+
+  // Estado para paginación local (si existe)
+  const [visibleCount, setVisibleCount] = useState(24);
+
+  // Filtrado local robusto: nombre, tags y tipo de comida
+  const filteredRecipes = useMemo(() => {
+    let arr = recipes;
+    // Filtro por nombre
+    if (searchQuery.trim()) {
+      arr = arr.filter(recipe => recipe.name.toLowerCase().includes(searchQuery.trim().toLowerCase()));
+    }
+    // Filtro por tags y tipo de comida
+    if (selectedTags.length) {
+      arr = arr.filter((recipe) => {
+        const recipeTagNames = (recipe.tags || []).map((t) => t.name);
+        const hasTag = selectedTags.some((tag) => recipeTagNames.includes(tag));
+        const hasMealType = recipe.meal_type && selectedTags.includes(recipe.meal_type);
+        return hasTag || hasMealType;
+      });
+    }
+    // Filtro por tiempo máximo
+    if (maxCookTime[0] !== 120) {
+      arr = arr.filter(recipe => (recipe.cook_time_minutes || 0) <= maxCookTime[0]);
+    }
+    // Filtro por rango calórico
+    if (calorieRange[0] !== 0 || calorieRange[1] !== 1000) {
+      arr = arr.filter(recipe => (recipe.calories || 0) >= calorieRange[0] && (recipe.calories || 0) <= calorieRange[1]);
+    }
+    return arr;
+  }, [recipes, searchQuery, selectedTags, maxCookTime, calorieRange]);
+
+  // Reiniciar paginación al aplicar un filtro
+  useEffect(() => {
+    setVisibleCount(24);
+  }, [searchQuery, selectedTags, maxCookTime, calorieRange]);
+
+  // Estado para el ordenamiento
+  const [sortOption, setSortOption] = useState<"az" | "za" | "calories-asc" | "calories-desc">("az");
+
+  // Ordenar recetas según la opción seleccionada
+  const sortedRecipes = useMemo(() => {
+    const arr = [...filteredRecipes];
+    if (sortOption === "az") {
+      arr.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortOption === "za") {
+      arr.sort((a, b) => b.name.localeCompare(a.name));
+    } else if (sortOption === "calories-asc") {
+      arr.sort((a, b) => (a.calories || 0) - (b.calories || 0));
+    } else if (sortOption === "calories-desc") {
+      arr.sort((a, b) => (b.calories || 0) - (a.calories || 0));
+    }
+    return arr;
+  }, [filteredRecipes, sortOption]);
+
+  // Recetas a mostrar en la grilla (paginación local)
+  const visibleRecipes = sortedRecipes.slice(0, visibleCount);
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]))
@@ -187,24 +253,45 @@ export default function RecipesPage() {
                 </div>
               </div>
 
+              {/* Selector de ordenamiento dentro de filtros */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Ordenar recetas</label>
+                <Select value={sortOption} onValueChange={(v: string) => setSortOption(v as any)}> 
+                  <SelectTrigger className="min-w-[140px] w-[200px] h-10 text-sm px-4 py-2">
+                    {sortOption === "az" && "De A a la Z"}
+                    {sortOption === "za" && "De Z a la A"}
+                    {sortOption === "calories-asc" && "Calorías: menor a mayor"}
+                    {sortOption === "calories-desc" && "Calorías: mayor a menor"}
+                  </SelectTrigger>
+                  <SelectContent className="min-w-[150px] w-[180px] text-xs">
+                    <SelectItem value="az">De A a la Z</SelectItem>
+                    <SelectItem value="za">De Z a la A</SelectItem>
+                    <SelectItem value="calories-asc">Calorías: menor a mayor</SelectItem>
+                    <SelectItem value="calories-desc">Calorías: mayor a menor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {allTags.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium mb-3">Dietary Preferences & Tags</label>
+                  <label className="block text-sm font-medium mb-3">Dietary Preferences, Tags & Tipo de comida</label>
                   <div className="flex flex-wrap gap-2">
                     {allTags.map((tag) => (
-                      <motion.div key={tag} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Badge
-                          variant={selectedTags.includes(tag) ? "default" : "outline"}
-                          className={`cursor-pointer transition-all duration-200 text-xs px-2 py-1 rounded-full ${
-                            selectedTags.includes(tag)
-                              ? "bg-orange-600 text-white hover:bg-orange-700"
-                              : "border-gray-300 hover:bg-orange-50 dark:border-gray-600 dark:hover:bg-orange-950"
-                          }`}
-                          onClick={() => toggleTag(tag)}
-                        >
-                          {tag.charAt(0).toUpperCase() + tag.slice(1)}
-                        </Badge>
-                      </motion.div>
+                      tag ? (
+                        <motion.div key={tag} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Badge
+                            variant={selectedTags.includes(tag) ? "default" : "outline"}
+                            className={`cursor-pointer transition-all duration-200 text-xs px-2 py-1 rounded-full ${
+                              selectedTags.includes(tag)
+                                ? "bg-orange-600 text-white hover:bg-orange-700"
+                                : "border-gray-300 hover:bg-orange-50 dark:border-gray-600 dark:hover:bg-orange-950"
+                            }`}
+                            onClick={() => toggleTag(tag)}
+                          >
+                            {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                          </Badge>
+                        </motion.div>
+                      ) : null
                     ))}
                   </div>
                 </div>
@@ -241,7 +328,7 @@ export default function RecipesPage() {
       </motion.div>
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mb-6">
-        <p className="text-gray-600 dark:text-gray-400">{t("recipes.showingResults", { count: recipes?.length || 0 })}</p>
+        <p className="text-gray-600 dark:text-gray-400">{t("recipes.showingResults", { count: filteredRecipes?.length || 0 })}</p>
       </motion.div>
 
       <motion.div
@@ -251,8 +338,8 @@ export default function RecipesPage() {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
       >
         <AnimatePresence>
-          {recipesState &&
-            recipesState.map((recipe: RecipeWithDetails, index: number) => (
+          {visibleRecipes &&
+            visibleRecipes.map((recipe: RecipeWithDetails, index: number) => (
               <motion.div
                 key={recipe.id}
                 layout
@@ -380,7 +467,7 @@ export default function RecipesPage() {
         </AnimatePresence>
       </motion.div>
 
-      {recipes && recipes.length === 0 && !loading && (
+      {filteredRecipes && filteredRecipes.length === 0 && !loading && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -405,6 +492,19 @@ export default function RecipesPage() {
             )}
           </div>
         </motion.div>
+      )}
+
+      {/* Botón Ver más recetas */}
+      {visibleCount < filteredRecipes.length && !loading && (
+        <div className="flex justify-center mt-8">
+          <Button
+            variant="outline"
+            onClick={() => setVisibleCount((prev) => prev + 24)}
+            className="px-6"
+          >
+            Ver más recetas
+          </Button>
+        </div>
       )}
 
       <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
