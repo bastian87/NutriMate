@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuthContext } from "@/components/auth/auth-provider";
 
 const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 const MEALS = ["breakfast", "lunch", "dinner", "snack"];
@@ -8,7 +8,7 @@ const MEALS = ["breakfast", "lunch", "dinner", "snack"];
 export function useMealPlanSave() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const router = useRouter();
 
   const saveMealPlan = async (

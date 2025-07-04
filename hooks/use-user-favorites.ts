@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { recipeService, type RecipeWithDetails } from "@/lib/services/recipe-service"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuthContext } from "@/components/auth/auth-provider"
 import { useToast } from "@/hooks/use-toast"
 import { useSubscription } from "@/hooks/use-subscription"
 
 export function useUserFavorites() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading } = useAuthContext()
   const { toast } = useToast()
   const { isPremium } = useSubscription()
   const [favorites, setFavorites] = useState<RecipeWithDetails[]>([])

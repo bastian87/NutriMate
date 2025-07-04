@@ -104,7 +104,7 @@ export default function DashboardPage() {
     }
   }
 
-  if (authLoading || mealPlansLoading) {
+  if (authLoading) {
     return (
       <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[calc(100vh-200px)]">
         <div className="text-center">
@@ -222,7 +222,8 @@ export default function DashboardPage() {
                 <Button
                   variant="outline"
                   onClick={handleGenerateNewPlan}
-                  disabled={isGenerating || !!currentMealPlan}
+                  
+                  
                   className="flex items-center gap-2"
                 >
                   <RefreshCw className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} />

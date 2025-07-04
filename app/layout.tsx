@@ -7,7 +7,9 @@ import { LanguageProvider } from "@/lib/i18n/context"
 import Script from "next/script"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
-import { UserPreferencesProvider } from "@/components/auth/user-preferences-provider";
+import { UserPreferencesProvider } from "@/components/auth/user-preferences-provider"
+import { Sidebar } from "@/components/sidebar"
+import { ConditionalLayout } from "@/components/conditional-layout"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -42,7 +44,9 @@ export default function RootLayout({
           <LanguageProvider>
             <AuthProvider>
               <UserPreferencesProvider>
-                {children}
+                <ConditionalLayout>
+                  {children}
+                </ConditionalLayout>
                 <Toaster />
               </UserPreferencesProvider>
             </AuthProvider>

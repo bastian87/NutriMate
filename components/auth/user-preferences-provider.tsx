@@ -15,7 +15,23 @@ const UserPreferencesContext = createContext<UserPreferencesContextType | undefi
 
 export function UserPreferencesProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuthContext();
-  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
+  
+  // Inicializar con datos de localStorage si existen
+  const getInitialPreferences = (): UserPreferences | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const stored = localStorage.getItem("userPreferences");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed;
+      }
+    } catch (error) {
+      console.error("Error reading preferences from localStorage:", error);
+    }
+    return null;
+  };
+
+  const [preferences, setPreferences] = useState<UserPreferences | null>(getInitialPreferences);
   const [loading, setLoading] = useState(true);
 
   const fetchPreferences = useCallback(async () => {
@@ -34,6 +50,19 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
             }
           : null
       );
+      
+      // Guardar en localStorage
+      if (data) {
+        localStorage.setItem("userPreferences", JSON.stringify({
+          ...data,
+          dietary_preferences: data.dietary_preferences ?? [],
+          excluded_ingredients: data.excluded_ingredients ?? [],
+          allergies: data.allergies ?? [],
+          intolerances: data.intolerances ?? [],
+        }));
+      } else {
+        localStorage.removeItem("userPreferences");
+      }
     } catch (error) {
       setPreferences(null);
       console.error("Error fetching user preferences:", error);
