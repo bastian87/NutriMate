@@ -52,7 +52,7 @@ export default function MealPlansPage() {
   const handleGenerateCustomMealPlan = () => {
     setCustomError(null);
     if (!user || !user.id) {
-      setCustomError("Debes iniciar sesión para generar un meal plan.");
+      setCustomError(t('mealPlans.mustBeLoggedIn'));
       return;
     }
     router.push(`/meal-plans/custom`);
@@ -185,20 +185,20 @@ export default function MealPlansPage() {
                         {format(new Date(plan.start_date), "MMM d, yyyy")} - {format(new Date(plan.end_date), "MMM d, yyyy")}
                       </CardDescription>
                       <div className="flex gap-2 mt-2">
-                        <Badge variant="outline">7 días</Badge>
+                        <Badge variant="outline">{t('mealPlans.sevenDays')}</Badge>
                         {plan.name.toLowerCase().includes("personalizado") && (
-                          <Badge variant="outline">Personalizado</Badge>
+                          <Badge variant="outline">{t('mealPlans.personalized')}</Badge>
                         )}
                       </div>
                     </div>
                     <div className="flex flex-col md:flex-row gap-2 mt-4 md:mt-0 md:ml-4">
                       <Button asChild size="sm" className="bg-orange-600 hover:bg-orange-700">
-                        <Link href={`/meal-plans/${plan.id}`}>Ver detalles</Link>
+                        <Link href={`/meal-plans/${plan.id}`}>{t("mealPlans.viewMealPlan")}</Link>
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => handleExportMealPlan(plan.id, "pdf")}
                         disabled={isExporting === plan.id}>
                         {isExporting === plan.id ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Download className="h-3 w-3 mr-1.5" />}
-                        Exportar PDF
+                        {t("mealPlans.exportMealPlan")}
                       </Button>
                       <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(plan.id)}>
                         <Trash2 className="h-4 w-4 text-red-500" />
@@ -214,9 +214,9 @@ export default function MealPlansPage() {
         <div className="w-full md:w-1/3 flex flex-col items-center justify-center">
           {isPremium && (
             <Card className="w-full p-6 bg-orange-50 border-orange-200 shadow-md flex flex-col items-center">
-              <CardTitle className="text-xl mb-2 text-center">Crea tu Meal Plan Personalizado</CardTitle>
+              <CardTitle className="text-xl mb-2 text-center">{t('mealPlans.createCustomMealPlanTitle')}</CardTitle>
               <CardDescription className="mb-4 text-center text-gray-600">
-                Genera un plan de comidas adaptado a tus preferencias y objetivos.
+                {t('mealPlans.createCustomMealPlanDesc')}
               </CardDescription>
               <Button
                 size="lg"
@@ -224,7 +224,7 @@ export default function MealPlansPage() {
                 onClick={handleGenerateCustomMealPlan}
               >
                 <Plus className="h-5 w-5 mr-2" />
-                Crear Meal Plan Personalizado
+                {t('mealPlans.createCustomMealPlanButton')}
               </Button>
               {customError && (
                 <div className="text-red-600 mt-4 text-center font-semibold">
