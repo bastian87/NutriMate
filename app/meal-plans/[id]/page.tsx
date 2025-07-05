@@ -155,7 +155,7 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
       <div className="container mx-auto px-4 py-6">
         <Link href="/meal-plans" className="inline-flex items-center text-gray-600 hover:text-orange-600 mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Volver a mis planes
+          {t('mealPlans.backToMealPlans')}
         </Link>
 
         <motion.div
@@ -166,7 +166,9 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
           <div>
             <h1 className="text-3xl font-bold mb-2">{mealPlan.name}</h1>
             {mealPlan.name.toLowerCase().includes("personalizado") && (
-              <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold mb-2">Plan personalizado</span>
+              <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold mb-2">
+                {t('mealPlans.customPlan')}
+              </span>
             )}
             <p className="text-gray-600">
               {format(new Date(mealPlan.start_date), "d 'de' MMMM")} - {format(new Date(mealPlan.end_date), "d 'de' MMMM, yyyy")}
@@ -179,7 +181,7 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
               className="bg-orange-600 hover:bg-orange-700"
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
-              {isAddingToGrocery ? "Agregando..." : "Agregar todo a la lista de compras"}
+              {isAddingToGrocery ? t('mealPlans.addingAll') : t('mealPlans.addAllToGrocery')}
             </Button>
           </div>
         </motion.div>
@@ -202,10 +204,10 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
                     return (
                       <div key={mealType} className="space-y-3">
                         <h4 className="font-semibold text-lg capitalize">
-                          {mealType === "breakfast" && "Desayuno"}
-                          {mealType === "lunch" && "Comida"}
-                          {mealType === "dinner" && "Cena"}
-                          {mealType === "snack" && "Snack"}
+                          {mealType === "breakfast" && t('mealPlans.breakfast')}
+                          {mealType === "lunch" && t('mealPlans.lunch')}
+                          {mealType === "dinner" && t('mealPlans.dinner')}
+                          {mealType === "snack" && t('mealPlans.snack')}
                         </h4>
                         {meal ? (
                           <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
@@ -229,7 +231,7 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
                               <div className="flex gap-1">
                                 <Link href={`/recipes/${meal.recipe.id}`}>
                                   <Button size="sm" variant="outline" className="text-xs">
-                                    Ver receta
+                                    {t('mealPlans.viewRecipe')}
                                   </Button>
                                 </Link>
                                 <Button
@@ -244,14 +246,16 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
                                   ) : (
                                     <RefreshCw className="h-3 w-3" />
                                   )}
-                                  Cambiar
+                                  {t('common.edit')}
                                 </Button>
                               </div>
                             </div>
                           </div>
                         ) : (
                           <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
-                            <p className="text-gray-500 text-sm">No hay receta seleccionada</p>
+                            <p className="text-gray-500 text-sm">
+                              {t('mealPlans.noMealPlanned')}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -267,11 +271,11 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
         <Dialog open={modalProps.open} onOpenChange={modalProps.onOpenChange}>
           <DialogContent className="max-w-4xl max-h-[80vh]">
             <DialogHeader>
-              <DialogTitle>Seleccionar nueva receta</DialogTitle>
+              <DialogTitle>{t('mealPlans.custom.selectNewRecipe')}</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col h-full max-h-[calc(80vh-120px)]">
               <Input
-                placeholder="Buscar recetas..."
+                placeholder={t('mealPlans.custom.searchPlaceholder')}
                 value={modalProps.search}
                 onChange={(e) => modalProps.setSearch(e.target.value)}
                 className="mb-4"
@@ -281,11 +285,13 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
                   {modalProps.loading ? (
                     <div className="col-span-full text-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-                      <p className="mt-2 text-gray-600">Cargando recetas...</p>
+                      <p className="mt-2 text-gray-600">
+                        {t('mealPlans.custom.loadingRecipes')}
+                      </p>
                     </div>
                   ) : modalProps.recipes.length === 0 ? (
                     <div className="col-span-full text-center py-8 text-gray-500">
-                      No se encontraron recetas compatibles
+                      {t('mealPlans.custom.noRecipesFound')}
                     </div>
                   ) : (
                     modalProps.recipes.map((recipe) => (
@@ -333,7 +339,7 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
                       variant="outline"
                       onClick={() => modalProps.setLimit(modalProps.limit + 20)}
                     >
-                      Ver más recetas
+                      {t('mealPlans.custom.seeMore')}
                     </Button>
                   </div>
                 )}
@@ -356,7 +362,7 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
                       onClick={() => confirmRecipeSelection(handleRecipeChange)}
                       disabled={changingMealId === currentMeal?.id}
                     >
-                      {changingMealId === currentMeal?.id ? "Cambiando..." : "Seleccionar"}
+                      {changingMealId === currentMeal?.id ? t('common.loading') : t('common.select')}
                     </Button>
                   </div>
                 </div>
@@ -374,7 +380,7 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
         >
           <Card>
             <CardHeader>
-              <CardTitle>Resumen nutricional semanal</CardTitle>
+              <CardTitle>{t('mealPlans.weeklyNutritionSummary')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -382,25 +388,33 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
                   <div className="text-2xl font-bold text-orange-600">
                     {mealPlan.meals.reduce((sum, meal) => sum + (meal.recipe.calories ?? 0), 0)}
                   </div>
-                  <div className="text-sm text-gray-600">Calorías totales</div>
+                  <div className="text-sm text-gray-600">
+                    {t('mealPlans.totalCalories')}
+                  </div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">
                     {mealPlan.meals.reduce((sum, meal) => sum + (meal.recipe.protein ?? 0), 0)}g
                   </div>
-                  <div className="text-sm text-gray-600">Proteína</div>
+                  <div className="text-sm text-gray-600">
+                    {t('mealPlans.protein')}
+                  </div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">
                     {mealPlan.meals.reduce((sum, meal) => sum + (meal.recipe.carbs ?? 0), 0)}g
                   </div>
-                  <div className="text-sm text-gray-600">Carbohidratos</div>
+                  <div className="text-sm text-gray-600">
+                    {t('mealPlans.carbs')}
+                  </div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">
                     {mealPlan.meals.reduce((sum, meal) => sum + (meal.recipe.fat ?? 0), 0)}g
                   </div>
-                  <div className="text-sm text-gray-600">Grasa</div>
+                  <div className="text-sm text-gray-600">
+                    {t('mealPlans.fat')}
+                  </div>
                 </div>
               </div>
             </CardContent>
