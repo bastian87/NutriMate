@@ -16,7 +16,7 @@ import { format } from "date-fns"
 import { useLanguage } from "@/lib/i18n/context"
 
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"] as const
-const DAYS_ES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const
 
 export default function MealPlanDetailPage({ params }: { params: { id: string } }) {
   const { mealPlan, loading, error, setMealPlan, regenerateMeal } = useMealPlan(params.id)
@@ -188,12 +188,12 @@ export default function MealPlanDetailPage({ params }: { params: { id: string } 
 
         {/* Meal Plan Grid */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="space-y-8">
-          {DAYS_ES.map((day, dayIndex) => (
+          {DAYS.map((day, dayIndex) => (
             <Card key={day} className="overflow-hidden">
               <CardHeader className="bg-gray-50 dark:bg-gray-800">
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5" />
-                  {day}
+                  {t(`mealPlans.days.${day}`)}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">

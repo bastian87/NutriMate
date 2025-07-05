@@ -13,6 +13,7 @@ export const translations = {
       back: "Back",
       next: "Next",
       tryAgain: "Try Again",
+      select: "Select",
     },
     home: {
       title: "Your Personal Nutrition Assistant",
@@ -475,6 +476,7 @@ export const translations = {
         mustSelectAll: "You must select a recipe for every meal of every day before saving.",
         mustLogin: "You must be logged in to save your meal plan.",
         suggestedRecipes: "Suggested recipes",
+        selectNewRecipe: "Select New Recipe",
         searchPlaceholder: "Search recipes...",
         loadingRecipes: "Loading recipes...",
         noRecipesFound: "No recipes found",
@@ -1032,6 +1034,7 @@ export const translations = {
       back: "Atrás",
       next: "Siguiente",
       tryAgain: "Intentar nuevamente",
+      select: "Seleccionar",
     },
     home: {
       title: "Tu asistente personal de nutrición",
@@ -1442,6 +1445,7 @@ export const translations = {
         mustLogin: "Debes iniciar sesión para guardar tu meal plan.",
         suggestedRecipes: "Recetas sugeridas",
         searchPlaceholder: "Buscar recetas...",
+        selectNewRecipe: "Selecciona receta nueva",
         loadingRecipes: "Cargando recetas...",
         noRecipesFound: "No se encontraron recetas",
         noRecipesFoundWithName: "No se encontraron recetas con ese nombre",
@@ -1910,6 +1914,7 @@ export const translations = {
       back: "Retour",
       next: "Suivant",
       tryAgain: "Réessayer",
+      select: "Sélect",
     },
     home: {
       title: "Votre assistant personnel en nutrition",
@@ -2319,6 +2324,7 @@ export const translations = {
         mustSelectAll: "Vous devez sélectionner une recette pour chaque repas de chaque jour avant d'enregistrer.",
         mustLogin: "Vous devez être connecté pour enregistrer votre plan de repas.",
         suggestedRecipes: "Recettes suggérées",
+        selectNewRecipe: "Sélectionnez une nouvelle recette",
         searchPlaceholder: "Rechercher des recettes...",
         loadingRecipes: "Chargement des recettes...",
         noRecipesFound: "Aucune recette trouvée",
