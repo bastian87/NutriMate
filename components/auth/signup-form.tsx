@@ -139,7 +139,7 @@ export default function SignupForm() {
                 required
                 disabled={loading}
                 minLength={6}
-                placeholder="Create a password (min. 6 characters)"
+                placeholder="Create a password (min. 10 characters)"
               />
             </div>
 

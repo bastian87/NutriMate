@@ -322,15 +322,13 @@ export default function OnboardingForm() {
           {/* Step 1: Basic Information */}
           {currentStep === 1 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold mb-4">Tell us about yourself</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                This information helps us calculate your daily calorie needs and personalize your meal plan.
-              </p>
+              <h2 className="text-xl font-semibold mb-4">{t("onboardingForm.step1Title")}</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">{t("onboardingForm.step1Desc")}</p>
 
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="age">Age</Label>
+                    <Label htmlFor="age">{t("onboardingForm.age")}</Label>
                     <Input
                       id="age"
                       type="number"
@@ -348,25 +346,25 @@ export default function OnboardingForm() {
                     <ErrorMessage error={errors.age} />
                   </div>
                   <div>
-                    <Label htmlFor="gender">Gender</Label>
+                    <Label htmlFor="gender">{t("onboardingForm.gender")}</Label>
                     <Select
                       value={formData.gender}
                       onValueChange={(value) => setFormData((prev) => ({ ...prev, gender: value }))}
                     >
                       <SelectTrigger id="gender">
-                        <SelectValue placeholder="Select gender" />
+                        <SelectValue placeholder={t("onboardingForm.selectGender")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="male">{t("onboardingForm.male")}</SelectItem>
+                        <SelectItem value="female">{t("onboardingForm.female")}</SelectItem>
+                        <SelectItem value="other">{t("onboardingForm.other")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="height">Height</Label>
+                  <Label htmlFor="height">{t("onboardingForm.height")}</Label>
                   <div className="flex space-x-2">
                     <div className="flex-1">
                       <Input
@@ -407,11 +405,11 @@ export default function OnboardingForm() {
                       }}
                     >
                       <SelectTrigger className="w-24">
-                        <SelectValue placeholder="Unit" />
+                        <SelectValue placeholder={t("onboardingForm.unit")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="cm">cm</SelectItem>
-                        <SelectItem value="ft">ft</SelectItem>
+                        <SelectItem value="cm">{t("onboardingForm.cm")}</SelectItem>
+                        <SelectItem value="ft">{t("onboardingForm.ft")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -419,7 +417,7 @@ export default function OnboardingForm() {
                 </div>
 
                 <div>
-                  <Label htmlFor="weight">Weight</Label>
+                  <Label htmlFor="weight">{t("onboardingForm.weight")}</Label>
                   <div className="flex space-x-2">
                     <div className="flex-1">
                       <Input
@@ -463,11 +461,11 @@ export default function OnboardingForm() {
                       }}
                     >
                       <SelectTrigger className="w-24">
-                        <SelectValue placeholder="Unit" />
+                        <SelectValue placeholder={t("onboardingForm.unit")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="kg">kg</SelectItem>
-                        <SelectItem value="lb">lb</SelectItem>
+                        <SelectItem value="kg">{t("onboardingForm.kg")}</SelectItem>
+                        <SelectItem value="lb">{t("onboardingForm.lb")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -475,7 +473,7 @@ export default function OnboardingForm() {
                 </div>
 
                 <div>
-                  <Label htmlFor="activity">Activity Level</Label>
+                  <Label htmlFor="activity">{t("onboardingForm.activityLevel")}</Label>
                   <Select
                     value={formData.activity_level}
                     onValueChange={(value: ActivityLevel) =>
@@ -483,14 +481,14 @@ export default function OnboardingForm() {
                     }
                   >
                     <SelectTrigger id="activity">
-                      <SelectValue placeholder="Select activity level" />
+                      <SelectValue placeholder={t("onboardingForm.selectActivityLevel")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="sedentary">Sedentary (little or no exercise)</SelectItem>
-                      <SelectItem value="light">Lightly active (light exercise 1-3 days/week)</SelectItem>
-                      <SelectItem value="moderate">Moderately active (moderate exercise 3-5 days/week)</SelectItem>
-                      <SelectItem value="active">Very active (hard exercise 6-7 days/week)</SelectItem>
-                      <SelectItem value="very_active">Extra active (very hard exercise & physical job)</SelectItem>
+                      <SelectItem value="sedentary">{t("onboardingForm.sedentary")}</SelectItem>
+                      <SelectItem value="light">{t("onboardingForm.light")}</SelectItem>
+                      <SelectItem value="moderate">{t("onboardingForm.moderate")}</SelectItem>
+                      <SelectItem value="active">{t("onboardingForm.active")}</SelectItem>
+                      <SelectItem value="very_active">{t("onboardingForm.veryActive")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -501,10 +499,8 @@ export default function OnboardingForm() {
           {/* Step 2: Health Goals */}
           {currentStep === 2 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold mb-4">What's your primary health goal?</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                This helps us tailor your meal plan to support your specific goals.
-              </p>
+              <h2 className="text-xl font-semibold mb-4">{t("onboardingForm.step2Title")}</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">{t("onboardingForm.step2Desc")}</p>
 
               <RadioGroup
                 value={formData.health_goal}
@@ -519,9 +515,9 @@ export default function OnboardingForm() {
                 <div className="flex items-center space-x-2 border p-4 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer">
                   <RadioGroupItem value="weight_loss" id="weight_loss" />
                   <Label htmlFor="weight_loss" className="flex-1 cursor-pointer">
-                    <div className="font-medium">Weight Loss</div>
+                    <div className="font-medium">{t("onboardingForm.weightLoss")}</div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Calorie-controlled meals to support healthy weight loss
+                      {t("onboardingForm.weightLossDesc")}
                     </div>
                   </Label>
                 </div>
@@ -529,9 +525,9 @@ export default function OnboardingForm() {
                 <div className="flex items-center space-x-2 border p-4 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer">
                   <RadioGroupItem value="muscle_gain" id="muscle_gain" />
                   <Label htmlFor="muscle_gain" className="flex-1 cursor-pointer">
-                    <div className="font-medium">Muscle Gain</div>
+                    <div className="font-medium">{t("onboardingForm.muscleGain")}</div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Protein-rich meals to support muscle building
+                      {t("onboardingForm.muscleGainDesc")}
                     </div>
                   </Label>
                 </div>
@@ -539,9 +535,9 @@ export default function OnboardingForm() {
                 <div className="flex items-center space-x-2 border p-4 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer">
                   <RadioGroupItem value="maintenance" id="maintenance" />
                   <Label htmlFor="maintenance" className="flex-1 cursor-pointer">
-                    <div className="font-medium">Maintenance</div>
+                    <div className="font-medium">{t("onboardingForm.maintenance")}</div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Balanced meals to maintain your current weight
+                      {t("onboardingForm.maintenanceDesc")}
                     </div>
                   </Label>
                 </div>
@@ -549,9 +545,9 @@ export default function OnboardingForm() {
                 <div className="flex items-center space-x-2 border p-4 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer">
                   <RadioGroupItem value="health_improvement" id="health_improvement" />
                   <Label htmlFor="health_improvement" className="flex-1 cursor-pointer">
-                    <div className="font-medium">Health Improvement</div>
+                    <div className="font-medium">{t("onboardingForm.healthImprovement")}</div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Nutrient-dense meals to improve overall health
+                      {t("onboardingForm.healthImprovementDesc")}
                     </div>
                   </Label>
                 </div>
@@ -559,9 +555,9 @@ export default function OnboardingForm() {
                 <div className="flex items-center space-x-2 border p-4 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer">
                   <RadioGroupItem value="energy_boost" id="energy_boost" />
                   <Label htmlFor="energy_boost" className="flex-1 cursor-pointer">
-                    <div className="font-medium">Energy Boost</div>
+                    <div className="font-medium">{t("onboardingForm.energyBoost")}</div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Meals designed to increase energy levels throughout the day
+                      {t("onboardingForm.energyBoostDesc")}
                     </div>
                   </Label>
                 </div>
@@ -573,7 +569,7 @@ export default function OnboardingForm() {
           {/* Step 3: Dietary Preferences */}
           {currentStep === 3 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold mb-4">Dietary Preferences</h2>
+              <h2 className="text-xl font-semibold mb-4">{t("onboardingForm.step3Title")}</h2>
               <div className="grid grid-cols-2 gap-2 mt-2">
                 {dietTypes.map((diet) => (
                   <div key={diet} className="flex items-center space-x-2">
@@ -594,9 +590,9 @@ export default function OnboardingForm() {
           {/* Step 4: Advanced Preferences */}
           {currentStep === 4 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold mb-4">Preferencias avanzadas</h2>
+              <h2 className="text-xl font-semibold mb-4">{t("onboardingForm.step4Title")}</h2>
               <div>
-                <Label htmlFor="include_snacks">¿Incluir snacks?</Label>
+                <Label htmlFor="include_snacks">{t("onboardingForm.includeSnacks")}</Label>
                 <Checkbox
                   id="include_snacks"
                   checked={formData.include_snacks}
@@ -605,25 +601,25 @@ export default function OnboardingForm() {
                 />
               </div>
               <div>
-                <Label htmlFor="allergies">Alergias (separadas por coma)</Label>
+                <Label htmlFor="allergies">{t("onboardingForm.allergies")}</Label>
                 <Input
                   id="allergies"
-                  placeholder="ej: nueces, mariscos, huevo"
+                  placeholder={t("onboardingForm.allergiesPlaceholder")}
                   value={formData.allergies?.join(", ") || ""}
                   onChange={(e) => setFormData((prev) => ({ ...prev, allergies: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) }))}
                 />
               </div>
               <div>
-                <Label htmlFor="intolerances">Intolerancias (separadas por coma)</Label>
+                <Label htmlFor="intolerances">{t("onboardingForm.intolerances")}</Label>
                 <Input
                   id="intolerances"
-                  placeholder="ej: lactosa, gluten"
+                  placeholder={t("onboardingForm.intolerancesPlaceholder")}
                   value={formData.intolerances?.join(", ") || ""}
                   onChange={(e) => setFormData((prev) => ({ ...prev, intolerances: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) }))}
                 />
               </div>
               <div>
-                <Label htmlFor="max_prep_time">Tiempo máximo de preparación (minutos)</Label>
+                <Label htmlFor="max_prep_time">{t("onboardingForm.maxPrepTime")}</Label>
                 <Input
                   id="max_prep_time"
                   type="number"
@@ -634,19 +630,19 @@ export default function OnboardingForm() {
                 />
               </div>
               <div>
-                <Label htmlFor="macro_priority">Prioridad de macronutrientes</Label>
+                <Label htmlFor="macro_priority">{t("onboardingForm.macroPriority")}</Label>
                 <Select
                   value={formData.macro_priority || "balanced"}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, macro_priority: value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecciona prioridad" />
+                    <SelectValue placeholder={t("onboardingForm.selectMacroPriority")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="balanced">Balanceado</SelectItem>
-                    <SelectItem value="protein">Alta proteína</SelectItem>
-                    <SelectItem value="carbs">Altos carbohidratos</SelectItem>
-                    <SelectItem value="fat">Altas grasas</SelectItem>
+                    <SelectItem value="balanced">{t("onboardingForm.balanced")}</SelectItem>
+                    <SelectItem value="protein">{t("onboardingForm.protein")}</SelectItem>
+                    <SelectItem value="carbs">{t("onboardingForm.carbs")}</SelectItem>
+                    <SelectItem value="fat">{t("onboardingForm.fat")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -662,7 +658,7 @@ export default function OnboardingForm() {
               className="bg-orange-600 hover:bg-orange-700 flex items-center"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Saving..." : currentStep === totalSteps ? "Complete" : t("common.next")}{" "}
+              {isSubmitting ? "Saving..." : currentStep === totalSteps ? t("onboardingForm.finish") : t("common.next")}{" "}
               {!isSubmitting && currentStep !== totalSteps && <ArrowRight className="ml-2 h-4 w-4" />}
             </Button>
           </div>
