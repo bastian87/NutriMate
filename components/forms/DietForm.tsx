@@ -21,7 +21,9 @@ export default function DietForm({ user, initialPreferences, onUpdate }: DietFor
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     dietary_preferences: initialPreferences?.dietary_preferences || [],
-    excluded_ingredients: initialPreferences?.excluded_ingredients?.join(", ") || "", // Join for textarea
+    excluded_ingredients: Array.isArray(initialPreferences?.excluded_ingredients)
+      ? initialPreferences?.excluded_ingredients.join(", ")
+      : initialPreferences?.excluded_ingredients || "",
     // Assuming other fields from your onboarding might be here
   })
   const { toast } = useToast()
@@ -46,13 +48,17 @@ export default function DietForm({ user, initialPreferences, onUpdate }: DietFor
     try {
       const dataToUpdate = {
         ...formData,
-        // Split textarea back into an array, trimming whitespace and removing empty strings
         excluded_ingredients: formData.excluded_ingredients
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean),
       }
       await onUpdate(dataToUpdate)
+      // Actualizar el estado local para reflejar los datos guardados
+      setFormData((prev) => ({
+        ...prev,
+        excluded_ingredients: dataToUpdate.excluded_ingredients.join(", ")
+      }))
       toast({
         title: t("toast.updateDietTitle"),
         description: t("toast.updateDietDesc"),
