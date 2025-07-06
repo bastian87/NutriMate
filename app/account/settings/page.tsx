@@ -35,7 +35,6 @@ const AccountSettingsPage = () => {
         ...preferences,
         dietary_preferences: preferences.dietary_preferences ?? [],
         excluded_ingredients: preferences.excluded_ingredients ?? [],
-        intolerances: preferences.intolerances ?? [],
       }
     : null;
 

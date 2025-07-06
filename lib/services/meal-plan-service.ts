@@ -187,16 +187,8 @@ export class MealPlanService {
       // Excluir si algún ingrediente o el nombre de la receta contiene la palabra de un excluido
       const contieneExcluido = excluidos.some((e: string) =>
         ingredientes.some((ing: string) => ing.includes(e)) || (receta.name?.toLowerCase().includes(e))
-      );
-      const alergias = (prefs.allergies ?? []).map((i: string) => i.toLowerCase().trim());
-      const contieneAlergia = alergias.some((a: string) =>
-        ingredientes.some((ing: string) => ing.includes(a)) || (receta.name?.toLowerCase().includes(a))
-      );
-      const intolerancias = (prefs.intolerances ?? []).map((i: string) => i.toLowerCase().trim());
-      const contieneIntolerancia = intolerancias.some((i: string) =>
-        ingredientes.some((ing: string) => ing.includes(i)) || (receta.name?.toLowerCase().includes(i))
-      );
-      return !contieneExcluido && !contieneAlergia && !contieneIntolerancia;
+      );      
+      return !contieneExcluido;
     };
 
     let recetasFiltradas = allRecipes.filter(filtrarIngredientes);
@@ -279,14 +271,10 @@ export class MealPlanService {
       const ingredientes = (receta.ingredients || []).map((i: any) =>
         ((i.original ? i.original.toLowerCase() : "") + " " + (i.name ? i.name.toLowerCase() : "")).trim()
       );
-      const excluidos = (prefs.excluded_ingredients ?? []).map((i: string) => i.toLowerCase());
-      const alergias = (prefs.allergies ?? []).map((i: string) => i.toLowerCase());
-      const intolerancias = (prefs.intolerances ?? []).map((i: string) => i.toLowerCase());
+      const excluidos = (prefs.excluded_ingredients ?? []).map((i: string) => i.toLowerCase());      
       // Excluir si algún ingrediente contiene el texto de un excluido
-      const contieneExcluido = excluidos.some((e: string) => ingredientes.some((ing: string) => ing.includes(e)));
-      const contieneAlergia = alergias.some((a: string) => ingredientes.some((ing: string) => ing.includes(a)));
-      const contieneIntolerancia = intolerancias.some((i: string) => ingredientes.some((ing: string) => ing.includes(i)));
-      return !contieneExcluido && !contieneAlergia && !contieneIntolerancia;
+      const contieneExcluido = excluidos.some((e: string) => ingredientes.some((ing: string) => ing.includes(e)));      
+      return !contieneExcluido;
     };
 
     const recetasFiltradas = allRecipes

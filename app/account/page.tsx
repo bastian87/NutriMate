@@ -53,8 +53,6 @@ export default function AccountPage() {
         ...preferences,
         dietary_preferences: preferences.dietary_preferences ?? [],
         excluded_ingredients: preferences.excluded_ingredients ?? [],
-        allergies: preferences.allergies ?? [],
-        intolerances: preferences.intolerances ?? [],
       });
     }
   }, [preferences]);
@@ -297,25 +295,7 @@ export default function AccountPage() {
                   onCheckedChange={(checked) => setFormPrefs((prev) => prev ? { ...prev, include_snacks: checked as boolean } : prev)}
                   className="ml-2"
                 />
-              </div>
-              <div>
-                <Label htmlFor="allergies">{t("accountPage.allergies")}</Label>
-                <Input
-                  id="allergies"
-                  placeholder={t("accountPage.allergies")}
-                  value={formPrefs.allergies?.join(", ") || ""}
-                  onChange={(e) => setFormPrefs((prev) => prev ? { ...prev, allergies: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) } : prev)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="intolerances">{t("accountPage.intolerances")}</Label>
-                <Input
-                  id="intolerances"
-                  placeholder={t("accountPage.intolerances")}
-                  value={formPrefs.intolerances?.join(", ") || ""}
-                  onChange={(e) => setFormPrefs((prev) => prev ? { ...prev, intolerances: e.target.value.split(",").map((i) => i.trim()).filter(Boolean) } : prev)}
-                />
-              </div>
+              </div>              
               <div>
                 <Label htmlFor="max_prep_time">{t("accountPage.maxPrepTime")}</Label>
                 <Input

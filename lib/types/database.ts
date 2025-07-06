@@ -244,7 +244,6 @@ export interface Database {
           dietary_preferences: string[] | null
           excluded_ingredients: string[] | null
           include_snacks: boolean | null
-          intolerances: string[] | null
           max_prep_time: number | null
           macro_priority: string | null
           created_at: string
@@ -263,7 +262,6 @@ export interface Database {
           dietary_preferences?: string[] | null
           excluded_ingredients?: string[] | null
           include_snacks?: boolean | null
-          intolerances?: string[] | null
           max_prep_time?: number | null
           macro_priority?: string | null
           created_at?: string
@@ -282,7 +280,6 @@ export interface Database {
           dietary_preferences?: string[] | null
           excluded_ingredients?: string[] | null
           include_snacks?: boolean | null
-          intolerances?: string[] | null
           max_prep_time?: number | null
           macro_priority?: string | null
           created_at?: string
@@ -373,7 +370,6 @@ export type UserPreferences = {
   dietary_preferences: string[];
   excluded_ingredients: string[];
   include_snacks: boolean | null;
-  intolerances: string[];
   max_prep_time: number | null;
   macro_priority: string | null;
   created_at: string;

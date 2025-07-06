@@ -21,9 +21,6 @@ export default function DietForm({ user, initialPreferences, onUpdate }: DietFor
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     dietary_preferences: initialPreferences?.dietary_preferences || [],
-    excluded_ingredients: Array.isArray(initialPreferences?.excluded_ingredients)
-      ? initialPreferences?.excluded_ingredients.join(", ")
-      : initialPreferences?.excluded_ingredients || "",
     // Assuming other fields from your onboarding might be here
   })
   const { toast } = useToast()
@@ -48,16 +45,11 @@ export default function DietForm({ user, initialPreferences, onUpdate }: DietFor
     try {
       const dataToUpdate = {
         ...formData,
-        excluded_ingredients: formData.excluded_ingredients
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
       }
       await onUpdate(dataToUpdate)
       // Actualizar el estado local para reflejar los datos guardados
       setFormData((prev) => ({
         ...prev,
-        excluded_ingredients: dataToUpdate.excluded_ingredients.join(", ")
       }))
       toast({
         title: t("toast.updateDietTitle"),
@@ -106,18 +98,6 @@ export default function DietForm({ user, initialPreferences, onUpdate }: DietFor
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="excluded_ingredients">{t("dietForm.excludedIngredients")}</Label>
-            <Textarea
-              id="excluded_ingredients"
-              value={formData.excluded_ingredients}
-              onChange={(e) => setFormData((prev) => ({ ...prev, excluded_ingredients: e.target.value }))}
-              placeholder={t("dietForm.excludedIngredientsPlaceholder")}
-              rows={3}
-            />
-            <p className="text-xs text-muted-foreground">{t("dietForm.excludedIngredientsHelp")}</p>
           </div>
 
           <Button type="submit" disabled={loading}>
