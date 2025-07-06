@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (mounted) {
-          setUser(session?.user ?? null)
+        setUser(session?.user ?? null)
           setLoading(false)
           setInitialized(true)
         }
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("Error in initializeAuth:", error)
         if (mounted) {
           setUser(null)
-          setLoading(false)
+        setLoading(false)
           setInitialized(true)
         }
       }
@@ -61,9 +61,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state change:", event, session?.user?.id)
-        
+
         if (mounted) {
-          setUser(session?.user ?? null)
+      setUser(session?.user ?? null)
           
           // Solo cambiar loading a false si ya se inicializó
           if (initialized) {

@@ -17,6 +17,7 @@ import SubscriptionStatus from "@/components/subscription-status"
 import { useUserPreferences } from "@/components/auth/user-preferences-provider";
 import { useEffect } from "react";
 import type { UserPreferences } from "@/lib/types/database";
+import { useToast } from "@/components/ui/use-toast"
 
 // Eliminar la interfaz local UserPreferences y usar el tipo global importado
 // import type { UserPreferences } from "@/lib/types/database"
@@ -41,6 +42,15 @@ export default function AccountPage() {
   const { preferences, loading, fetchPreferences } = useUserPreferences();
   const [saving, setSaving] = useState(false)
   const [formPrefs, setFormPrefs] = useState<UserPreferences | null>(null);
+  const [excludedIngredientsInput, setExcludedIngredientsInput] = useState("");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (formPrefs?.excluded_ingredients) {
+      setExcludedIngredientsInput(formPrefs.excluded_ingredients.join(", "));
+    }
+  }, [formPrefs?.excluded_ingredients]);
+
 
   useEffect(() => {
     if (preferences) setFormPrefs(preferences);
@@ -62,11 +72,18 @@ export default function AccountPage() {
     try {
       setSaving(true)
       await userService.saveUserPreferences(user.id, formPrefs)
-      alert("Preferences updated successfully!")
+      toast({
+        title: t("accountPage.preferencesUpdated"),
+        description: t("toast.success"),
+      })
       await fetchPreferences();
     } catch (error) {
       console.error("Error saving preferences:", error)
-      alert("Failed to update preferences")
+      toast({
+        title: t("accountPage.preferencesUpdateFailed"),
+        description: t("toast.error"),
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
@@ -80,6 +97,40 @@ export default function AccountPage() {
         : [...prev.dietary_preferences, preference],
     } : prev);
   }
+
+  const handleSaveHealth = async () => {
+    if (!user || !formPrefs) return;
+    const healthFields = [
+      "age",
+      "gender",
+      "height",
+      "weight",
+      "activity_level",
+      "health_goal",
+      "calorie_target",
+    ];
+    const healthData = Object.fromEntries(
+      Object.entries(formPrefs).filter(([key]) => healthFields.includes(key))
+    );
+    try {
+      setSaving(true);
+      await userService.saveUserPreferences(user.id, healthData);
+      toast({
+        title: t("toast.updateHealthTitle"),
+        description: t("toast.updateHealthDesc"),
+      });
+      await fetchPreferences();
+    } catch (error) {
+      console.error("Error saving health info:", error);
+      toast({
+        title: t("toast.error"),
+        description: t("toast.updateHealthError"),
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (!user) {
     return (
@@ -220,6 +271,9 @@ export default function AccountPage() {
                   onChange={(e) => setFormPrefs((prev) => prev ? { ...prev, calorie_target: Number.parseInt(e.target.value) } : prev)}
                 />
               </div>
+              <Button onClick={handleSaveHealth} disabled={saving} className="w-full mt-4">
+                {saving ? t("accountPage.saving") : "Guardar información de salud"}
+              </Button>
             </CardContent>
           </Card>
         </motion.div>
@@ -252,26 +306,6 @@ export default function AccountPage() {
                   ))}
                 </div>
               </div>
-
-              <div>
-                <Label htmlFor="excluded_ingredients">{t("accountPage.excludedIngredients")}</Label>
-                <Input
-                  id="excluded_ingredients"
-                  placeholder={t("accountPage.excludedIngredientsPlaceholder")}
-                  value={formPrefs.excluded_ingredients?.join(", ") || ""}
-                  onChange={(e) =>
-                    setFormPrefs((prev) => prev ? {
-                      ...prev,
-                      excluded_ingredients: e.target.value.split(",").map((item) => item.trim()).filter(Boolean),
-                    } : prev)
-                  }
-                />
-                <p className="text-sm text-gray-500 mt-1">{t("accountPage.separateIngredients")}</p>
-              </div>
-
-              <Button onClick={handleSavePreferences} disabled={saving} className="w-full">
-                {saving ? t("accountPage.saving") : t("accountPage.savePreferences")}
-              </Button>
             </CardContent>
           </Card>
         </motion.div>
@@ -295,7 +329,7 @@ export default function AccountPage() {
                   onCheckedChange={(checked) => setFormPrefs((prev) => prev ? { ...prev, include_snacks: checked as boolean } : prev)}
                   className="ml-2"
                 />
-              </div>              
+              </div>
               <div>
                 <Label htmlFor="max_prep_time">{t("accountPage.maxPrepTime")}</Label>
                 <Input
@@ -323,6 +357,30 @@ export default function AccountPage() {
                     <SelectItem value="fat">{t("accountPage.fat")}</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              {/* Excluded Ingredients*/}
+              <div>
+                <Label htmlFor="excluded_ingredients">{t("accountPage.excludedIngredients")}</Label>
+                <Input
+                  id="excluded_ingredients"
+                  placeholder={t("accountPage.excludedIngredientsPlaceholder")}
+                  value={excludedIngredientsInput}
+                  onChange={(e) => setExcludedIngredientsInput(e.target.value)}
+                  onBlur={() =>
+                    setFormPrefs((prev) =>
+                      prev
+                        ? {
+                          ...prev,
+                          excluded_ingredients: excludedIngredientsInput
+                            .split(",")
+                            .map((item) => item.trim())
+                            .filter(Boolean),
+                        }
+                        : prev
+                    )
+                  }
+                />
+                <p className="text-sm text-gray-500 mt-1">{t("accountPage.separateIngredients")}</p>
               </div>
               <Button onClick={handleSavePreferences} disabled={saving} className="w-full">
                 {saving ? t("accountPage.saving") : t("accountPage.saveAdvancedPreferences")}

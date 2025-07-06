@@ -11,7 +11,6 @@ import { Toaster } from "@/components/ui/toaster"
 import { UserPreferencesProvider } from "@/components/auth/user-preferences-provider"
 import { Sidebar } from "@/components/sidebar"
 import { ConditionalLayout } from "@/components/conditional-layout"
-import { AuthDebug } from "@/components/auth/auth-debug"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -51,7 +50,6 @@ export default function RootLayout({
                     {children}
                   </ConditionalLayout>
                   <Toaster />
-                  <AuthDebug />
                 </UserPreferencesProvider>
               </UserProfileProvider>
             </AuthProvider>

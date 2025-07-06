@@ -84,7 +84,13 @@ export default function DietForm({ user, initialPreferences, onUpdate }: DietFor
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
             <Label>{t("dietForm.dietaryPreferences")}</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {/*
+              Solución superposición:
+              - Añadimos 'relative' al grid para contexto de stacking.
+              - Añadimos 'z-10' a los labels de dieta para que no se superpongan sobre otros inputs.
+              Esto evita que los labels queden por encima del input de Excluded Ingredients en Account Settings.
+            */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 relative">
               {dietTypes.map((diet) => (
                 <div key={diet} className="flex items-center space-x-2">
                   <Checkbox
@@ -92,7 +98,7 @@ export default function DietForm({ user, initialPreferences, onUpdate }: DietFor
                     checked={formData.dietary_preferences.includes(diet)}
                     onCheckedChange={(checked) => handleCheckboxChange(diet, checked as boolean)}
                   />
-                  <Label htmlFor={`diet-${diet}`} className="text-sm font-normal">
+                  <Label htmlFor={`diet-${diet}`} className="text-sm font-normal z-10">
                     {t(`dietTypes.${diet.replace(/\s/g, "")}`) || diet}
                   </Label>
                 </div>

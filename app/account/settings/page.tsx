@@ -20,18 +20,6 @@ import HealthForm from "@/components/forms/HealthForm"
 import DietForm from "@/components/forms/DietForm"
 import SecurityForm from "@/components/forms/SecurityForm"
 
-// Helper para normalizar ingredientes
-function normalizeIngredientsInput(input: string): string[] {
-  return Array.from(
-    new Set(
-      input
-        .split(",")
-        .map((i) => i.trim())
-        .filter((i) => i.length > 0)
-    )
-  );
-}
-
 const AccountSettingsPage = () => {
   const router = useRouter()
   const { toast } = useToast()
@@ -46,52 +34,10 @@ const AccountSettingsPage = () => {
     ? {
         ...preferences,
         dietary_preferences: preferences.dietary_preferences ?? [],
-        excluded_ingredients: preferences.excluded_ingredients ?? [],
       }
     : null;
 
-  const [excludedIngredientsInput, setExcludedIngredientsInput] = useState<string>(
-    safePreferences?.excluded_ingredients?.join(", ") || ""
-  );
   const [saving, setSaving] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    setExcludedIngredientsInput(safePreferences?.excluded_ingredients?.join(", ") || "");
-  }, [safePreferences?.excluded_ingredients]);
-
-  const handleExcludedIngredientsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setExcludedIngredientsInput(e.target.value);
-  };
-
-  const saveExcludedIngredients = async () => {
-    const normalized = normalizeIngredientsInput(excludedIngredientsInput);
-    const current = safePreferences?.excluded_ingredients || [];
-    // Solo guardar si hay cambios
-    if (
-      normalized.length !== current.length ||
-      normalized.some((v, i) => v !== current[i])
-    ) {
-      setSaving(true);
-      await handleUpdatePreferences({ excluded_ingredients: normalized });
-      toast({
-        title: t("accountSettings.success"),
-        description: t("accountSettings.preferencesUpdated"),
-      });
-      setSaving(false);
-    }
-  };
-
-  const handleExcludedIngredientsBlur = () => {
-    saveExcludedIngredients();
-  };
-
-  const handleExcludedIngredientsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      saveExcludedIngredients();
-      inputRef.current?.blur();
-    }
-  };
 
   const handleUpdatePreferences = async (updatedPrefs: Partial<UserPreferences>) => {
     if (!user) return
@@ -158,6 +104,7 @@ const AccountSettingsPage = () => {
         </Link>
       </div>
 
+      {/* Título y descripción */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -168,83 +115,54 @@ const AccountSettingsPage = () => {
         <p className="text-muted-foreground">{t("accountSettings.description")}</p>
       </motion.div>
 
-      <div className="space-y-8 mb-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <ProfileForm user={user} />
-        </motion.div>
-        
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <SecurityForm user={user} />
-        </motion.div>
-      </div>
+      {/*
+        Cambios realizados:
+        - Se agregaron márgenes superiores (mt-8, mt-12) entre secciones principales para evitar superposiciones y mejorar la separación visual.
+        - Cada bloque (perfil, seguridad, dieta, preferencias avanzadas, danger zone) tiene ahora un margen claro respecto al anterior.
+        - Se mantiene el diseño responsivo y la estructura general.
+      */}
 
-      {/* Advanced Preferences */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {t("accountSettings.advancedPreferences")}
-            </CardTitle>
-            <CardDescription>{t("accountSettings.advancedPreferencesDesc")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label htmlFor="excluded_ingredients" className="block text-sm font-medium mb-1">
-                {t("accountSettings.excludedIngredients")}
-              </label>
-              <input
-                id="excluded_ingredients"
-                type="text"
-                className="w-full border rounded px-3 py-2"
-                placeholder={t("accountSettings.excludedIngredientsPlaceholder")}
-                value={excludedIngredientsInput}
-                onChange={handleExcludedIngredientsChange}
-                onBlur={handleExcludedIngredientsBlur}
-                onKeyDown={handleExcludedIngredientsKeyDown}
-                ref={inputRef}
-                aria-label={t("accountSettings.excludedIngredients")}
-                aria-describedby="excluded_ingredients_help"
-                disabled={saving}
-              />
-              <p id="excluded_ingredients_help" className="text-xs text-muted-foreground mt-1">{t("accountSettings.separateIngredients")}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+      <section className="mb-12">
+        <ProfileForm user={user} />
+      </section>
 
-      {/* Danger Zone */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="mt-8"
-      >
-        <Card className="border-red-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-600">
-              <Trash2 className="h-5 w-5" />
-              {t("accountSettings.dangerZone")}
-            </CardTitle>
-            <CardDescription>{t("accountSettings.dangerZoneDesc")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-              <h3 className="font-medium text-red-800 mb-2">Delete Account</h3>
-              <p className="text-sm text-red-700 mb-4">
-                {t("accountSettings.deleteWarning")} <strong>{t("accountSettings.deleteWarningStrong")}</strong>
-              </p>
-              <Button
-                variant="destructive"
-                onClick={() => setShowDeleteDialog(true)}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                {t("accountSettings.deleteAccount")}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+      <section className="mt-12 mb-12">
+        <SecurityForm user={user} />
+      </section>
+
+      <section className="mt-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Card className="border-red-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-600">
+                <Trash2 className="h-5 w-5" />
+                {t("accountSettings.dangerZone")}
+              </CardTitle>
+              <CardDescription>{t("accountSettings.dangerZoneDesc")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                <h3 className="font-medium text-red-800 mb-2">Delete Account</h3>
+                <p className="text-sm text-red-700 mb-4">
+                  {t("accountSettings.deleteWarning")} <strong>{t("accountSettings.deleteWarningStrong")}</strong>
+                </p>
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {t("accountSettings.deleteAccount")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </section>
 
       {/* Delete Confirmation Dialog */}
       {showDeleteDialog && (

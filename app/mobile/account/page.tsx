@@ -13,6 +13,8 @@ import { useAuthContext } from "@/components/auth/auth-provider"
 import { userService } from "@/lib/services/user-service"
 import { motion } from "framer-motion"
 import Link from "next/link"
+import { useToast } from "@/components/ui/use-toast"
+import { useTranslation } from "react-i18next"
 
 interface UserPreferences {
   age?: number
@@ -47,6 +49,8 @@ export default function MobileAccountPage() {
     excluded_ingredients: [],
   })
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (user) {
@@ -97,10 +101,17 @@ export default function MobileAccountPage() {
     try {
       setSaving(true)
       await userService.updateUserProfile(user.id, profile)
-      alert("Profile updated successfully!")
+      toast({
+        title: t("accountPage.profileUpdated"),
+        description: t("toast.success"),
+      })
     } catch (error) {
       console.error("Error saving profile:", error)
-      alert("Failed to update profile")
+      toast({
+        title: t("accountPage.profileUpdateFailed"),
+        description: t("toast.error"),
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
@@ -112,10 +123,17 @@ export default function MobileAccountPage() {
     try {
       setSaving(true)
       await userService.saveUserPreferences(user.id, preferences)
-      alert("Preferences updated successfully!")
+      toast({
+        title: t("accountPage.preferencesUpdated"),
+        description: t("toast.success"),
+      })
     } catch (error) {
       console.error("Error saving preferences:", error)
-      alert("Failed to update preferences")
+      toast({
+        title: t("accountPage.preferencesUpdateFailed"),
+        description: t("toast.error"),
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
