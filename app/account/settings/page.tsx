@@ -20,6 +20,18 @@ import HealthForm from "@/components/forms/HealthForm"
 import DietForm from "@/components/forms/DietForm"
 import SecurityForm from "@/components/forms/SecurityForm"
 
+// Helper para normalizar ingredientes
+function normalizeIngredientsInput(input: string): string[] {
+  return Array.from(
+    new Set(
+      input
+        .split(",")
+        .map((i) => i.trim())
+        .filter((i) => i.length > 0)
+    )
+  );
+}
+
 const AccountSettingsPage = () => {
   const router = useRouter()
   const { toast } = useToast()
@@ -41,6 +53,7 @@ const AccountSettingsPage = () => {
   const [excludedIngredientsInput, setExcludedIngredientsInput] = useState<string>(
     safePreferences?.excluded_ingredients?.join(", ") || ""
   );
+  const [saving, setSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -52,11 +65,21 @@ const AccountSettingsPage = () => {
   };
 
   const saveExcludedIngredients = async () => {
-    const ingredientsArr = excludedIngredientsInput
-      .split(",")
-      .map((i) => i.trim())
-      .filter(Boolean);
-    await handleUpdatePreferences({ excluded_ingredients: ingredientsArr });
+    const normalized = normalizeIngredientsInput(excludedIngredientsInput);
+    const current = safePreferences?.excluded_ingredients || [];
+    // Solo guardar si hay cambios
+    if (
+      normalized.length !== current.length ||
+      normalized.some((v, i) => v !== current[i])
+    ) {
+      setSaving(true);
+      await handleUpdatePreferences({ excluded_ingredients: normalized });
+      toast({
+        title: t("accountSettings.success"),
+        description: t("accountSettings.preferencesUpdated"),
+      });
+      setSaving(false);
+    }
   };
 
   const handleExcludedIngredientsBlur = () => {
@@ -65,6 +88,7 @@ const AccountSettingsPage = () => {
 
   const handleExcludedIngredientsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
+      saveExcludedIngredients();
       inputRef.current?.blur();
     }
   };
@@ -178,8 +202,11 @@ const AccountSettingsPage = () => {
                 onBlur={handleExcludedIngredientsBlur}
                 onKeyDown={handleExcludedIngredientsKeyDown}
                 ref={inputRef}
+                aria-label={t("accountSettings.excludedIngredients")}
+                aria-describedby="excluded_ingredients_help"
+                disabled={saving}
               />
-              <p className="text-xs text-muted-foreground mt-1">{t("accountSettings.separateIngredients")}</p>
+              <p id="excluded_ingredients_help" className="text-xs text-muted-foreground mt-1">{t("accountSettings.separateIngredients")}</p>
             </div>
           </CardContent>
         </Card>
