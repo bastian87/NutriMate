@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Trash2, Loader2, ArrowLeft } from "lucide-react"
@@ -37,6 +37,37 @@ const AccountSettingsPage = () => {
         excluded_ingredients: preferences.excluded_ingredients ?? [],
       }
     : null;
+
+  const [excludedIngredientsInput, setExcludedIngredientsInput] = useState<string>(
+    safePreferences?.excluded_ingredients?.join(", ") || ""
+  );
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setExcludedIngredientsInput(safePreferences?.excluded_ingredients?.join(", ") || "");
+  }, [safePreferences?.excluded_ingredients]);
+
+  const handleExcludedIngredientsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setExcludedIngredientsInput(e.target.value);
+  };
+
+  const saveExcludedIngredients = async () => {
+    const ingredientsArr = excludedIngredientsInput
+      .split(",")
+      .map((i) => i.trim())
+      .filter(Boolean);
+    await handleUpdatePreferences({ excluded_ingredients: ingredientsArr });
+  };
+
+  const handleExcludedIngredientsBlur = () => {
+    saveExcludedIngredients();
+  };
+
+  const handleExcludedIngredientsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      inputRef.current?.blur();
+    }
+  };
 
   const handleUpdatePreferences = async (updatedPrefs: Partial<UserPreferences>) => {
     if (!user) return
@@ -122,6 +153,37 @@ const AccountSettingsPage = () => {
           <SecurityForm user={user} />
         </motion.div>
       </div>
+
+      {/* Advanced Preferences */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {t("accountSettings.advancedPreferences")}
+            </CardTitle>
+            <CardDescription>{t("accountSettings.advancedPreferencesDesc")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label htmlFor="excluded_ingredients" className="block text-sm font-medium mb-1">
+                {t("accountSettings.excludedIngredients")}
+              </label>
+              <input
+                id="excluded_ingredients"
+                type="text"
+                className="w-full border rounded px-3 py-2"
+                placeholder={t("accountSettings.excludedIngredientsPlaceholder")}
+                value={excludedIngredientsInput}
+                onChange={handleExcludedIngredientsChange}
+                onBlur={handleExcludedIngredientsBlur}
+                onKeyDown={handleExcludedIngredientsKeyDown}
+                ref={inputRef}
+              />
+              <p className="text-xs text-muted-foreground mt-1">{t("accountSettings.separateIngredients")}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Danger Zone */}
       <motion.div
