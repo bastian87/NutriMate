@@ -14,7 +14,7 @@ import { userService } from "@/lib/services/user-service"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { useToast } from "@/components/ui/use-toast"
-import { useTranslation } from "react-i18next"
+import { useLanguage } from "@/lib/i18n/context";
 
 interface UserPreferences {
   age?: number
@@ -50,7 +50,8 @@ export default function MobileAccountPage() {
   })
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t } = useLanguage();
+
 
   useEffect(() => {
     if (user) {

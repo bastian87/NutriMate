@@ -305,6 +305,13 @@ export default function AccountPage() {
                     </div>
                   ))}
                 </div>
+                <Button
+                  onClick={handleSavePreferences}
+                  disabled={saving}
+                  className="w-full mt-4"
+                >
+                  {saving ? t("accountPage.saving") : t("accountPage.saveDietaryPreferences")}
+                </Button>
               </div>
             </CardContent>
           </Card>

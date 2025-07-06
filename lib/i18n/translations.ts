@@ -298,6 +298,7 @@ export const translations = {
       protein: "High protein",
       carbs: "High carbs",
       fat: "High fat",
+      saveDietaryPreferences: "Save Dietary Preferences",
       saveAdvancedPreferences: "Save advanced preferences",
       advancedPreferencesDesc: "Further personalize your experience",
     },
@@ -1349,6 +1350,7 @@ export const translations = {
       protein: "Alta en proteínas",
       carbs: "Alta en carbohidratos",
       fat: "Alta en grasas",
+      saveDietaryPreferences: "Guardar preferencias dietarias",
       saveAdvancedPreferences: "Guardar preferencias avanzadas",
       advancedPreferencesDesc: "Personaliza aún más tu experiencia",
     },
@@ -2261,6 +2263,7 @@ export const translations = {
       carbs: "Riche en glucides",
       fat: "Riche en graisses",
       saveAdvancedPreferences: "Enregistrer les préférences avancées",
+      saveDietaryPreferences: "Enregistrer les préférences alimentaires",
       advancedPreferencesDesc: "Personnalisez encore plus votre expérience",
     },
     layout: {
