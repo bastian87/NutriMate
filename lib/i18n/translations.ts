@@ -1810,11 +1810,11 @@ export const translations = {
       height: "Altura (cm)",
       activity: "Nivel de actividad",
       activities: [
-        "Sédentario (peu ou pas d'exercice)",
-        "Léger (exercice léger 1-3 días/semaine)",
-        "Modéré (exercice modéré 3-5 días/semaine)",
-        "Intense (exercice intense 6-7 días/semaine)",
-        "Muy intense (entrenamiento físico ou travail très exigeant)"
+        "Sedentario (poco o ningún ejercicio)",
+        "Ligeramente activo (ejercicio ligero 1-3 días/semana)",
+        "Moderadamente activo (ejercicio moderado 3-5 días/semana)",
+        "Muy activo (ejercicio intenso 6-7 días/semana)",
+        "Extra activo (ejercicio muy intenso y trabajo físico)"
       ],
       goals: [
         "Mantener peso",

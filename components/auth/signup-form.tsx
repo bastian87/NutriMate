@@ -12,8 +12,10 @@ import { useAuthContext } from "./auth-provider"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase/client"
 import { ArrowLeft } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
 
 export default function SignupForm() {
+  const { t } = useLanguage()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [fullName, setFullName] = useState("")
@@ -76,7 +78,7 @@ export default function SignupForm() {
         <Link href="/landing">
           <Button variant="outline" className="flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Volver a Landing
+            {t("auth.backToLanding")}
           </Button>
         </Link>
       </div>
