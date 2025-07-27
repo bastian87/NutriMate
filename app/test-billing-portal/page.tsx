@@ -13,6 +13,7 @@ export default function TestBillingPortalPage() {
   const [testResults, setTestResults] = useState<any>(null)
   const [lemonsqueezyTest, setLemonsqueezyTest] = useState<any>(null)
   const [subscriptionTest, setSubscriptionTest] = useState<any>(null)
+  const [portalGenerationTest, setPortalGenerationTest] = useState<any>(null)
 
   const runBillingPortalTest = async () => {
     if (!user) {
@@ -206,6 +207,53 @@ export default function TestBillingPortalPage() {
     }
   }
 
+  const testPortalGeneration = async () => {
+    setIsLoading(true)
+    try {
+      console.log("Probando diferentes métodos de generación de portal...")
+      
+      const res = await fetch("/api/test-portal-generation")
+      const data = await res.json()
+      
+      setPortalGenerationTest({
+        timestamp: new Date().toISOString(),
+        success: data.success,
+        results: data.results,
+        successfulUrl: data.successfulUrl,
+        customerId: data.customerId,
+        subscriptionId: data.subscriptionId
+      })
+      
+      if (data.success) {
+        toast({
+          title: "Portal generado exitosamente",
+          description: `URL encontrada: ${data.successfulUrl}`,
+        })
+      } else {
+        toast({
+          title: "No se pudo generar el portal",
+          description: "Todos los métodos de prueba fallaron",
+          variant: "destructive"
+        })
+      }
+      
+    } catch (error: any) {
+      setPortalGenerationTest({
+        timestamp: new Date().toISOString(),
+        success: false,
+        error: error.message
+      })
+      
+      toast({
+        title: "Error",
+        description: "Error al probar la generación del portal: " + error.message,
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -262,6 +310,14 @@ export default function TestBillingPortalPage() {
               className="bg-purple-600 hover:bg-purple-700"
             >
               {isLoading ? "Probando..." : "📋 Probar Suscripción"}
+            </Button>
+
+            <Button 
+              onClick={testPortalGeneration} 
+              disabled={isLoading}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {isLoading ? "Probando..." : "🔧 Probar Generación de Portal"}
             </Button>
           </div>
 
@@ -364,6 +420,63 @@ export default function TestBillingPortalPage() {
                   </summary>
                   <pre className="mt-2 text-xs bg-white border border-gray-200 rounded p-2 overflow-auto max-h-64">
                     {JSON.stringify(subscriptionTest, null, 2)}
+                  </pre>
+                </details>
+              </div>
+            </div>
+          )}
+
+          {portalGenerationTest && (
+            <div className="mt-6">
+              <h3 className="font-semibold mb-2">Prueba de Generación de Portal</h3>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <span className="font-medium">Estado:</span>
+                    <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                      portalGenerationTest.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {portalGenerationTest.success ? 'Exitoso' : 'Fallido'}
+                    </span>
+                  </div>
+                  {portalGenerationTest.successfulUrl && (
+                    <div className="col-span-2">
+                      <span className="font-medium">URL exitosa:</span>
+                      <span className="ml-2 text-green-600 break-all">{portalGenerationTest.successfulUrl}</span>
+                    </div>
+                  )}
+                </div>
+                
+                {portalGenerationTest.results && (
+                  <div className="mb-4">
+                    <span className="font-medium">Resultados de las pruebas:</span>
+                    <div className="mt-2 space-y-2">
+                      {portalGenerationTest.results.map((result: any, index: number) => (
+                        <div key={index} className="text-sm border-l-4 pl-2" style={{
+                          borderColor: result.success ? '#10b981' : '#ef4444'
+                        }}>
+                          <div className="font-medium">{result.returnUrl}</div>
+                          <div className="text-gray-600">
+                            Estado: {result.status} {result.statusText}
+                            {result.success && result.url && (
+                              <span className="text-green-600 ml-2">✓ {result.url}</span>
+                            )}
+                            {!result.success && result.error && (
+                              <span className="text-red-600 ml-2">✗ {result.error}</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <details className="mt-4">
+                  <summary className="cursor-pointer font-medium text-gray-700">
+                    Ver datos completos de la prueba
+                  </summary>
+                  <pre className="mt-2 text-xs bg-white border border-gray-200 rounded p-2 overflow-auto max-h-64">
+                    {JSON.stringify(portalGenerationTest, null, 2)}
                   </pre>
                 </details>
               </div>

@@ -152,6 +152,7 @@ export async function getCustomerPortalUrl(subscriptionId: string): Promise<stri
 
     console.log("URL de retorno configurada:", returnUrl)
     console.log("API Key configurada:", LEMONSQUEEZY_CONFIG.apiKey ? "Sí" : "No")
+    console.log("API Key (primeros 10 caracteres):", LEMONSQUEEZY_CONFIG.apiKey ? LEMONSQUEEZY_CONFIG.apiKey.substring(0, 10) + "..." : "No configurada")
 
     // Generar el portal del cliente usando el customer_id
     const portalUrl = `${LEMONSQUEEZY_BASE_URL}/customers/${subscription.customer_id}/portal`
@@ -179,6 +180,7 @@ export async function getCustomerPortalUrl(subscriptionId: string): Promise<stri
     })
 
     console.log("Respuesta del portal de facturación:", response.status, response.statusText)
+    console.log("Headers de respuesta:", Object.fromEntries(response.headers.entries()))
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -197,6 +199,16 @@ export async function getCustomerPortalUrl(subscriptionId: string): Promise<stri
         console.error("Error de permisos - API key no tiene permisos para crear portales")
       } else if (response.status === 422) {
         console.error("Error de validación - datos de la petición inválidos")
+      } else if (response.status === 500) {
+        console.error("Error interno del servidor de LemonSqueezy")
+      }
+      
+      // Intentar método alternativo: generar URL directa del portal
+      console.log("Intentando método alternativo: URL directa del portal")
+      const alternativeUrl = generateAlternativePortalUrl(subscription.customer_id, returnUrl)
+      if (alternativeUrl) {
+        console.log("URL alternativa generada:", alternativeUrl)
+        return alternativeUrl
       }
       
       return null
@@ -208,6 +220,40 @@ export async function getCustomerPortalUrl(subscriptionId: string): Promise<stri
     return data.data.attributes.url
   } catch (error) {
     console.error("Error getting customer portal URL:", error)
+    console.error("Stack trace:", error instanceof Error ? error.stack : "No stack trace available")
+    
+    // Intentar método alternativo en caso de error
+    try {
+      const subscription = await getSubscription(subscriptionId)
+      if (subscription) {
+        const returnUrl = process.env.NEXT_PUBLIC_APP_URL 
+          ? `${process.env.NEXT_PUBLIC_APP_URL}/account/subscription`
+          : "https://nutrimate.app/account/subscription"
+        
+        const alternativeUrl = generateAlternativePortalUrl(subscription.customer_id, returnUrl)
+        if (alternativeUrl) {
+          console.log("URL alternativa generada después de error:", alternativeUrl)
+          return alternativeUrl
+        }
+      }
+    } catch (altError) {
+      console.error("Error en método alternativo:", altError)
+    }
+    
+    return null
+  }
+}
+
+// Función alternativa para generar URL del portal
+function generateAlternativePortalUrl(customerId: string, returnUrl: string): string | null {
+  try {
+    // Generar una URL del portal usando el customer_id directamente
+    // Esta es una URL que debería funcionar para acceder al portal de facturación
+    const portalUrl = `https://app.lemonsqueezy.com/billing?customer=${customerId}&return_url=${encodeURIComponent(returnUrl)}`
+    console.log("URL alternativa generada:", portalUrl)
+    return portalUrl
+  } catch (error) {
+    console.error("Error generando URL alternativa:", error)
     return null
   }
 }
