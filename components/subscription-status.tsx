@@ -20,6 +20,8 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [cancelledSubscription, setCancelledSubscription] = useState<any | null>(null)
+  const [showDebugInfo, setShowDebugInfo] = useState(false)
+  const [debugInfo, setDebugInfo] = useState<any>(null)
   const { t } = useLanguage()
   const { toast } = useToast()
 
@@ -103,8 +105,11 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
     setError(null)
     setMessage(null)
     try {
+      console.log("Iniciando solicitud de portal de facturación...")
       const res = await fetch("/api/user/subscription", { method: "GET" })
       const data = await res.json()
+      
+      console.log("Respuesta del servidor:", { status: res.status, data })
       
       if (!res.ok) {
         if (res.status === 404) {
@@ -126,10 +131,35 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
         throw new Error("No se pudo generar la URL del portal de facturación.")
       }
       
+      console.log("Abriendo portal de facturación:", data.url)
       window.open(data.url, "_blank")
       setMessage("Portal de facturación abierto en una nueva pestaña.")
     } catch (error: any) {
+      console.error("Error en handleManageBilling:", error)
       setError(error.message || "No se pudo abrir el portal de facturación.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDebugSubscription = async () => {
+    setIsLoading(true)
+    setError(null)
+    setMessage(null)
+    try {
+      const res = await fetch("/api/user/subscription", { method: "GET" })
+      const data = await res.json()
+      
+      setDebugInfo({
+        responseStatus: res.status,
+        responseData: data,
+        subscription: subscription,
+        cancelledSubscription: cancelledSubscription,
+        timestamp: new Date().toISOString()
+      })
+      setShowDebugInfo(true)
+    } catch (error: any) {
+      setError("Error al obtener información de depuración: " + error.message)
     } finally {
       setIsLoading(false)
     }
@@ -344,6 +374,34 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
         <Button variant="outline" className="w-fit mb-2" onClick={refreshSubscription} disabled={isLoading}>
         {t("subscription.refresStatus")}
         </Button>
+        
+        {/* Botón de depuración */}
+        <Button 
+          variant="outline" 
+          className="w-fit ml-2" 
+          onClick={handleDebugSubscription} 
+          disabled={isLoading}
+        >
+          🔍 Depurar
+        </Button>
+        
+        {/* Información de depuración */}
+        {showDebugInfo && debugInfo && (
+          <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <h4 className="font-semibold mb-2">Información de Depuración</h4>
+            <pre className="text-xs overflow-auto max-h-96">
+              {JSON.stringify(debugInfo, null, 2)}
+            </pre>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2"
+              onClick={() => setShowDebugInfo(false)}
+            >
+              Cerrar
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

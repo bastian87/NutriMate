@@ -91,6 +91,8 @@ export async function PATCH(request: NextRequest) {
 export async function GET(request: NextRequest) {
   // Obtener URL del portal de facturación
   try {
+    console.log("GET /api/user/subscription - Iniciando solicitud de portal de facturación")
+    
     const supabase = createServerSupabaseClient()
     const {
       data: { user },
@@ -98,8 +100,11 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
+      console.error("Error de autenticación:", authError)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    console.log("Usuario autenticado:", user.id)
 
     // Buscar el subscription_id del usuario
     const { data: subData, error: subError } = await supabase
@@ -109,26 +114,32 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (subError || !subData?.subscription_id) {
-      console.error("Subscription lookup error:", subError)
+      console.error("Error al buscar suscripción:", subError)
       return NextResponse.json({ 
         error: "No subscription found", 
         details: "User does not have an active subscription" 
       }, { status: 404 })
     }
 
-    console.log("Attempting to get portal URL for subscription:", subData.subscription_id)
+    console.log("Suscripción encontrada:", { 
+      subscriptionId: subData.subscription_id, 
+      status: subData.status 
+    })
     
     const url = await getCustomerPortalUrl(subData.subscription_id)
     if (!url) {
-      console.error("Failed to generate customer portal URL")
+      console.error("No se pudo generar URL del portal de facturación")
       
       // Verificar si la suscripción existe en LemonSqueezy
       const subscription = await getSubscription(subData.subscription_id)
       if (!subscription) {
+        console.error("Suscripción no encontrada en LemonSqueezy")
+        
         // Verificar si estamos en modo de desarrollo
         const isDevelopment = process.env.NODE_ENV !== "production"
         
         if (isDevelopment) {
+          console.log("Modo de desarrollo detectado - suscripción de prueba")
           return NextResponse.json({ 
             error: "Test subscription portal not available", 
             details: "You are using a test subscription in development mode. Test subscriptions may not have access to the billing portal. Please create a new subscription in production mode to access billing features.",
@@ -152,10 +163,10 @@ export async function GET(request: NextRequest) {
       }, { status: 500 })
     }
 
-    console.log("Successfully generated portal URL")
+    console.log("URL del portal generada exitosamente")
     return NextResponse.json({ url })
   } catch (error) {
-    console.error("Get billing portal URL error:", error)
+    console.error("Error in GET /api/user/subscription:", error)
     return NextResponse.json({ 
       error: "Internal server error",
       details: "An unexpected error occurred while generating the billing portal URL"

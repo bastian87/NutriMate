@@ -134,6 +134,8 @@ export async function resumeSubscription(subscriptionId: string): Promise<boolea
 
 export async function getCustomerPortalUrl(subscriptionId: string): Promise<string | null> {
   try {
+    console.log("getCustomerPortalUrl - Iniciando para subscriptionId:", subscriptionId)
+    
     // Primero obtener la suscripción para obtener el customer_id
     const subscription = await getSubscription(subscriptionId)
     if (!subscription) {
@@ -141,10 +143,14 @@ export async function getCustomerPortalUrl(subscriptionId: string): Promise<stri
       return null
     }
 
+    console.log("Suscripción obtenida, customer_id:", subscription.customer_id)
+
     // URL de retorno por defecto
     const returnUrl = process.env.NEXT_PUBLIC_APP_URL 
       ? `${process.env.NEXT_PUBLIC_APP_URL}/account/subscription`
       : "https://nutrimate.app/account/subscription"
+
+    console.log("URL de retorno configurada:", returnUrl)
 
     // Generar el portal del cliente usando el customer_id
     const response = await fetch(`${LEMONSQUEEZY_BASE_URL}/customers/${subscription.customer_id}/portal`, {
@@ -164,6 +170,8 @@ export async function getCustomerPortalUrl(subscriptionId: string): Promise<stri
       }),
     })
 
+    console.log("Respuesta del portal de facturación:", response.status)
+
     if (!response.ok) {
       const errorText = await response.text()
       console.error(`Failed to create customer portal: ${response.status} - ${errorText}`)
@@ -178,6 +186,7 @@ export async function getCustomerPortalUrl(subscriptionId: string): Promise<stri
     }
 
     const data = await response.json()
+    console.log("Portal URL generada exitosamente")
     return data.data.attributes.url
   } catch (error) {
     console.error("Error getting customer portal URL:", error)
