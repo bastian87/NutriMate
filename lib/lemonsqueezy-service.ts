@@ -151,26 +151,34 @@ export async function getCustomerPortalUrl(subscriptionId: string): Promise<stri
       : "https://nutrimate.app/account/subscription"
 
     console.log("URL de retorno configurada:", returnUrl)
+    console.log("API Key configurada:", LEMONSQUEEZY_CONFIG.apiKey ? "Sí" : "No")
 
     // Generar el portal del cliente usando el customer_id
-    const response = await fetch(`${LEMONSQUEEZY_BASE_URL}/customers/${subscription.customer_id}/portal`, {
+    const portalUrl = `${LEMONSQUEEZY_BASE_URL}/customers/${subscription.customer_id}/portal`
+    console.log("URL del portal a llamar:", portalUrl)
+    
+    const requestBody = {
+      data: {
+        type: "customer-portals",
+        attributes: {
+          return_url: returnUrl,
+        },
+      },
+    }
+    
+    console.log("Cuerpo de la petición:", JSON.stringify(requestBody, null, 2))
+
+    const response = await fetch(portalUrl, {
       method: "POST",
       headers: {
         Accept: "application/vnd.api+json",
         "Content-Type": "application/vnd.api+json",
         Authorization: `Bearer ${LEMONSQUEEZY_CONFIG.apiKey}`,
       },
-      body: JSON.stringify({
-        data: {
-          type: "customer-portals",
-          attributes: {
-            return_url: returnUrl,
-          },
-        },
-      }),
+      body: JSON.stringify(requestBody),
     })
 
-    console.log("Respuesta del portal de facturación:", response.status)
+    console.log("Respuesta del portal de facturación:", response.status, response.statusText)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -182,11 +190,21 @@ export async function getCustomerPortalUrl(subscriptionId: string): Promise<stri
         return null
       }
       
+      // Log adicional para otros errores
+      if (response.status === 401) {
+        console.error("Error de autenticación - API key inválida")
+      } else if (response.status === 403) {
+        console.error("Error de permisos - API key no tiene permisos para crear portales")
+      } else if (response.status === 422) {
+        console.error("Error de validación - datos de la petición inválidos")
+      }
+      
       return null
     }
 
     const data = await response.json()
-    console.log("Portal URL generada exitosamente")
+    console.log("Respuesta completa del portal:", JSON.stringify(data, null, 2))
+    console.log("Portal URL generada exitosamente:", data.data.attributes.url)
     return data.data.attributes.url
   } catch (error) {
     console.error("Error getting customer portal URL:", error)

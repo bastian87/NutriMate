@@ -11,6 +11,8 @@ export default function TestBillingPortalPage() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [testResults, setTestResults] = useState<any>(null)
+  const [lemonsqueezyTest, setLemonsqueezyTest] = useState<any>(null)
+  const [subscriptionTest, setSubscriptionTest] = useState<any>(null)
 
   const runBillingPortalTest = async () => {
     if (!user) {
@@ -109,6 +111,101 @@ export default function TestBillingPortalPage() {
     }
   }
 
+  const testLemonSqueezyConnection = async () => {
+    setIsLoading(true)
+    try {
+      console.log("Probando conectividad con LemonSqueezy...")
+      
+      const res = await fetch("/api/test-lemonsqueezy")
+      const data = await res.json()
+      
+      setLemonsqueezyTest({
+        timestamp: new Date().toISOString(),
+        success: data.success,
+        error: data.error,
+        details: data.details,
+        storeInfo: data.storeInfo,
+        apiKeyConfigured: data.apiKeyConfigured,
+        storeIdConfigured: data.storeIdConfigured
+      })
+      
+      if (data.success) {
+        toast({
+          title: "Conexión exitosa",
+          description: "LemonSqueezy está configurado correctamente",
+        })
+      } else {
+        toast({
+          title: "Error de conexión",
+          description: data.error || "No se pudo conectar con LemonSqueezy",
+          variant: "destructive"
+        })
+      }
+      
+    } catch (error: any) {
+      setLemonsqueezyTest({
+        timestamp: new Date().toISOString(),
+        success: false,
+        error: error.message
+      })
+      
+      toast({
+        title: "Error",
+        description: "Error al probar LemonSqueezy: " + error.message,
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const testSubscriptionInLemonSqueezy = async () => {
+    setIsLoading(true)
+    try {
+      console.log("Probando suscripción específica en LemonSqueezy...")
+      
+      const res = await fetch("/api/test-subscription")
+      const data = await res.json()
+      
+      setSubscriptionTest({
+        timestamp: new Date().toISOString(),
+        success: data.success,
+        error: data.error,
+        details: data.details,
+        subscription: data.subscription,
+        databaseSubscription: data.databaseSubscription
+      })
+      
+      if (data.success) {
+        toast({
+          title: "Suscripción encontrada",
+          description: "La suscripción existe en LemonSqueezy y está activa",
+        })
+      } else {
+        toast({
+          title: "Suscripción no encontrada",
+          description: data.error || "No se pudo encontrar la suscripción en LemonSqueezy",
+          variant: "destructive"
+        })
+      }
+      
+    } catch (error: any) {
+      setSubscriptionTest({
+        timestamp: new Date().toISOString(),
+        success: false,
+        error: error.message
+      })
+      
+      toast({
+        title: "Error",
+        description: "Error al probar la suscripción: " + error.message,
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -150,7 +247,128 @@ export default function TestBillingPortalPage() {
             >
               {isLoading ? "Abriendo..." : "🚀 Abrir Portal"}
             </Button>
+
+            <Button 
+              onClick={testLemonSqueezyConnection} 
+              disabled={isLoading}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isLoading ? "Probando..." : "🔧 Probar LemonSqueezy"}
+            </Button>
+
+            <Button 
+              onClick={testSubscriptionInLemonSqueezy} 
+              disabled={isLoading}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              {isLoading ? "Probando..." : "📋 Probar Suscripción"}
+            </Button>
           </div>
+
+          {lemonsqueezyTest && (
+            <div className="mt-6">
+              <h3 className="font-semibold mb-2">Prueba de LemonSqueezy</h3>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <span className="font-medium">Estado:</span>
+                    <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                      lemonsqueezyTest.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {lemonsqueezyTest.success ? 'Conectado' : 'Error'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">API Key:</span>
+                    <span className={`ml-2 ${lemonsqueezyTest.apiKeyConfigured ? 'text-green-600' : 'text-red-600'}`}>
+                      {lemonsqueezyTest.apiKeyConfigured ? '✓ Configurada' : '✗ No configurada'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Store ID:</span>
+                    <span className={`ml-2 ${lemonsqueezyTest.storeIdConfigured ? 'text-green-600' : 'text-red-600'}`}>
+                      {lemonsqueezyTest.storeIdConfigured ? '✓ Configurado' : '✗ No configurado'}
+                    </span>
+                  </div>
+                </div>
+                
+                {lemonsqueezyTest.error && (
+                  <div className="mb-4">
+                    <span className="font-medium text-red-600">Error:</span>
+                    <p className="text-sm text-red-600 mt-1">{lemonsqueezyTest.error}</p>
+                  </div>
+                )}
+                
+                {lemonsqueezyTest.storeInfo && (
+                  <div className="mb-4">
+                    <span className="font-medium">Información de la tienda:</span>
+                    <p className="text-sm text-gray-600 mt-1">Nombre: {lemonsqueezyTest.storeInfo.name}</p>
+                    <p className="text-sm text-gray-600">Slug: {lemonsqueezyTest.storeInfo.slug}</p>
+                  </div>
+                )}
+
+                <details className="mt-4">
+                  <summary className="cursor-pointer font-medium text-gray-700">
+                    Ver datos completos de LemonSqueezy
+                  </summary>
+                  <pre className="mt-2 text-xs bg-white border border-gray-200 rounded p-2 overflow-auto max-h-64">
+                    {JSON.stringify(lemonsqueezyTest, null, 2)}
+                  </pre>
+                </details>
+              </div>
+            </div>
+          )}
+
+          {subscriptionTest && (
+            <div className="mt-6">
+              <h3 className="font-semibold mb-2">Prueba de Suscripción</h3>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <span className="font-medium">Estado:</span>
+                    <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                      subscriptionTest.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {subscriptionTest.success ? 'Encontrada' : 'No encontrada'}
+                    </span>
+                  </div>
+                </div>
+                
+                {subscriptionTest.error && (
+                  <div className="mb-4">
+                    <span className="font-medium text-red-600">Error:</span>
+                    <p className="text-sm text-red-600 mt-1">{subscriptionTest.error}</p>
+                  </div>
+                )}
+                
+                {subscriptionTest.details && (
+                  <div className="mb-4">
+                    <span className="font-medium">Detalles:</span>
+                    <p className="text-sm text-gray-600 mt-1">{subscriptionTest.details}</p>
+                  </div>
+                )}
+
+                {subscriptionTest.subscription && (
+                  <div className="mb-4">
+                    <span className="font-medium">Información de LemonSqueezy:</span>
+                    <p className="text-sm text-gray-600 mt-1">Producto: {subscriptionTest.subscription.product_name}</p>
+                    <p className="text-sm text-gray-600">Variante: {subscriptionTest.subscription.variant_name}</p>
+                    <p className="text-sm text-gray-600">Estado: {subscriptionTest.subscription.status}</p>
+                    <p className="text-sm text-gray-600">Cancelada: {subscriptionTest.subscription.cancelled ? 'Sí' : 'No'}</p>
+                  </div>
+                )}
+
+                <details className="mt-4">
+                  <summary className="cursor-pointer font-medium text-gray-700">
+                    Ver datos completos de la suscripción
+                  </summary>
+                  <pre className="mt-2 text-xs bg-white border border-gray-200 rounded p-2 overflow-auto max-h-64">
+                    {JSON.stringify(subscriptionTest, null, 2)}
+                  </pre>
+                </details>
+              </div>
+            </div>
+          )}
 
           {testResults && (
             <div className="mt-6">
