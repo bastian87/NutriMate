@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
-import { cancelSubscription, resumeSubscription, getCustomerPortalUrl, getSubscription } from "@/lib/lemonsqueezy-service"
+import { cancelSubscription, resumeSubscription, getCustomerPortalUrl, getSubscription, getDirectBillingPortalUrl } from "@/lib/lemonsqueezy-service"
 
 export async function POST(request: NextRequest) {
   // Cancelar suscripción
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
     // Buscar el subscription_id del usuario
     const { data: subData, error: subError } = await supabase
       .from("user_subscriptions")
-      .select("subscription_id, status")
+      .select("subscription_id, status, customer_id")
       .eq("user_id", user.id)
       .single()
 
@@ -126,47 +126,58 @@ export async function GET(request: NextRequest) {
       status: subData.status 
     })
     
+    // Intentar obtener la URL del portal usando la API de LemonSqueezy
     const url = await getCustomerPortalUrl(subData.subscription_id)
+    
     if (!url) {
-      console.error("No se pudo generar URL del portal de facturación")
+      console.log("No se pudo generar URL del portal con la API, usando método directo")
       
-      // Verificar si la suscripción existe en LemonSqueezy
-      const subscription = await getSubscription(subData.subscription_id)
-      if (!subscription) {
-        console.error("Suscripción no encontrada en LemonSqueezy")
-        
-        // Verificar si estamos en modo de desarrollo
-        const isDevelopment = process.env.NODE_ENV !== "production"
-        
-        if (isDevelopment) {
-          console.log("Modo de desarrollo detectado - suscripción de prueba")
-          return NextResponse.json({ 
-            error: "Test subscription portal not available", 
-            details: "You are using a test subscription in development mode. Test subscriptions may not have access to the billing portal. Please create a new subscription in production mode to access billing features.",
-            subscriptionId: subData.subscription_id,
-            status: subData.status,
-            isTestMode: true
-          }, { status: 400 })
-        } else {
-          return NextResponse.json({ 
-            error: "Subscription not found in LemonSqueezy", 
-            details: "Your subscription exists in our database but not in the payment system. Please contact support to resolve this issue.",
-            subscriptionId: subData.subscription_id,
-            status: subData.status
-          }, { status: 500 })
-        }
-      }
+      // Usar el método directo como fallback
+      const directUrl = getDirectBillingPortalUrl(subData.customer_id)
+      console.log("URL directa generada:", directUrl)
       
       return NextResponse.json({ 
-        error: "No portal URL available", 
-        details: "Could not generate billing portal URL. Please try again later." 
-      }, { status: 500 })
+        url: directUrl,
+        method: "direct",
+        customerId: subData.customer_id
+      })
     }
 
-    console.log("URL del portal generada exitosamente")
-    return NextResponse.json({ url })
+    console.log("URL del portal generada exitosamente con API")
+    return NextResponse.json({ 
+      url,
+      method: "api"
+    })
   } catch (error) {
     console.error("Error in GET /api/user/subscription:", error)
+    
+    // Como último recurso, intentar generar la URL directa
+    try {
+      const supabase = createServerSupabaseClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (user) {
+        const { data: subData } = await supabase
+          .from("user_subscriptions")
+          .select("customer_id")
+          .eq("user_id", user.id)
+          .single()
+        
+        if (subData?.customer_id) {
+          const directUrl = getDirectBillingPortalUrl(subData.customer_id)
+          console.log("URL directa generada como último recurso:", directUrl)
+          
+          return NextResponse.json({ 
+            url: directUrl,
+            method: "direct_fallback",
+            customerId: subData.customer_id
+          })
+        }
+      }
+    } catch (fallbackError) {
+      console.error("Error en fallback:", fallbackError)
+    }
+    
     return NextResponse.json({ 
       error: "Internal server error",
       details: "An unexpected error occurred while generating the billing portal URL"

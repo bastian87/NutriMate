@@ -258,12 +258,21 @@ export async function getCustomerPortalUrl(subscriptionId: string): Promise<stri
   }
 }
 
+// Función para generar URL directa del portal de facturación
+export function getDirectBillingPortalUrl(customerId: string): string {
+  const baseUrl = "https://nutrimate.lemonsqueezy.com/billing"
+  const returnUrl = process.env.NEXT_PUBLIC_APP_URL 
+    ? `${process.env.NEXT_PUBLIC_APP_URL}/account/subscription`
+    : "https://nutrimate.app/account/subscription"
+  
+  return `${baseUrl}?customer=${customerId}&return_url=${encodeURIComponent(returnUrl)}`
+}
+
 // Función alternativa para generar URL del portal
 function generateAlternativePortalUrl(customerId: string, returnUrl: string): string | null {
   try {
-    // Generar una URL del portal usando el customer_id directamente
-    // Esta es una URL que debería funcionar para acceder al portal de facturación
-    const portalUrl = `https://app.lemonsqueezy.com/billing?customer=${customerId}&return_url=${encodeURIComponent(returnUrl)}`
+    // Usar la URL directa del portal de facturación de Nutrimate
+    const portalUrl = `https://nutrimate.lemonsqueezy.com/billing?customer=${customerId}&return_url=${encodeURIComponent(returnUrl)}`
     console.log("URL alternativa generada:", portalUrl)
     return portalUrl
   } catch (error) {
