@@ -64,7 +64,14 @@ export async function GET() {
           }),
         })
 
-        const result = {
+        const result: {
+          returnUrl: string;
+          status: number;
+          statusText: string;
+          success: boolean;
+          error: string | null;
+          url: string | null;
+        } = {
           returnUrl,
           status: response.status,
           statusText: response.statusText,

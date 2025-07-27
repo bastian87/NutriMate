@@ -14,6 +14,7 @@ export default function TestBillingPortalPage() {
   const [lemonsqueezyTest, setLemonsqueezyTest] = useState<any>(null)
   const [subscriptionTest, setSubscriptionTest] = useState<any>(null)
   const [portalGenerationTest, setPortalGenerationTest] = useState<any>(null)
+  const [lemonsqueezyConfig, setLemonsqueezyConfig] = useState<any>(null)
 
   const runBillingPortalTest = async () => {
     if (!user) {
@@ -254,6 +255,52 @@ export default function TestBillingPortalPage() {
     }
   }
 
+  const checkLemonSqueezyConfig = async () => {
+    setIsLoading(true)
+    try {
+      console.log("Verificando configuración de LemonSqueezy...")
+      
+      const res = await fetch("/api/check-lemonsqueezy-config")
+      const data = await res.json()
+      
+      setLemonsqueezyConfig({
+        timestamp: new Date().toISOString(),
+        success: data.success,
+        storeInfo: data.storeInfo,
+        recommendations: data.recommendations,
+        manualCheckRequired: data.manualCheckRequired
+      })
+      
+      if (data.success) {
+        toast({
+          title: "Configuración verificada",
+          description: "Revisa las recomendaciones para configurar el portal de facturación",
+        })
+      } else {
+        toast({
+          title: "Error al verificar",
+          description: data.error || "No se pudo verificar la configuración",
+          variant: "destructive"
+        })
+      }
+      
+    } catch (error: any) {
+      setLemonsqueezyConfig({
+        timestamp: new Date().toISOString(),
+        success: false,
+        error: error.message
+      })
+      
+      toast({
+        title: "Error",
+        description: "Error al verificar la configuración: " + error.message,
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -319,7 +366,70 @@ export default function TestBillingPortalPage() {
             >
               {isLoading ? "Probando..." : "🔧 Probar Generación de Portal"}
             </Button>
+
+            <Button 
+              onClick={checkLemonSqueezyConfig} 
+              disabled={isLoading}
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
+              {isLoading ? "Verificando..." : "⚙️ Verificar Configuración LS"}
+            </Button>
           </div>
+
+          {lemonsqueezyConfig && (
+            <div className="mt-6">
+              <h3 className="font-semibold mb-2">Configuración de LemonSqueezy</h3>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <span className="font-medium">Estado:</span>
+                    <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                      lemonsqueezyConfig.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {lemonsqueezyConfig.success ? 'Verificado' : 'Error'}
+                    </span>
+                  </div>
+                </div>
+                
+                {lemonsqueezyConfig.storeInfo && (
+                  <div className="mb-4">
+                    <span className="font-medium">Información de la tienda:</span>
+                    <p className="text-sm text-gray-600 mt-1">Nombre: {lemonsqueezyConfig.storeInfo.name}</p>
+                    <p className="text-sm text-gray-600">Dominio: {lemonsqueezyConfig.storeInfo.domain}</p>
+                    <p className="text-sm text-gray-600">URL: {lemonsqueezyConfig.storeInfo.url}</p>
+                  </div>
+                )}
+
+                {lemonsqueezyConfig.recommendations && (
+                  <div className="mb-4">
+                    <span className="font-medium text-blue-600">Pasos para configurar en LemonSqueezy:</span>
+                    <ol className="text-sm text-gray-700 mt-2 space-y-1 list-decimal list-inside">
+                      {lemonsqueezyConfig.recommendations.map((rec: string, index: number) => (
+                        <li key={index}>{rec}</li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <h4 className="font-semibold text-blue-800 mb-2">💡 Recomendación</h4>
+                  <p className="text-sm text-blue-700">
+                    <strong>Configura la URL de retorno directamente en LemonSqueezy</strong> en lugar de usar variables de entorno. 
+                    Esto es más confiable y es la forma oficial recomendada.
+                  </p>
+                </div>
+
+                <details className="mt-4">
+                  <summary className="cursor-pointer font-medium text-gray-700">
+                    Ver datos completos de la configuración
+                  </summary>
+                  <pre className="mt-2 text-xs bg-white border border-gray-200 rounded p-2 overflow-auto max-h-64">
+                    {JSON.stringify(lemonsqueezyConfig, null, 2)}
+                  </pre>
+                </details>
+              </div>
+            </div>
+          )}
 
           {lemonsqueezyTest && (
             <div className="mt-6">
