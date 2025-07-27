@@ -145,10 +145,24 @@ export async function getCustomerPortalUrl(subscriptionId: string): Promise<stri
 
     console.log("Suscripción obtenida, customer_id:", subscription.customer_id)
 
-    // URL de retorno por defecto
-    const returnUrl = process.env.NEXT_PUBLIC_APP_URL 
+    // Determinar la URL de retorno con fallbacks
+    let returnUrl = process.env.NEXT_PUBLIC_APP_URL 
       ? `${process.env.NEXT_PUBLIC_APP_URL}/account/subscription`
-      : "https://nutrimate.app/account/subscription"
+      : null
+    
+    // Si no hay NEXT_PUBLIC_APP_URL configurada, usar URLs alternativas
+    if (!returnUrl) {
+      // Intentar detectar la URL actual
+      if (typeof window !== 'undefined') {
+        const currentOrigin = window.location.origin
+        returnUrl = `${currentOrigin}/account/subscription`
+        console.log("Usando URL detectada del navegador:", returnUrl)
+      } else {
+        // Fallback para servidor
+        returnUrl = "https://nutrimate.app/account/subscription"
+        console.log("Usando URL de fallback:", returnUrl)
+      }
+    }
 
     console.log("URL de retorno configurada:", returnUrl)
     console.log("API Key configurada:", LEMONSQUEEZY_CONFIG.apiKey ? "Sí" : "No")
@@ -226,7 +240,7 @@ export async function getCustomerPortalUrl(subscriptionId: string): Promise<stri
     try {
       const subscription = await getSubscription(subscriptionId)
       if (subscription) {
-        const returnUrl = process.env.NEXT_PUBLIC_APP_URL 
+        let returnUrl = process.env.NEXT_PUBLIC_APP_URL 
           ? `${process.env.NEXT_PUBLIC_APP_URL}/account/subscription`
           : "https://nutrimate.app/account/subscription"
         

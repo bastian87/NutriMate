@@ -547,7 +547,22 @@ export default function TestBillingPortalPage() {
               <li>• API key de LemonSqueezy mal configurada</li>
               <li>• Suscripción no encontrada en LemonSqueezy</li>
               <li>• Problemas de conectividad con la API de LemonSqueezy</li>
+              <li>• <strong>URL de retorno no configurada</strong> (problema más común)</li>
             </ul>
+            
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <h4 className="font-semibold text-blue-800 mb-2">¿Problema con la URL de retorno?</h4>
+              <p className="text-sm text-blue-700 mb-3">
+                Si el problema es que no tienes configurada una URL de retorno válida, 
+                usa nuestra herramienta de configuración:
+              </p>
+              <a 
+                href="/configure-url" 
+                className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
+              >
+                🔧 Configurar URL de Retorno
+              </a>
+            </div>
           </div>
         </CardContent>
       </Card>
