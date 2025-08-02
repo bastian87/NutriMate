@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, Filter, Clock, Star, Heart, X, ChefHat, Utensils, Plus, Loader2, Bookmark, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, Filter, Clock, Star, Heart, X, ChefHat, Utensils, Plus, Loader2, Bookmark, ChevronLeft, ChevronRight, BookmarkCheck } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -28,6 +28,7 @@ export default function RecipesPage() {
   const { tryAddFavorite, showLimitModal, setShowLimitModal, favorites, removeFavorite } = useUserFavorites()
   const { isPremium } = useSubscription()
   const [recipesState, setRecipesState] = useState<RecipeWithDetails[]>([])
+  const [favoritedRecipes, setFavoritedRecipes] = useState<Set<string>>(new Set())
   const { t } = useLanguage();
 
   const filters = useMemo(
@@ -45,7 +46,12 @@ export default function RecipesPage() {
 
   useEffect(() => {
     setRecipesState(recipes)
-  }, [recipes])
+    // Inicializar favoritos con las recetas que ya están en favoritos
+    const favoriteIds = favorites.map(fav => fav.id)
+    setFavoritedRecipes(new Set(favoriteIds))
+    
+
+  }, [recipes, favorites])
 
   // Definir tipos de comida
   const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
@@ -398,32 +404,47 @@ export default function RecipesPage() {
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => {
-                            const isFav = recipesState.find(r => r.id === recipe.id)?.is_favorited
+                            const isFav = favoritedRecipes.has(recipe.id)
                             if (isFav) {
                               removeFavorite(recipe.id)
-                              setRecipesState(prev => prev.map(r => r.id === recipe.id ? { ...r, is_favorited: false } : r))
+                              setFavoritedRecipes(prev => {
+                                const newSet = new Set(prev)
+                                newSet.delete(recipe.id)
+                                return newSet
+                              })
                             } else {
-                              const currentFavoritesCount = recipesState.filter((r) => r.is_favorited).length
+                              const currentFavoritesCount = favoritedRecipes.size
                               if (!isPremium && currentFavoritesCount >= 10) {
                                 setShowLimitModal(true)
                                 return
                               }
                               tryAddFavorite(recipe.id).then(success => {
-                                if (success) setRecipesState(prev => prev.map(r => r.id === recipe.id ? { ...r, is_favorited: true } : r))
+                                if (success) {
+                                  setFavoritedRecipes(prev => new Set([...prev, recipe.id]))
+                                }
                               })
                             }
                           }}
                           className={`p-1.5 rounded-full backdrop-blur-sm transition-all duration-200 ${
-                            recipe.is_favorited ? "bg-orange-500 text-white" : "bg-white/80 text-gray-600 hover:bg-white"
+                            favoritedRecipes.has(recipe.id) ? "bg-red-500 text-white" : "bg-white/80 text-gray-600 hover:bg-white"
                           }`}
-                          aria-label={recipe.is_favorited ? "Remove from favorites" : "Add to favorites"}
+                          aria-label={favoritedRecipes.has(recipe.id) ? "Remove from favorites" : "Add to favorites"}
                         >
-                          <Bookmark className={`h-4 w-4 ${recipe.is_favorited ? "fill-current" : ""}`} />
+                          <Heart className={`h-4 w-4 ${favoritedRecipes.has(recipe.id) ? "fill-current" : ""}`} />
                         </motion.button>
                       )}
                       <div className="bg-white/90 backdrop-blur-sm text-orange-600 rounded-full px-2 py-1 text-xs font-semibold flex items-center">
                         <Star className="h-3 w-3 mr-1 fill-orange-600 text-orange-600" />
-                        {recipe.average_rating ? recipe.average_rating.toFixed(1) : "N/A"}
+                        {recipe.average_rating !== null && recipe.average_rating !== undefined ? (
+                          <span>
+                            {recipe.average_rating.toFixed(1)}
+                            {recipe.rating_count && recipe.rating_count > 0 && (
+                              <span className="text-xs opacity-75 ml-1">({recipe.rating_count})</span>
+                            )}
+                          </span>
+                        ) : (
+                          "N/A"
+                        )}
                       </div>
                     </div>
                     <div className="absolute bottom-2 left-2">

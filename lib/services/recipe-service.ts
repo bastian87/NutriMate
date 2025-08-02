@@ -82,16 +82,29 @@ export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDet
     const recipeIds = recipes.map((r) => r.id)
     if (recipeIds.length === 0) return []
 
-    const [ingredientsResult, ratingsResult, favoritesResult] = await Promise.all([
+    // Cargar todas las calificaciones (más eficiente que filtrar por IDs)
+    const { data: allRatings, error: allRatingsError } = await supabase
+      .from("recipe_ratings")
+      .select("recipe_id, rating, user_id");
+    
+    if (allRatingsError) {
+      console.error("Error loading ratings:", allRatingsError);
+    }
+    
+    const [ingredientsResult, favoritesResult] = await Promise.all([
       supabase.from("recipe_ingredients").select("*").in("recipe_id", recipeIds),
-      supabase.from("recipe_ratings").select("recipe_id, rating, user_id").in("recipe_id", recipeIds),
       filters?.userId
         ? supabase.from("user_favorites").select("recipe_id").eq("user_id", filters.userId).in("recipe_id", recipeIds)
         : Promise.resolve({ data: [] }),
     ]);
     const ingredientsData = ingredientsResult.data;
-    const ratingsData = ratingsResult.data;
+    const ratingsData = allRatings; // Usar todas las calificaciones sin filtro
     const favoritesData = favoritesResult.data;
+    
+    // Debug: verificar datos de calificaciones
+
+    
+
 
     // Función para normalizar IDs (quita guiones, minúsculas, trim)
     const normalize = (id: string) => id.replace(/-/g, "").toLowerCase().trim();
@@ -105,6 +118,10 @@ export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDet
         recipeRatings.length > 0
           ? recipeRatings.reduce((sum: number, r: any) => sum + r.rating, 0) / recipeRatings.length
           : 0
+      
+
+      
+
       const isFavorited = favoritesData?.some((fav) => fav.recipe_id === recipe.id) || false
       const userRating = filters?.userId ? recipeRatings.find((r) => r.user_id === filters.userId)?.rating : undefined
 
