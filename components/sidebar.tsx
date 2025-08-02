@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSelector } from "./language-selector"
 import { useAuthContext } from "@/components/auth/auth-provider"
-import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider"
+import { useUserProfile } from "@/components/auth/user-profile-provider"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { ThemeToggle } from "./theme-toggle"
@@ -31,12 +31,11 @@ import {
 } from "lucide-react"
 
 export function Sidebar() {
+  const { user, signOut } = useAuthContext()
   const { t } = useLanguage()
   const pathname = usePathname()
   const router = useRouter()
-  const { user, loading: authLoading, signOut } = useAuthContext()
-  const { userData, loading: profileLoading } = useUserProfile()
-  const isPremium = useIsPremium()
+  const { userData } = useUserProfile()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -134,7 +133,7 @@ export function Sidebar() {
   )
 
   // Mostrar loading state mientras se cargan los datos
-  if (authLoading || profileLoading) {
+  if (userData === null) {
     return (
       <>
         <MobileMenuButton />
@@ -249,27 +248,6 @@ export function Sidebar() {
             <NavItem key={item.href} item={item} isCollapsed={isCollapsed} />
           ))}
           
-          {/* Account Info */}
-          {user && !isCollapsed && (
-            <div className="px-3 py-2 mb-2">
-              <div className="flex items-center gap-2 mb-1">
-                {isPremium ? (
-                  <Crown className="h-4 w-4 text-orange-600" />
-                ) : (
-                  <User className="h-4 w-4 text-gray-500" />
-                )}
-                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                  {isPremium ? "Premium" : "Free"}
-                </span>
-              </div>
-              {userData?.profile?.full_name && (
-                <p className="text-xs text-gray-500 truncate">
-                  {userData.profile.full_name}
-                </p>
-              )}
-            </div>
-          )}
-
           {/* Selectores de idioma y tema */}
           <div className="px-3 pb-2 flex flex-col gap-2 mt-auto">
             <LanguageSelector isCompact={false} />
@@ -358,32 +336,6 @@ export function Sidebar() {
                 <NavItem key={item.href} item={item} isCollapsed={false} />
               ))}
             </div>
-
-            {/* Mobile Account Info */}
-            {user && (
-              <div className="p-4 border-t border-orange-200 dark:border-gray-800">
-                <div className="flex items-center gap-2 mb-2">
-                  {isPremium ? (
-                    <Crown className="h-4 w-4 text-orange-600" />
-                  ) : (
-                    <User className="h-4 w-4 text-gray-500" />
-                  )}
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {isPremium ? "Premium Account" : "Free Account"}
-                  </span>
-                </div>
-                {userData?.profile?.full_name && (
-                  <p className="text-sm text-gray-500 mb-2">
-                    {userData.profile.full_name}
-                  </p>
-                )}
-                {userData?.usage && (
-                  <div className="text-xs text-gray-500 mb-2">
-                    {userData.usage.mealPlans.created}/{userData.usage.mealPlans.maxCreated} meal plans
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Mobile Logout/Login */}
             <div className="p-4 border-t border-orange-200 dark:border-gray-800">

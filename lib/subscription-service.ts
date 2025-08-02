@@ -1,4 +1,5 @@
 // Enhanced subscription service with proper free/premium feature gating
+import { supabase } from "@/lib/supabase/client"
 
 export interface Subscription {
   id: string
@@ -35,9 +36,47 @@ export interface UsageLimit {
 }
 
 export async function getUserSubscription(userId: string): Promise<Subscription | null> {
-  // In production, this would fetch from your database
-  // For now, return null which means user is on free plan
-  return null
+  try {
+    const { data, error } = await supabase
+      .from("user_subscriptions")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No subscription found
+        return null
+      }
+      throw error
+    }
+
+    if (!data) {
+      return null
+    }
+
+    // Convertir los datos de la base de datos al formato esperado
+    const subscription: Subscription = {
+      id: data.id,
+      userId: data.user_id,
+      plan: "premium", // Si tiene suscripción activa, es premium
+      status: data.status as "active" | "cancelled" | "past_due" | "trialing",
+      currentPeriodStart: new Date(data.created_at),
+      currentPeriodEnd: data.renews_at ? new Date(data.renews_at) : new Date(data.created_at),
+      cancelAtPeriodEnd: data.cancel_at_period_end || false,
+      trialEnd: data.trial_ends_at ? new Date(data.trial_ends_at) : null,
+      billingCycle: data.billing_cycle as "monthly" | "annual" || "monthly",
+      amount: data.amount || 4.99,
+      stripeCustomerId: data.customer_id,
+      stripeSubscriptionId: data.subscription_id
+    }
+
+    return subscription
+  } catch (error) {
+    console.error("Error fetching user subscription:", error)
+    return null
+  }
 }
 
 export async function getUserUsage(userId: string): Promise<UsageLimit | null> {

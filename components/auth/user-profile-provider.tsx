@@ -31,6 +31,7 @@ interface UserProfileContextType {
   error: string | null
   fetchUserProfile: () => Promise<void>
   refreshUserProfile: () => Promise<void>
+  forceRefreshUserProfile: () => Promise<void>
   updateUserProfile: (updates: Partial<UserProfile>) => Promise<void>
   updateUserPreferences: (updates: Partial<UserPreferences>) => Promise<void>
 }
@@ -164,6 +165,79 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     await fetchUserProfile()
   }, [fetchUserProfile])
 
+  // Función para forzar actualización completa (incluye limpiar caché)
+  const forceRefreshUserProfile = useCallback(async () => {
+    // Limpiar datos del almacenamiento local
+    clearUserDataFromStorage()
+    // Limpiar estado actual
+    setUserData(null)
+    setError(null)
+    // Recargar datos frescos
+    await fetchUserProfile()
+  }, [fetchUserProfile])
+
+  // Función para verificar si la suscripción ha cambiado
+  const checkSubscriptionChange = useCallback(async () => {
+    if (!user) return
+
+    try {
+      // Obtener suscripción actual de la base de datos
+      const { data: currentSubscription } = await supabase
+        .from("user_subscriptions")
+        .select("status, plan_name")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .single()
+
+      // Comparar con el estado actual en el contexto
+      const currentIsPremium = userData?.isPremium || false
+      const newIsPremium = !!currentSubscription
+
+      // Si el estado ha cambiado, actualizar el contexto
+      if (currentIsPremium !== newIsPremium) {
+        console.log("Detectado cambio en suscripción, actualizando contexto...")
+        await forceRefreshUserProfile()
+      }
+    } catch (error) {
+      // Silenciar errores de verificación
+      console.debug("Error checking subscription change:", error)
+    }
+  }, [user, userData?.isPremium, forceRefreshUserProfile])
+
+  // Verificar cambios en la suscripción cada 30 segundos
+  useEffect(() => {
+    if (!user || !userData) return
+
+    const interval = setInterval(checkSubscriptionChange, 30000) // 30 segundos
+
+    return () => clearInterval(interval)
+  }, [user, userData, checkSubscriptionChange])
+
+  // Verificar suscripción cuando la ventana vuelve a estar activa
+  useEffect(() => {
+    if (!user || !userData) return
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // La ventana volvió a estar activa, verificar suscripción
+        checkSubscriptionChange()
+      }
+    }
+
+    const handleFocus = () => {
+      // La ventana recibió foco, verificar suscripción
+      checkSubscriptionChange()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [user, userData, checkSubscriptionChange])
+
   // Función para actualizar el perfil del usuario
   const updateUserProfile = useCallback(async (updates: Partial<UserProfile>) => {
     if (!user || !userData?.profile) return
@@ -250,6 +324,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
       error,
       fetchUserProfile,
       refreshUserProfile,
+      forceRefreshUserProfile,
       updateUserProfile,
       updateUserPreferences
     }}>
