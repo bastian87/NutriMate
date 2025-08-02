@@ -20,8 +20,6 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [cancelledSubscription, setCancelledSubscription] = useState<any | null>(null)
-  const [showDebugInfo, setShowDebugInfo] = useState(false)
-  const [debugInfo, setDebugInfo] = useState<any>(null)
   const { t } = useLanguage()
   const { toast } = useToast()
 
@@ -142,63 +140,6 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
     }
   }
 
-  const handleDebugSubscription = async () => {
-    setIsLoading(true)
-    setError(null)
-    setMessage(null)
-    try {
-      const res = await fetch("/api/user/subscription", { method: "GET" })
-      const data = await res.json()
-      
-      setDebugInfo({
-        responseStatus: res.status,
-        responseData: data,
-        subscription: subscription,
-        cancelledSubscription: cancelledSubscription,
-        timestamp: new Date().toISOString()
-      })
-      setShowDebugInfo(true)
-    } catch (error: any) {
-      setError("Error al obtener información de depuración: " + error.message)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const refreshSubscription = async () => {
-    setIsLoading(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const { data, error } = await supabase
-        .from("user_subscriptions")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("status", "active")
-        .maybeSingle();
-      if (error) throw error;
-      setSubscription(data);
-      if (!data) {
-        const { data: cancelledData } = await supabase
-          .from("user_subscriptions")
-          .select("*")
-          .eq("user_id", userId)
-          .eq("status", "cancelled")
-          .order("ends_at", { ascending: false })
-          .limit(1);
-        setCancelledSubscription(cancelledData && cancelledData.length > 0 ? cancelledData[0] : null);
-      } else {
-        setCancelledSubscription(null);
-      }
-      toast({ title: "Estado actualizado", description: "El estado de tu suscripción se ha refrescado." });
-    } catch (err: any) {
-      setError("No se pudo refrescar la suscripción.");
-      toast({ title: "Error", description: "No se pudo refrescar la suscripción.", variant: "destructive" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const getStatusBadge = () => {
     if (subscription?.cancelAtPeriodEnd) {
       return (
@@ -244,11 +185,6 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
             </div>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
               {`Tu suscripción está cancelada, pero tienes acceso premium hasta el ${new Date(cancelledSubscription.ends_at).toLocaleDateString()}. Luego perderás acceso a las funciones premium.`}
-            </div>
-            <div className="flex justify-center mt-2">
-              <Button variant="outline" size="sm" onClick={refreshSubscription} disabled={isLoading}>
-                Refrescar estado
-              </Button>
             </div>
             <div className="flex justify-center mt-2">
               <Link href="/pricing" passHref>
@@ -368,38 +304,6 @@ export default function SubscriptionStatus({ userId }: SubscriptionStatusProps) 
             </Button>
             {message && <div className="text-green-700 bg-green-50 border border-green-200 rounded p-2 text-sm mt-2">{message}</div>}
             {error && <div className="text-red-700 bg-red-50 border border-red-200 rounded p-2 text-sm mt-2">{error}</div>}
-          </div>
-        )}
-
-        <Button variant="outline" className="w-fit mb-2" onClick={refreshSubscription} disabled={isLoading}>
-        {t("subscription.refresStatus")}
-        </Button>
-        
-        {/* Botón de depuración */}
-        <Button 
-          variant="outline" 
-          className="w-fit ml-2" 
-          onClick={handleDebugSubscription} 
-          disabled={isLoading}
-        >
-          🔍 Depurar
-        </Button>
-        
-        {/* Información de depuración */}
-        {showDebugInfo && debugInfo && (
-          <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-            <h4 className="font-semibold mb-2">Información de Depuración</h4>
-            <pre className="text-xs overflow-auto max-h-96">
-              {JSON.stringify(debugInfo, null, 2)}
-            </pre>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-2"
-              onClick={() => setShowDebugInfo(false)}
-            >
-              Cerrar
-            </Button>
           </div>
         )}
       </CardContent>

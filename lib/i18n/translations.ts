@@ -1744,7 +1744,7 @@ export const translations = {
       settings: "Configuración",
       expandSidebar: "Expandir Barra Lateral",
       collapseSidebar: "Contraer Barra Lateral",
-      calorieCalculator: "Calculadora de Calorías",
+      calorieCalculator: "Calcula tus calorías",
     },
     featureGate: {
       premiumFeature: "Función Premium",
