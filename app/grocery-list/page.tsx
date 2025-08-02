@@ -13,7 +13,7 @@ import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Trash2, Plus, Crown } from "lucide-react"
+import { Trash2, Plus, Crown, ChevronDown, ChevronRight } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { getRecipeById } from "@/lib/services/recipe-service"
 import {
@@ -39,6 +39,7 @@ export default function GroceryListPage() {
   const [isClearing, setIsClearing] = useState(false)
   const [recipeNames, setRecipeNames] = useState<Record<string, string>>({});
   const [showClearConfirmDialog, setShowClearConfirmDialog] = useState(false)
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -97,6 +98,28 @@ export default function GroceryListPage() {
       setIsClearing(false);
       setShowClearConfirmDialog(false);
     }
+  }
+
+  const toggleSection = (sectionKey: string) => {
+    setCollapsedSections(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(sectionKey)) {
+        newSet.delete(sectionKey)
+      } else {
+        newSet.add(sectionKey)
+      }
+      return newSet
+    })
+  }
+
+  const isSectionCollapsed = (sectionKey: string) => collapsedSections.has(sectionKey)
+
+  const collapseAllSections = () => {
+    setCollapsedSections(new Set(groupKeys))
+  }
+
+  const expandAllSections = () => {
+    setCollapsedSections(new Set())
   }
 
   // Handler para imprimir
@@ -257,6 +280,14 @@ export default function GroceryListPage() {
               <Download className="mr-2 h-4 w-4" />
               {t("groceryList.download")}
             </Button>
+            <Button variant="outline" className="flex items-center" onClick={collapseAllSections}>
+              <ChevronRight className="mr-2 h-4 w-4" />
+              Colapsar Todo
+            </Button>
+            <Button variant="outline" className="flex items-center" onClick={expandAllSections}>
+              <ChevronDown className="mr-2 h-4 w-4" />
+              Expandir Todo
+            </Button>
             <Button variant="destructive" className="flex items-center" onClick={handleClearAll} disabled={isClearing || !groceryList?.items.length}>
               <Trash2 className="mr-2 h-4 w-4" />
               {t("groceryList.clearList")}
@@ -296,52 +327,85 @@ export default function GroceryListPage() {
             if (!items || items.length === 0) return null;
             const isOther = groupKey === "other";
             const groupTitle = isOther ? t("groceryList.categories.other") : recipeNames[groupKey] || t("groceryList.loading");
+            const isCollapsed = isSectionCollapsed(groupKey);
+            
             return (
               <div
                 key={groupKey}
                 className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
               >
-                <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                <div 
+                  className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                  onClick={() => toggleSection(groupKey)}
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      {/* Eliminar badge, solo mostrar el nombre */}
-                      <span className="font-semibold text-lg">{groupTitle}</span>
+                      <div className="flex items-center gap-2">
+                        {isCollapsed ? (
+                          <ChevronRight className="h-5 w-5 text-gray-500" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-gray-500" />
+                        )}
+                        <span className="font-semibold text-lg">{groupTitle}</span>
+                      </div>
                       <span className="text-sm text-gray-600 dark:text-gray-400">
                         {items.length} {items.length !== 1 ? t("groceryList.items") : t("groceryList.item")}
                       </span>
                     </div>
+                    <div className="text-sm text-gray-500">
+                      {isCollapsed ? "Hacer clic para expandir" : "Hacer clic para colapsar"}
+                    </div>
                   </div>
                 </div>
-                <div className="p-6">
-                  <div className="space-y-4">
-                    {items.map((item) => (
-                      <div key={item.id} className="flex items-center justify-between group">
-                        <div className="flex items-center gap-3 flex-1">
-                          <Checkbox
-                            checked={item.is_checked}
-                            onCheckedChange={(checked) => handleToggleItem(item.id, checked as boolean)}
-                          />
-                          <div className={`flex-1 ${item.is_checked ? "line-through text-gray-500" : ""}`}>
-                            <span className="font-medium">{item.name}</span>
-                            {item.quantity && (
-                              <span className="text-gray-600 dark:text-gray-400 ml-2">
-                                {item.quantity} {item.unit}
-                              </span>
-                            )}
+                
+                {!isCollapsed ? (
+                  <div className="p-6">
+                    <div className="space-y-4">
+                      {items.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between group">
+                          <div className="flex items-center gap-3 flex-1">
+                            <Checkbox
+                              checked={item.is_checked}
+                              onCheckedChange={(checked) => handleToggleItem(item.id, checked as boolean)}
+                            />
+                            <div className={`flex-1 ${item.is_checked ? "line-through text-gray-500" : ""}`}>
+                              <span className="font-medium">{item.name}</span>
+                              {item.quantity && (
+                                <span className="text-gray-600 dark:text-gray-400 ml-2">
+                                  {item.quantity} {item.unit}
+                                </span>
+                              )}
+                            </div>
                           </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteItem(item.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="px-6 py-3 bg-gray-50 dark:bg-gray-700">
+                    <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+                      <span>
+                        {items.filter(item => !item.is_checked).length} items pendientes
+                        {items.filter(item => item.is_checked).length > 0 && (
+                          <span className="ml-2 text-green-600">
+                            • {items.filter(item => item.is_checked).length} completados
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-xs">
+                        Hacer clic para ver detalles
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}

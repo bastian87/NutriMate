@@ -171,18 +171,38 @@ export function useGroceryList() {
   }
 
   const addRecipeIngredients = async (recipeId: string, selectedIngredientIds?: string[]) => {
-    if (!user || !groceryList) return
+    if (!user || !groceryList) {
+      console.error("❌ addRecipeIngredients: Usuario o lista de compras no disponible", {
+        user: !!user,
+        groceryList: !!groceryList
+      })
+      return
+    }
+
+    console.log("🔍 addRecipeIngredients: Iniciando proceso", {
+      recipeId,
+      selectedIngredientIds,
+      groceryListId: groceryList.id,
+      userId: user.id
+    })
 
     try {
       // Get recipe ingredients
+      console.log("📋 Buscando ingredientes para receta:", recipeId)
       const { data: ingredients, error } = await supabase
         .from("recipe_ingredients")
         .select("*")
         .eq("recipe_id", recipeId)
 
-      if (error) throw error
+      if (error) {
+        console.error("❌ Error obteniendo ingredientes:", error)
+        throw error
+      }
+
+      console.log("📋 Ingredientes encontrados:", ingredients?.length || 0)
 
       if (!ingredients || ingredients.length === 0) {
+        console.error("❌ No se encontraron ingredientes para la receta:", recipeId)
         throw new Error("No ingredients found for this recipe")
       }
 
@@ -190,6 +210,8 @@ export function useGroceryList() {
       const ingredientsToAdd = selectedIngredientIds
         ? ingredients.filter((ing) => selectedIngredientIds.includes(ing.id))
         : ingredients
+
+      console.log("📋 Ingredientes a agregar:", ingredientsToAdd.length)
 
       // Add each ingredient to the grocery list
       const itemsToInsert = ingredientsToAdd.map((ingredient) => ({
@@ -202,16 +224,33 @@ export function useGroceryList() {
         is_checked: false,
       }))
 
+      console.log("📋 Items a insertar:", itemsToInsert.length)
+
       const { data, error: insertError } = await supabase.from("grocery_list_items").insert(itemsToInsert).select()
 
-      if (insertError) throw insertError
+      if (insertError) {
+        console.error("❌ Error insertando items:", insertError)
+        throw insertError
+      }
 
-      setGroceryList((prev) => ({
-        ...prev!,
-        items: [...(data || []), ...prev!.items],
-      }))
+      console.log("✅ Items insertados exitosamente:", data?.length || 0)
+
+      setGroceryList((prev) => {
+        const updated = {
+          ...prev!,
+          items: [...(data || []), ...prev!.items],
+        }
+        console.log("🔄 Lista de compras actualizada:", {
+          itemsAnteriores: prev!.items.length,
+          itemsNuevos: data?.length || 0,
+          itemsTotales: updated.items.length
+        })
+        return updated
+      })
+
+      console.log("✅ addRecipeIngredients: Proceso completado exitosamente")
     } catch (err) {
-      console.error("Error adding recipe ingredients:", err)
+      console.error("❌ Error adding recipe ingredients:", err)
       throw err
     }
   }

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, Filter, Clock, Star, Heart, X, ChefHat, Utensils, Plus, Loader2, Bookmark } from "lucide-react"
+import { Search, Filter, Clock, Star, Heart, X, ChefHat, Utensils, Plus, Loader2, Bookmark, ChevronLeft, ChevronRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -67,8 +67,9 @@ export default function RecipesPage() {
     return Array.from(tags).filter(Boolean).sort();
   }, [recipes]);
 
-  // Estado para paginación local (si existe)
-  const [visibleCount, setVisibleCount] = useState(24);
+  // Estado para paginación con pestañas
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12; // 12 recetas por página (3x4 grid)
 
   // Filtrado local robusto: nombre, tags y tipo de comida
   const filteredRecipes = useMemo(() => {
@@ -99,7 +100,7 @@ export default function RecipesPage() {
 
   // Reiniciar paginación al aplicar un filtro
   useEffect(() => {
-    setVisibleCount(24);
+    setCurrentPage(1);
   }, [searchQuery, selectedTags, maxCookTime, calorieRange]);
 
   // Estado para el ordenamiento
@@ -120,8 +121,13 @@ export default function RecipesPage() {
     return arr;
   }, [filteredRecipes, sortOption]);
 
-  // Recetas a mostrar en la grilla (paginación local)
-  const visibleRecipes = sortedRecipes.slice(0, visibleCount);
+  // Cálculo de paginación
+  const totalPages = Math.ceil(sortedRecipes.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  
+  // Recetas a mostrar en la página actual
+  const visibleRecipes = sortedRecipes.slice(startIndex, endIndex);
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]))
@@ -134,13 +140,27 @@ export default function RecipesPage() {
     setCalorieRange([0, 1000])
   }
 
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+  }
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  }
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  }
+
   const activeFiltersCount =
     (searchQuery ? 1 : 0) +
     selectedTags.length +
     (maxCookTime[0] !== 120 ? 1 : 0) +
     (calorieRange[0] !== 0 || calorieRange[1] !== 1000 ? 1 : 0)
-
-  const localFavoriteCount = recipesState.filter((r) => r.is_favorited).length
 
   if (loading && recipes.length === 0) {
     return (
@@ -185,10 +205,6 @@ export default function RecipesPage() {
               </Button>
             </Link>
           )}
-          <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-            <Heart className="h-3 w-3 mr-1" />
-            {localFavoriteCount} {t("recipes.favorites")}
-          </Badge>
         </div>
       </motion.div>
 
@@ -328,7 +344,19 @@ export default function RecipesPage() {
       </motion.div>
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mb-6">
-        <p className="text-gray-600 dark:text-gray-400">{t("recipes.showingResults", { count: filteredRecipes?.length || 0 })}</p>
+        <div className="flex justify-between items-center">
+          <p className="text-gray-600 dark:text-gray-400">
+            {totalPages > 1 
+              ? `Mostrando ${startIndex + 1}-${Math.min(endIndex, sortedRecipes.length)} de ${sortedRecipes.length} recetas`
+              : `${sortedRecipes.length} recetas encontradas`
+            }
+          </p>
+          {totalPages > 1 && (
+            <p className="text-sm text-gray-500">
+              Página {currentPage} de {totalPages}
+            </p>
+          )}
+        </div>
       </motion.div>
 
       <motion.div
@@ -375,7 +403,8 @@ export default function RecipesPage() {
                               removeFavorite(recipe.id)
                               setRecipesState(prev => prev.map(r => r.id === recipe.id ? { ...r, is_favorited: false } : r))
                             } else {
-                              if (!isPremium && localFavoriteCount >= 10) {
+                              const currentFavoritesCount = recipesState.filter((r) => r.is_favorited).length
+                              if (!isPremium && currentFavoritesCount >= 10) {
                                 setShowLimitModal(true)
                                 return
                               }
@@ -494,16 +523,99 @@ export default function RecipesPage() {
         </motion.div>
       )}
 
-      {/* Botón Ver más recetas */}
-      {visibleCount < filteredRecipes.length && !loading && (
+      {/* Sistema de paginación */}
+      {totalPages > 1 && !loading && (
         <div className="flex justify-center mt-8">
-          <Button
-            variant="outline"
-            onClick={() => setVisibleCount((prev) => prev + 24)}
-            className="px-6"
-          >
-            Ver más recetas
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Botón Anterior */}
+            <Button
+              variant="outline"
+              onClick={goToPreviousPage}
+              disabled={currentPage === 1}
+              className="flex items-center gap-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </Button>
+
+            {/* Números de página */}
+            <div className="flex items-center gap-1">
+              {/* Primera página */}
+              {currentPage > 3 && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(1)}
+                    className="w-10 h-10"
+                  >
+                    1
+                  </Button>
+                  {currentPage > 4 && (
+                    <span className="px-2 text-gray-500">...</span>
+                  )}
+                </>
+              )}
+
+              {/* Páginas alrededor de la actual */}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                if (pageNum > totalPages) return null;
+                
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === currentPage ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => goToPage(pageNum)}
+                    className={`w-10 h-10 ${
+                      pageNum === currentPage 
+                        ? "bg-orange-600 hover:bg-orange-700 text-white" 
+                        : ""
+                    }`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+
+              {/* Última página */}
+              {currentPage < totalPages - 2 && (
+                <>
+                  {currentPage < totalPages - 3 && (
+                    <span className="px-2 text-gray-500">...</span>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(totalPages)}
+                    className="w-10 h-10"
+                  >
+                    {totalPages}
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {/* Botón Siguiente */}
+            <Button
+              variant="outline"
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-2"
+            >
+              Siguiente
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Información de paginación */}
+      {totalPages > 1 && !loading && (
+        <div className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
+          Página {currentPage} de {totalPages} • 
+          Mostrando {startIndex + 1}-{Math.min(endIndex, sortedRecipes.length)} de {sortedRecipes.length} recetas
         </div>
       )}
 
