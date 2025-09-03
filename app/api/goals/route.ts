@@ -1,80 +1,36 @@
-/**
- * API endpoint for managing nutrition goals
- */
-
 import { NextRequest, NextResponse } from 'next/server';
-import { CreateOrUpdateGoalSchema, type CreateOrUpdateGoalInput } from '../../../lib/validation/zod';
-import type { Goal } from '../../../types/nutri';
+import { GoalUpsertSchema } from '@/lib/validation/zod';
+import { createServerClient } from '@/lib/supabase/server';
+import { getUserId } from '@/lib/auth/getUserId';
 
-// Placeholder auth helper - replace with actual auth implementation
-function getCurrentUserId(): string {
-  // TODO: Replace with actual auth implementation
-  return 'user-placeholder-id';
-}
-
-/**
- * POST /api/goals - Create or update a nutrition goal
- */
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
-    
-    // Validate input
-    const validatedInput = CreateOrUpdateGoalSchema.parse(body);
-    
-    // Get current user ID (placeholder)
-    const userId = getCurrentUserId();
-    
-    // Compute week/month targets if omitted
-    const goalData: CreateOrUpdateGoalInput & {
-      target_kcal_week: number;
-      target_kcal_month: number;
-    } = {
-      ...validatedInput,
-      target_kcal_week: validatedInput.target_kcal_week ?? validatedInput.target_kcal_day * 7,
-      target_kcal_month: validatedInput.target_kcal_month ?? validatedInput.target_kcal_day * 30
-    };
-    
-    // TODO: Replace with actual Supabase implementation
-    // For now, return a mock response
-    const goal: Goal = {
-      id: 'goal-' + Date.now(),
+    const userId = await getUserId(req as unknown as Request);
+    const data = GoalUpsertSchema.parse(await req.json());
+
+    const targetKcalWeek = data.targetKcalWeek ?? data.targetKcalDay * 7;
+    const targetKcalMonth = data.targetKcalMonth ?? data.targetKcalDay * 30;
+
+    const supa = createServerClient();
+
+    await supa.from('goals')
+      .update({ end_date: data.startDate })
+      .eq('user_id', userId)
+      .is('end_date', null);
+
+    const { data: inserted, error } = await supa.from('goals').insert({
       user_id: userId,
-      start_date: goalData.start_date,
-      end_date: goalData.end_date || null,
-      target_kcal_day: goalData.target_kcal_day,
-      target_kcal_week: goalData.target_kcal_week,
-      target_kcal_month: goalData.target_kcal_month,
-      objective: goalData.objective,
-      created_at: new Date().toISOString()
-    };
-    
-    // TODO: Implement actual database upsert
-    // await supabase
-    //   .from('goals')
-    //   .upsert({
-    //     user_id: userId,
-    //     ...goalData,
-    //     updated_at: new Date().toISOString()
-    //   }, {
-    //     onConflict: 'user_id,start_date'
-    //   });
-    
-    return NextResponse.json(goal, { status: 201 });
-    
-  } catch (error) {
-    console.error('Error creating/updating goal:', error);
-    
-    if (error instanceof Error && error.name === 'ZodError') {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.message },
-        { status: 400 }
-      );
-    }
-    
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+      start_date: data.startDate,
+      end_date: data.endDate ?? null,
+      target_kcal_day: data.targetKcalDay,
+      target_kcal_week: targetKcalWeek,
+      target_kcal_month: targetKcalMonth,
+      objective: data.objective,
+    }).select('*').single();
+
+    if (error) throw error;
+    return NextResponse.json({ goal: inserted });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message ?? 'Invalid request' }, { status: 400 });
   }
 }

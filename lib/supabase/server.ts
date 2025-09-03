@@ -1,15 +1,7 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
-import type { Database } from "@/lib/types/database"
+import { createClient } from '@supabase/supabase-js';
 
-export function createServerSupabaseClient() {
-  const cookieStore = cookies()
-  return createServerComponentClient<Database>({ cookies: () => cookieStore })
+export function createServerClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createClient(url, serviceRoleKey, { auth: { persistSession: false } });
 }
-
-export function getServerClient() {
-  return createServerSupabaseClient()
-}
-
-// Export default
-export default createServerSupabaseClient

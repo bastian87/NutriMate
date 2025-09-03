@@ -1,212 +1,127 @@
-/**
- * API endpoint for managing daily nutrition entries
- */
-
 import { NextRequest, NextResponse } from 'next/server';
-import { UpsertDayEntrySchema, type UpsertDayEntryInput } from '../../../lib/validation/zod';
-import { evaluateDay } from '../../../lib/nutri/validation';
-import type { DayEntry, DayEntryItem, Ingredient } from '../../../types/nutri';
+import { DayEntryUpsertSchema } from '@/lib/validation/zod';
+import { createServerClient } from '@/lib/supabase/server';
+import { getUserId } from '@/lib/auth/getUserId';
+import { evaluateDay } from '@/lib/nutri/evaluateDay';
+import type { MacroGroup } from '@/types/nutri';
 
-// Placeholder auth helper - replace with actual auth implementation
-function getCurrentUserId(): string {
-  // TODO: Replace with actual auth implementation
-  return 'user-placeholder-id';
-}
-
-/**
- * Helper function to fetch ingredients by IDs
- * TODO: Replace with actual Supabase implementation
- */
-async function fetchIngredients(ingredientIds: string[]): Promise<Ingredient[]> {
-  // Mock implementation - replace with actual Supabase query
-  const mockIngredients: Ingredient[] = [
-    {
-      id: 'ingredient-1',
-      name: 'rice',
-      locale: 'en',
-      group: 'carb',
-      kcal_per_100g: 130,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'ingredient-2',
-      name: 'chicken breast',
-      locale: 'en',
-      group: 'protein',
-      kcal_per_100g: 165,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'ingredient-3',
-      name: 'olive oil',
-      locale: 'en',
-      group: 'fat',
-      kcal_per_100g: 884,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'ingredient-4',
-      name: 'spinach',
-      locale: 'en',
-      group: 'vegfruit',
-      kcal_per_100g: 23,
-      created_at: new Date().toISOString()
-    }
-  ];
-  
-  return mockIngredients.filter(ing => ingredientIds.includes(ing.id));
-}
-
-/**
- * Helper function to get yesterday's date
- */
-function getYesterdayDate(date: string): string {
-  const yesterday = new Date(date);
-  yesterday.setDate(yesterday.getDate() - 1);
-  return yesterday.toISOString().split('T')[0];
-}
-
-/**
- * Helper function to update user streaks
- * TODO: Replace with actual Supabase implementation
- */
-async function updateStreaks(userId: string, isTodaySuccess: boolean, isYesterdaySuccess: boolean): Promise<void> {
-  // Mock implementation - replace with actual Supabase query
-  console.log(`Updating streaks for user ${userId}: today=${isTodaySuccess}, yesterday=${isYesterdaySuccess}`);
-  
-  // TODO: Implement actual streak logic:
-  // 1. Fetch current streak record
-  // 2. If today success and yesterday success => current++, else current=1
-  // 3. best = max(best, current)
-  // 4. Update streaks table
-}
-
-/**
- * Helper function to insert XP record
- * TODO: Replace with actual Supabase implementation
- */
-async function insertXPRecord(userId: string, date: string, reason: 'day' | 'streak', amount: number, relatedId?: string): Promise<void> {
-  // Mock implementation - replace with actual Supabase query
-  console.log(`Inserting XP record: user=${userId}, date=${date}, reason=${reason}, amount=${amount}, relatedId=${relatedId}`);
-  
-  // TODO: Implement actual XP insertion:
-  // await supabase
-  //   .from('xp_ledger')
-  //   .insert({
-  //     user_id: userId,
-  //     date,
-  //     reason,
-  //     amount,
-  //     related_id: relatedId
-  //   });
-}
-
-/**
- * POST /api/day-entries - Create or update a daily nutrition entry
- */
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
+  const supa = createServerClient();
   try {
-    const body = await request.json();
-    
-    // Validate input
-    const validatedInput = UpsertDayEntrySchema.parse(body);
-    
-    // Get current user ID (placeholder)
-    const userId = getCurrentUserId();
-    
-    // Fetch ingredients to compute kcal per item
-    const ingredientIds = validatedInput.items.map(item => item.ingredient_id);
-    const ingredients = await fetchIngredients(ingredientIds);
-    
-    if (ingredients.length !== ingredientIds.length) {
-      return NextResponse.json(
-        { error: 'Some ingredients not found' },
-        { status: 404 }
-      );
+    const userId = await getUserId(req as unknown as Request);
+    const body = DayEntryUpsertSchema.parse(await req.json());
+    const { date, goalId, items } = body;
+
+    // Fetch ingredients to compute kcal + group
+    const ingredientIds = items.map(i => i.ingredientId);
+    const { data: ing, error: ingErr } = await supa
+      .from('ingredients')
+      .select('id, "group", kcal_per_100g')
+      .in('id', ingredientIds);
+    if (ingErr) throw ingErr;
+    if (!ing || ing.length !== ingredientIds.length) {
+      throw new Error('Some ingredients not found');
     }
-    
-    // Build DayEntryItem list with denormalized "group"
-    const dayEntryItems: DayEntryItem[] = validatedInput.items.map(item => {
-      const ingredient = ingredients.find(ing => ing.id === item.ingredient_id);
-      if (!ingredient) {
-        throw new Error(`Ingredient not found: ${item.ingredient_id}`);
-      }
-      
-      const kcal = Math.round(ingredient.kcal_per_100g * item.quantity_grams / 100);
-      
-      return {
-        id: `item-${Date.now()}-${Math.random()}`,
-        day_entry_id: `day-entry-${Date.now()}`,
-        ingredient_id: item.ingredient_id,
-        quantity_grams: item.quantity_grams,
-        kcal,
-        group: ingredient.group, // denormalized for fast validation
-        created_at: new Date().toISOString()
-      };
+
+    const enriched = items.map(i => {
+      const found = ing.find(g => g.id === i.ingredientId)!;
+      const kcal = Math.round((found.kcal_per_100g * i.quantityGrams) / 100);
+      return { ...i, kcal, group: found.group as MacroGroup };
     });
-    
-    // TODO: Fetch goal to get target_kcal_day
-    // For now, use a mock target
-    const targetKcal = 2000;
-    
-    // Call evaluateDay to get validation result
-    const evaluation = evaluateDay(dayEntryItems, targetKcal);
-    
-    // Create DayEntry with computed flags and isSuccess
-    const dayEntry: DayEntry = {
-      id: `day-entry-${Date.now()}`,
-      user_id: userId,
-      date: validatedInput.date,
-      goal_id: validatedInput.goal_id,
-      total_kcal: evaluation.totalsKcal,
-      has_carb: evaluation.flags.hasCarb,
-      has_protein: evaluation.flags.hasProtein,
-      has_fat: evaluation.flags.hasFat,
-      has_vegfruit: evaluation.flags.hasVegFruit,
-      extras_count: evaluation.flags.extrasCount,
-      is_success: evaluation.isSuccess,
-      created_at: new Date().toISOString()
-    };
-    
-    // TODO: Implement actual database transaction
-    // await supabase.rpc('upsert_day_entry_with_items', {
-    //   day_entry: dayEntry,
-    //   day_entry_items: dayEntryItems
-    // });
-    
-    // Update streaks
-    const yesterdayDate = getYesterdayDate(validatedInput.date);
-    // TODO: Check if yesterday was successful
-    const isYesterdaySuccess = false; // Placeholder
-    
-    await updateStreaks(userId, evaluation.isSuccess, isYesterdaySuccess);
-    
-    // Insert XP records
-    if (evaluation.isSuccess) {
-      await insertXPRecord(userId, validatedInput.date, 'day', 50, dayEntry.id);
-      
-      // TODO: Check if streak >= 4 for bonus XP
-      const currentStreak = 1; // Placeholder
-      if (currentStreak >= 4) {
-        await insertXPRecord(userId, validatedInput.date, 'streak', 25, dayEntry.id);
+
+    // Get target kcal from goal
+    const { data: goal, error: goalErr } = await supa
+      .from('goals')
+      .select('id, target_kcal_day')
+      .eq('id', goalId)
+      .single();
+    if (goalErr) throw goalErr;
+
+    const evalRes = evaluateDay(enriched, goal.target_kcal_day);
+
+    // Upsert day_entries
+    const { data: dayRow, error: upErr } = await supa
+      .from('day_entries')
+      .upsert({
+        user_id: userId,
+        date,
+        goal_id: goalId,
+        total_kcal: evalRes.totalsKcal,
+        has_carb: evalRes.flags.hasCarb,
+        has_protein: evalRes.flags.hasProtein,
+        has_fat: evalRes.flags.hasFat,
+        has_vegfruit: evalRes.flags.hasVegFruit,
+        extras_count: evalRes.flags.extrasCount,
+        is_success: evalRes.isSuccess,
+      }, { onConflict: 'user_id,date' })
+      .select('id')
+      .single();
+    if (upErr) throw upErr;
+
+    // Replace items
+    await supa.from('day_entry_items').delete().eq('day_entry_id', dayRow.id);
+    const toInsert = enriched.map(i => ({
+      day_entry_id: dayRow.id,
+      ingredient_id: i.ingredientId,
+      quantity_grams: i.quantityGrams,
+      kcal: i.kcal!,
+      group: i.group!,
+    }));
+    const { error: insErr } = await supa.from('day_entry_items').insert(toInsert);
+    if (insErr) throw insErr;
+
+    // Streaks + XP
+    const yesterday = new Date(date);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yStr = yesterday.toISOString().slice(0, 10);
+
+    let current = 0;
+    const { data: y, error: yErr } = await supa
+      .from('day_entries')
+      .select('is_success')
+      .eq('user_id', userId)
+      .eq('date', yStr)
+      .maybeSingle();
+    if (yErr) throw yErr;
+
+    if (evalRes.isSuccess) {
+      const { data: s, error: sErr } = await supa
+        .from('streaks')
+        .select('id,current,best')
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (sErr) throw sErr;
+
+      const nextCurrent = (y?.is_success ? (s?.current ?? 0) + 1 : 1);
+      const nextBest = Math.max(s?.best ?? 0, nextCurrent);
+
+      if (s?.id) {
+        await supa.from('streaks').update({ current: nextCurrent, best: nextBest }).eq('id', s.id);
+      } else {
+        await supa.from('streaks').insert({ user_id: userId, current: nextCurrent, best: nextBest });
+      }
+      current = nextCurrent;
+
+      await supa.from('xp_ledger').insert({
+        user_id: userId, date, reason: 'day', amount: 50, related_id: dayRow.id,
+      });
+      if (current >= 4) {
+        await supa.from('xp_ledger').insert({
+          user_id: userId, date, reason: 'streak', amount: 25, related_id: dayRow.id,
+        });
       }
     }
-    
-    return NextResponse.json(dayEntry, { status: 201 });
-    
-  } catch (error) {
-    console.error('Error creating/updating day entry:', error);
-    
-    if (error instanceof Error && error.name === 'ZodError') {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.message },
-        { status: 400 }
-      );
-    }
-    
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+
+    return NextResponse.json({
+      id: dayRow.id,
+      date,
+      totalsKcal: evalRes.totalsKcal,
+      flags: evalRes.flags,
+      isSuccess: evalRes.isSuccess,
+      goalId,
+      streakCurrent: current,
+    });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message ?? 'Bad Request' }, { status: 400 });
   }
 }
