@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuthContext } from "@/components/auth/auth-provider";
 
 interface CalendarDay {
   date: string;
@@ -17,14 +18,17 @@ interface Props {
 
 export function CalendarView({ range, from }: Props) {
   const [days, setDays] = useState<CalendarDay[]>([]);
+  const { user } = useAuthContext();
 
   useEffect(() => {
+    if (!user?.id) return;
+    
     fetch(`/api/calendar?range=${range}&from=${from}`, {
-      headers: { "x-user-id": "demo-user-id" },
+      headers: { "x-user-id": user.id },
     })
       .then((r) => r.json())
       .then((d) => setDays(d.days ?? []));
-  }, [range, from]);
+  }, [range, from, user?.id]);
 
   return (
     <div className="grid grid-cols-7 gap-2">

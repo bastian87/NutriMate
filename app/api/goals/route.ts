@@ -3,6 +3,24 @@ import { GoalUpsertSchema } from '@/lib/validation/zod';
 import { createServerClient } from '@/lib/supabase/server';
 import { getUserId } from '@/lib/auth/getUserId';
 
+export async function GET(req: NextRequest) {
+  try {
+    const userId = await getUserId(req as unknown as Request);
+    const supa = createServerClient();
+
+    const { data: goals, error } = await supa
+      .from('goals')
+      .select('*')
+      .eq('user_id', userId)
+      .order('start_date', { ascending: false });
+
+    if (error) throw error;
+    return NextResponse.json({ goals });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message ?? 'Invalid request' }, { status: 400 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const userId = await getUserId(req as unknown as Request);

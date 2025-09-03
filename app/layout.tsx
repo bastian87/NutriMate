@@ -31,7 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans`}>
+      <body className={`${inter.variable} font-sans antialiased min-h-screen bg-background text-foreground`}>
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-SCX9Q55CJF" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
           {`

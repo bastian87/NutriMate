@@ -28,6 +28,10 @@ import {
   User,
   Calculator,
   Crown,
+  Target,
+  Flame,
+  BarChart3,
+  Apple,
 } from "lucide-react"
 
 export function Sidebar() {
@@ -65,6 +69,12 @@ export function Sidebar() {
     { name: t("navigation.recipes"), href: "/recipes", icon: ChefHat },
     { name: t("navigation.groceryList"), href: "/grocery-list", icon: ShoppingCart },
     { name: t("navigation.mealPlans"), href: "/meal-plans", icon: Calendar },
+    { name: t("navigation.nutritionTracking"), href: "/calendar", icon: Calendar },
+    { name: "Objetivos", href: "/goals", icon: Target },
+    { name: "Gamificación", href: "/gamification", icon: Flame },
+    { name: "Resumen Semanal", href: "/weekly-summary", icon: BarChart3 },
+    { name: "Resumen Mensual", href: "/monthly-summary", icon: BarChart3 },
+    { name: "Ingredientes", href: "/ingredients", icon: Apple },
     { name: t("navigation.savedRecipes"), href: "/saved-recipes", icon: Heart },
     { name: t("navigation.calorieCalculator"), href: "/calorie-calculator", icon: Calculator },
   ]

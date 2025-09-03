@@ -22,8 +22,7 @@ const PUBLIC_ROUTES = [
   "/privacy-policy",
   "/terms-of-service",
   "/auth/callback",
-  "/demo",
-  "/calendar",
+
 ]
 
 export function ConditionalLayout({ children }: ConditionalLayoutProps) {
