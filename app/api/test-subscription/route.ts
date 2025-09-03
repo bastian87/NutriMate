@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createServerClient } from "@/lib/supabase/server"
 import { getSubscription } from "@/lib/lemonsqueezy-service"
 
 export async function GET() {
   try {
     console.log("Probando suscripción específica en LemonSqueezy...")
     
-    const supabase = createServerSupabaseClient()
+    const supabase = createServerClient()
     const {
       data: { user },
       error: authError,

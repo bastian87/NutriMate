@@ -2,7 +2,22 @@
  * Pure validation service for Nutrimate gamified nutrition tracking
  */
 
-import type { DayEntryItem, DayEvaluationResult } from '../../types/nutri';
+import type { DayEntryItem } from '../../types/nutri';
+
+/**
+ * Day evaluation result interface
+ */
+export interface DayEvaluationResult {
+  totalsKcal: number;
+  flags: {
+    hasCarb: boolean;
+    hasProtein: boolean;
+    hasFat: boolean;
+    hasVegFruit: boolean;
+    extrasCount: number;
+  };
+  isSuccess: boolean;
+}
 
 /**
  * Evaluates a day's nutrition entries against target calories and macro requirements
@@ -13,7 +28,7 @@ import type { DayEntryItem, DayEvaluationResult } from '../../types/nutri';
  */
 export function evaluateDay(items: DayEntryItem[], targetKcal: number): DayEvaluationResult {
   // Calculate total calories
-  const totalsKcal = items.reduce((sum, item) => sum + item.kcal, 0);
+  const totalsKcal = items.reduce((sum, item) => sum + (item.kcal ?? 0), 0);
   
   // Check for macro group presence
   const hasCarb = items.some(item => item.group === 'carb');

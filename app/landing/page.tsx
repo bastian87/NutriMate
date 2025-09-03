@@ -1,5 +1,5 @@
 import LandingClient from "@/components/landing-client"
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createServerClient } from "@/lib/supabase/server"
 import { recipeService, type RecipeWithDetails } from "@/lib/services/recipe-service"
 
 interface Recipe {
@@ -18,7 +18,7 @@ interface Recipe {
 }
 
 export default async function LandingPage() {
-  const supabase = createServerSupabaseClient()
+  const supabase = createServerClient()
   
   // Get featured recipes using the existing getRecipes function
   let featuredRecipes: RecipeWithDetails[] = []

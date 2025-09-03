@@ -55,8 +55,8 @@ export default function DayDrawer({
           date,
           goal_id: goalId,
           items: items.map(item => ({
-            ingredient_id: item.ingredient_id,
-            quantity_grams: item.quantity_grams
+            ingredientId: item.ingredientId,
+            quantityGrams: item.quantityGrams
           }))
         }),
       });

@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createCheckout } from "@/lib/lemonsqueezy"
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createServerClient } from "@/lib/supabase/server"
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
 
-    const supabase = createServerSupabaseClient()
+    const supabase = createServerClient()
     console.log("Supabase session check")
     console.log(await supabase.auth.getSession())
 

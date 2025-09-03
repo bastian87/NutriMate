@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createServerClient } from "@/lib/supabase/server"
 import { LEMONSQUEEZY_BASE_URL, LEMONSQUEEZY_CONFIG } from "@/lib/stripe"
 
 export async function GET() {
   try {
     console.log("Probando diferentes métodos de generación de portal...")
     
-    const supabase = createServerSupabaseClient()
+    const supabase = createServerClient()
     const {
       data: { user },
       error: authError,

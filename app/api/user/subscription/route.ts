@@ -1,11 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createServerClient } from "@/lib/supabase/server"
 import { cancelSubscription, resumeSubscription, getCustomerPortalUrl, getSubscription, getDirectBillingPortalUrl } from "@/lib/lemonsqueezy-service"
 
 export async function POST(request: NextRequest) {
   // Cancelar suscripción
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createServerClient()
     const {
       data: { user },
       error: authError,
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   // Reactivar suscripción
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createServerClient()
     const {
       data: { user },
       error: authError,
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
   try {
     console.log("GET /api/user/subscription - Iniciando solicitud de portal de facturación")
     
-    const supabase = createServerSupabaseClient()
+    const supabase = createServerClient()
     const {
       data: { user },
       error: authError,
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
     
     // Como último recurso, intentar generar la URL directa
     try {
-      const supabase = createServerSupabaseClient()
+      const supabase = createServerClient()
       const { data: { user } } = await supabase.auth.getUser()
       
       if (user) {

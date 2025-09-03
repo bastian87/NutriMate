@@ -20,12 +20,19 @@ import type { Ingredient, DayEntryItem, MacroGroup } from '@/types/nutri';
 import { Search, Plus, Trash2, Check, X } from 'lucide-react';
 
 /**
+ * Extended day entry item with ID for component state
+ */
+interface DayEntryItemWithId extends DayEntryItem {
+  id: string;
+}
+
+/**
  * Plate slot interface
  */
 interface PlateSlot {
   id: string;
   group: MacroGroup;
-  items: DayEntryItem[];
+  items: DayEntryItemWithId[];
   maxItems: number;
 }
 
@@ -44,36 +51,36 @@ interface PlateBuilderProps {
  */
 const mockIngredients: Ingredient[] = [
   // Carbs
-  { id: '1', name: 'rice', locale: 'en', group: 'carb', kcal_per_100g: 130, created_at: new Date().toISOString() },
-  { id: '2', name: 'oats', locale: 'en', group: 'carb', kcal_per_100g: 389, created_at: new Date().toISOString() },
-  { id: '3', name: 'potato', locale: 'en', group: 'carb', kcal_per_100g: 77, created_at: new Date().toISOString() },
-  { id: '4', name: 'whole-wheat bread', locale: 'en', group: 'carb', kcal_per_100g: 247, created_at: new Date().toISOString() },
+  { id: '1', name: 'rice', locale: 'en', group: 'carb', kcalPer100g: 130 },
+  { id: '2', name: 'oats', locale: 'en', group: 'carb', kcalPer100g: 389 },
+  { id: '3', name: 'potato', locale: 'en', group: 'carb', kcalPer100g: 77 },
+  { id: '4', name: 'whole-wheat bread', locale: 'en', group: 'carb', kcalPer100g: 247 },
   
   // Protein
-  { id: '5', name: 'chicken breast', locale: 'en', group: 'protein', kcal_per_100g: 165, created_at: new Date().toISOString() },
-  { id: '6', name: 'egg', locale: 'en', group: 'protein', kcal_per_100g: 155, created_at: new Date().toISOString() },
-  { id: '7', name: 'tuna', locale: 'en', group: 'protein', kcal_per_100g: 132, created_at: new Date().toISOString() },
-  { id: '8', name: 'lentils', locale: 'en', group: 'protein', kcal_per_100g: 116, created_at: new Date().toISOString() },
-  { id: '9', name: 'tofu', locale: 'en', group: 'protein', kcal_per_100g: 76, created_at: new Date().toISOString() },
+  { id: '5', name: 'chicken breast', locale: 'en', group: 'protein', kcalPer100g: 165 },
+  { id: '6', name: 'egg', locale: 'en', group: 'protein', kcalPer100g: 155 },
+  { id: '7', name: 'tuna', locale: 'en', group: 'protein', kcalPer100g: 132 },
+  { id: '8', name: 'lentils', locale: 'en', group: 'protein', kcalPer100g: 116 },
+  { id: '9', name: 'tofu', locale: 'en', group: 'protein', kcalPer100g: 76 },
   
   // Fat
-  { id: '10', name: 'olive oil', locale: 'en', group: 'fat', kcal_per_100g: 884, created_at: new Date().toISOString() },
-  { id: '11', name: 'avocado', locale: 'en', group: 'fat', kcal_per_100g: 160, created_at: new Date().toISOString() },
-  { id: '12', name: 'almonds', locale: 'en', group: 'fat', kcal_per_100g: 579, created_at: new Date().toISOString() },
-  { id: '13', name: 'peanut butter', locale: 'en', group: 'fat', kcal_per_100g: 588, created_at: new Date().toISOString() },
+  { id: '10', name: 'olive oil', locale: 'en', group: 'fat', kcalPer100g: 884 },
+  { id: '11', name: 'avocado', locale: 'en', group: 'fat', kcalPer100g: 160 },
+  { id: '12', name: 'almonds', locale: 'en', group: 'fat', kcalPer100g: 579 },
+  { id: '13', name: 'peanut butter', locale: 'en', group: 'fat', kcalPer100g: 588 },
   
   // Vegetables & Fruits
-  { id: '14', name: 'spinach', locale: 'en', group: 'vegfruit', kcal_per_100g: 23, created_at: new Date().toISOString() },
-  { id: '15', name: 'broccoli', locale: 'en', group: 'vegfruit', kcal_per_100g: 34, created_at: new Date().toISOString() },
-  { id: '16', name: 'tomato', locale: 'en', group: 'vegfruit', kcal_per_100g: 18, created_at: new Date().toISOString() },
-  { id: '17', name: 'apple', locale: 'en', group: 'vegfruit', kcal_per_100g: 52, created_at: new Date().toISOString() },
-  { id: '18', name: 'banana', locale: 'en', group: 'vegfruit', kcal_per_100g: 89, created_at: new Date().toISOString() },
+  { id: '14', name: 'spinach', locale: 'en', group: 'vegfruit', kcalPer100g: 23 },
+  { id: '15', name: 'broccoli', locale: 'en', group: 'vegfruit', kcalPer100g: 34 },
+  { id: '16', name: 'tomato', locale: 'en', group: 'vegfruit', kcalPer100g: 18 },
+  { id: '17', name: 'apple', locale: 'en', group: 'vegfruit', kcalPer100g: 52 },
+  { id: '18', name: 'banana', locale: 'en', group: 'vegfruit', kcalPer100g: 89 },
   
   // Treats
-  { id: '19', name: 'ice cream', locale: 'en', group: 'treat', kcal_per_100g: 207, created_at: new Date().toISOString() },
-  { id: '20', name: 'soda', locale: 'en', group: 'treat', kcal_per_100g: 42, created_at: new Date().toISOString() },
-  { id: '21', name: 'donut', locale: 'en', group: 'treat', kcal_per_100g: 452, created_at: new Date().toISOString() },
-  { id: '22', name: 'chocolate bar', locale: 'en', group: 'treat', kcal_per_100g: 546, created_at: new Date().toISOString() }
+  { id: '19', name: 'ice cream', locale: 'en', group: 'treat', kcalPer100g: 207 },
+  { id: '20', name: 'soda', locale: 'en', group: 'treat', kcalPer100g: 42 },
+  { id: '21', name: 'donut', locale: 'en', group: 'treat', kcalPer100g: 452 },
+  { id: '22', name: 'chocolate bar', locale: 'en', group: 'treat', kcalPer100g: 546 }
 ];
 
 /**
@@ -94,7 +101,7 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
     { id: 'vegfruit-slot', group: 'vegfruit', items: [], maxItems: 4 }
   ]);
 
-  const [extrasBasket, setExtrasBasket] = useState<DayEntryItem[]>([]);
+  const [extrasBasket, setExtrasBasket] = useState<DayEntryItemWithId[]>([]);
 
   // Filter ingredients based on search and active tab
   const filteredIngredients = useMemo(() => {
@@ -147,14 +154,12 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
     if (!ingredient) return;
 
     // Create day entry item
-    const dayEntryItem: DayEntryItem = {
+    const dayEntryItem: DayEntryItemWithId = {
       id: `item-${Date.now()}-${Math.random()}`,
-      day_entry_id: `day-entry-${Date.now()}`,
-      ingredient_id: ingredient.id,
-      quantity_grams: 100, // Default quantity
-      kcal: Math.round(ingredient.kcal_per_100g * 100 / 100),
-      group: ingredient.group,
-      created_at: new Date().toISOString()
+      ingredientId: ingredient.id,
+      quantityGrams: 100, // Default quantity
+      kcal: Math.round(ingredient.kcalPer100g * 100 / 100),
+      group: ingredient.group
     };
 
     // Handle dropping on plate slots
@@ -181,14 +186,12 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
    * Add ingredient by typing
    */
   const addIngredientBySearch = (ingredient: Ingredient) => {
-    const dayEntryItem: DayEntryItem = {
+    const dayEntryItem: DayEntryItemWithId = {
       id: `item-${Date.now()}-${Math.random()}`,
-      day_entry_id: `day-entry-${Date.now()}`,
-      ingredient_id: ingredient.id,
-      quantity_grams: 100,
-      kcal: Math.round(ingredient.kcal_per_100g * 100 / 100),
-      group: ingredient.group,
-      created_at: new Date().toISOString()
+      ingredientId: ingredient.id,
+      quantityGrams: 100,
+      kcal: Math.round(ingredient.kcalPer100g * 100 / 100),
+      group: ingredient.group
     };
 
     if (ingredient.group === 'treat') {
@@ -238,7 +241,15 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
 
     setSaving(true);
     try {
-      await onSave(allItems);
+      // Convert items with ID to items without ID for API
+      const itemsForApi: DayEntryItem[] = allItems.map(item => ({
+        ingredientId: item.ingredientId,
+        quantityGrams: item.quantityGrams,
+        kcal: item.kcal,
+        group: item.group
+      }));
+      
+      await onSave(itemsForApi);
       
       // Show success toast based on evaluation
       if (evaluation.isSuccess) {
@@ -321,7 +332,7 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
                       >
                         <div>
                           <div className="font-medium text-sm">{ingredient.name}</div>
-                          <div className="text-xs text-gray-500">{ingredient.kcal_per_100g} kcal/100g</div>
+                          <div className="text-xs text-gray-500">{ingredient.kcalPer100g} kcal/100g</div>
                         </div>
                         <Plus className="w-4 h-4 text-gray-400" />
                       </div>
@@ -371,7 +382,7 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
                             >
                               <div>
                                 <div className="font-medium">
-                                  {mockIngredients.find(ing => ing.id === item.ingredient_id)?.name}
+                                  {mockIngredients.find(ing => ing.id === item.ingredientId)?.name}
                                 </div>
                                 <div className="text-xs text-gray-500">{item.kcal} kcal</div>
                               </div>
@@ -410,7 +421,7 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
                       >
                         <div>
                           <div className="font-medium">
-                            {mockIngredients.find(ing => ing.id === item.ingredient_id)?.name}
+                            {mockIngredients.find(ing => ing.id === item.ingredientId)?.name}
                           </div>
                           <div className="text-xs text-gray-500">{item.kcal} kcal</div>
                         </div>
