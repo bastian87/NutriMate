@@ -25,15 +25,16 @@ async function cleanupDuplicateGroceryLists() {
 
   try {
     // Obtener todos los usuarios que tienen listas de compras
-    const { data: usersWithLists, error: usersError } = await supabase
+    const { data: allLists, error: listsError } = await supabase
       .from('grocery_lists')
       .select('user_id')
-      .group('user_id')
 
-    if (usersError) {
-      console.error('❌ Error obteniendo usuarios:', usersError)
+    if (listsError) {
+      console.error('❌ Error obteniendo listas:', listsError)
       return
     }
+
+    const usersWithLists = allLists?.map(list => ({ user_id: list.user_id })) || []
 
     console.log(`📊 Encontrados ${usersWithLists?.length || 0} usuarios con listas de compras`)
 

@@ -49,12 +49,12 @@ async function checkGroceryLists() {
       }
       acc[list.user_id].push(list)
       return acc
-    }, {} as Record<string, any[]>)
+    }, {} as Record<string, Array<typeof allLists[0]>>)
 
     console.log(`👥 Usuarios con listas: ${Object.keys(listsByUser).length}\n`)
 
     // Mostrar información por usuario
-    for (const [userId, userLists] of Object.entries(listsByUser)) {
+    for (const [userId, userLists] of Object.entries(listsByUser) as [string, Array<typeof allLists[0]>][]) {
       console.log(`👤 Usuario: ${userId}`)
       console.log(`   📝 Listas: ${userLists.length}`)
       
@@ -75,10 +75,10 @@ async function checkGroceryLists() {
     const { data: allItems, error: itemsError } = await supabase
       .from('grocery_list_items')
       .select('grocery_list_id')
-      .group('grocery_list_id')
 
     if (!itemsError && allItems) {
-      console.log(`📦 Total de listas con items: ${allItems.length}`)
+      const uniqueListIds = new Set(allItems.map(item => item.grocery_list_id))
+      console.log(`📦 Total de listas con items: ${uniqueListIds.size}`)
     }
 
   } catch (error) {
