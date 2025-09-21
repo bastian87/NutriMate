@@ -22,7 +22,29 @@ export function OnboardingWizard() {
   const router = useRouter()
   const { toast } = useToast()
   const [currentStep, setCurrentStep] = useState(0)
-  const [onboardingData, setOnboardingData] = useState<Partial<OnboardingData>>({})
+  const [onboardingData, setOnboardingData] = useState<Partial<OnboardingData>>(() => {
+    // Inicializar con datos vacíos o datos guardados
+    const savedData = onboardingService.getOnboardingData()
+    return Object.keys(savedData).length > 0 ? savedData : {
+      full_name: '',
+      username: '',
+      email: '',
+      age: undefined,
+      gender: '',
+      height: undefined,
+      weight: undefined,
+      activity_level: '',
+      health_goal: '',
+      calorie_target: undefined,
+      dietary_preferences: [],
+      excluded_ingredients: [],
+      include_snacks: false,
+      max_prep_time: 60,
+      macro_priority: 'balanced',
+      allergies: [],
+      intolerances: []
+    }
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [isCreatingAccount, setIsCreatingAccount] = useState(false)
 
@@ -42,30 +64,6 @@ export function OnboardingWizard() {
     }
   }, [])
 
-  // Si no hay datos iniciales, empezar con datos vacíos
-  useEffect(() => {
-    if (Object.keys(onboardingData).length === 0) {
-      setOnboardingData({
-        full_name: '',
-        username: '',
-        email: '',
-        age: undefined,
-        gender: '',
-        height: undefined,
-        weight: undefined,
-        activity_level: '',
-        health_goal: '',
-        calorie_target: undefined,
-        dietary_preferences: [],
-        excluded_ingredients: [],
-        include_snacks: false,
-        max_prep_time: 60,
-        macro_priority: 'balanced',
-        allergies: [],
-        intolerances: []
-      })
-    }
-  }, [])
 
   // Guardar datos cuando cambien
   useEffect(() => {

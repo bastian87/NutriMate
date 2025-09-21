@@ -235,3 +235,4 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
     </div>
   )
 }
+

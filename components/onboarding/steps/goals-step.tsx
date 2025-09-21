@@ -347,3 +347,4 @@ export function GoalsStep({ data, onChange }: GoalsStepProps) {
     </div>
   )
 }
+

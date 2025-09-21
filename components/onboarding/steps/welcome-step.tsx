@@ -129,3 +129,4 @@ export function WelcomeStep({ data, onChange }: WelcomeStepProps) {
     </div>
   )
 }
+
