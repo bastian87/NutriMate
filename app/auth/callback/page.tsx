@@ -23,48 +23,21 @@ export default function AuthCallbackPage() {
           return;
         }
 
-        // Verificar si el usuario ya tiene perfil completo
-        const { data: userProfile, error: profileError } = await supabase
-          .from("users")
-          .select("id, username, full_name")
-          .eq("id", session.user.id)
-          .maybeSingle();
+        // Verificar si el onboarding está completo en los metadatos del usuario
+        const onboardingComplete = session.user.user_metadata?.onboarding_complete === true;
 
-        if (profileError) {
-          console.error("Error checking user profile:", profileError);
-        }
-
-        // Verificar si el usuario tiene preferencias (indicador de perfil completo)
-        let hasPreferences = false;
-        if (userProfile) {
-          const { data: preferences, error: prefsError } = await supabase
-            .from("user_preferences")
-            .select("id")
-            .eq("user_id", session.user.id)
-            .maybeSingle();
-          
-          if (prefsError) {
-            console.log("⚠️ Error checking preferences:", prefsError);
-          }
-          hasPreferences = !!preferences;
-        }
-
-        console.log("🔍 Profile check results:", { 
-          userProfile: !!userProfile, 
-          hasUsername: !!userProfile?.username, 
-          hasPreferences,
-          userProfileData: userProfile
+        console.log("🔍 Onboarding check results:", { 
+          onboardingComplete,
+          userMetadata: session.user.user_metadata
         });
 
-        // Lógica simple: si el perfil está incompleto, ir al onboarding
-        // Si el perfil está completo, ir al dashboard
-        if (userProfile && userProfile.username && hasPreferences) {
-          // Usuario tiene perfil completo, ir al dashboard
-          console.log("✅ User has complete profile, redirecting to dashboard");
+        // Si el onboarding está completo, ir al dashboard
+        // Si no, ir al onboarding
+        if (onboardingComplete) {
+          console.log("✅ Onboarding complete, redirecting to dashboard");
           router.push("/dashboard");
         } else {
-          // Usuario necesita completar su perfil, ir al onboarding
-          console.log("🔄 User needs to complete profile, redirecting to onboarding");
+          console.log("🔄 Onboarding incomplete, redirecting to onboarding");
           router.push("/onboarding");
         }
       } catch (error) {

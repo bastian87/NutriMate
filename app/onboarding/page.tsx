@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import OnboardingForm from "@/components/onboarding-form"
+import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { Loader2 } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/context"
@@ -77,14 +77,10 @@ export default function OnboardingPage() {
     )
   }
 
-  // User is authenticated, show the onboarding form
+  // User is authenticated, show the onboarding wizard
   return (
     <OnboardingGuard>
-      <div className="min-h-screen bg-white py-8 lg:py-12">
-        <div className="container mx-auto max-w-2xl px-4">
-          <OnboardingForm />
-        </div>
-      </div>
+      <OnboardingWizard />
     </OnboardingGuard>
   )
 }

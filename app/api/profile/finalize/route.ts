@@ -83,56 +83,37 @@ export async function POST(request: NextRequest) {
       counter++
     }
 
-    // 5. Upsert en la tabla users
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .upsert({
-        id: user.id,
-        email: user.email!,
-        full_name: full_name || null,
-        username: finalUsername
-      })
-      .select()
-      .single()
+    // 5. Usar transacción para crear usuario y preferencias de forma atómica
+    const { data: transactionData, error: transactionError } = await supabase.rpc('create_user_with_preferences', {
+      p_user_id: user.id,
+      p_email: user.email!,
+      p_full_name: full_name || null,
+      p_username: finalUsername,
+      p_age: age,
+      p_gender: gender,
+      p_height: height,
+      p_weight: weight,
+      p_activity_level: activity_level,
+      p_health_goal: health_goal,
+      p_calorie_target: calorie_target || 2000,
+      p_dietary_preferences: dietary_preferences,
+      p_excluded_ingredients: excluded_ingredients,
+      p_include_snacks: include_snacks,
+      p_allergies: allergies,
+      p_intolerances: intolerances,
+      p_max_prep_time: max_prep_time,
+      p_macro_priority: macro_priority
+    })
 
-    if (userError) {
-      console.error("Error upserting user profile:", userError)
+    if (transactionError) {
+      console.error("Error in transaction:", transactionError)
       return NextResponse.json(
-        { error: "Database error", message: "Failed to upsert user profile" },
+        { error: "Database error", message: "Failed to create user profile and preferences" },
         { status: 500 }
       )
     }
 
-    // 6. Upsert en la tabla user_preferences
-    const { data: preferencesData, error: preferencesError } = await supabase
-      .from("user_preferences")
-      .upsert({
-        user_id: user.id,
-        age,
-        gender,
-        height,
-        weight,
-        activity_level,
-        health_goal,
-        calorie_target: calorie_target || 2000,
-        dietary_preferences,
-        excluded_ingredients,
-        include_snacks,
-        allergies,
-        intolerances,
-        max_prep_time,
-        macro_priority
-      })
-      .select()
-      .single()
-
-    if (preferencesError) {
-      console.error("Error upserting user preferences:", preferencesError)
-      return NextResponse.json(
-        { error: "Database error", message: "Failed to upsert user preferences" },
-        { status: 500 }
-      )
-    }
+    const { userData, preferencesData } = transactionData
 
     // 7. Actualizar metadata del usuario para marcar onboarding como completo
     const { error: metadataError } = await supabase.auth.updateUser({
