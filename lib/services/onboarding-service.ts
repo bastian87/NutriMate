@@ -145,7 +145,13 @@ class OnboardingService {
             
             if (sessionData.session?.user?.email === data.email) {
               console.log("✅ User already has active session, using existing session")
-              authResult = { data: { user: sessionData.session.user, session: sessionData.session }, error: null }
+              authResult = { 
+                data: { 
+                  user: sessionData.session!.user, 
+                  session: sessionData.session! 
+                }, 
+                error: null 
+              }
             } else {
               return { 
                 success: false, 
