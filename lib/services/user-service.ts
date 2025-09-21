@@ -37,20 +37,25 @@ export class UserService {
 
   async getUserPreferences(userId: string): Promise<UserPreferences | null> {
     try {
+      console.log("🔍 getUserPreferences: Fetching for user ID:", userId)
+      
       const { data, error } = await this.supabase
         .from("user_preferences")
         .select("*")
         .eq("user_id", userId)
         .maybeSingle() // Use maybeSingle() instead of single()
 
+      console.log("🔍 getUserPreferences: Supabase response:", { data, error })
+
       if (error && error.code !== "PGRST116") {
-        console.error("Supabase error in getUserPreferences:", error)
+        console.error("❌ Supabase error in getUserPreferences:", error)
         return null
       }
 
+      console.log("✅ getUserPreferences: Returning data:", data)
       return data
     } catch (error) {
-      console.error("Error fetching user preferences:", error)
+      console.error("❌ Error fetching user preferences:", error)
       return null
     }
   }

@@ -84,7 +84,8 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
       hasUser: !!user,
       userId: user?.id,
       hasPreferences: !!preferences,
-      loading
+      loading,
+      preferencesData: preferences
     });
     
     if (user && preferences === null) {
