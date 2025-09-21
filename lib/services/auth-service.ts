@@ -59,6 +59,15 @@ class AuthService {
 
       if (authError) {
         console.error("❌ Auth error:", authError)
+        
+        // Manejo específico para rate limits
+        if (authError.message?.includes("Request rate limit reached") || authError.status === 429) {
+          return { 
+            data: null, 
+            error: new AuthError("Demasiados intentos de registro. Por favor, espera unos minutos antes de intentar nuevamente.") 
+          }
+        }
+        
         return { 
           data: null, 
           error: authError 
@@ -116,6 +125,15 @@ class AuthService {
 
       if (authError) {
         console.error("❌ Auth error:", authError)
+        
+        // Manejo específico para rate limits
+        if (authError.message?.includes("Request rate limit reached") || authError.status === 429) {
+          return { 
+            data: null, 
+            error: new AuthError("Demasiados intentos de inicio de sesión. Por favor, espera unos minutos antes de intentar nuevamente.") 
+          }
+        }
+        
         return { 
           data: null, 
           error: authError 

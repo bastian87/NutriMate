@@ -234,10 +234,12 @@ export default function DashboardPage() {
         <NutritionSummary
           data={todaysNutrition}
           title={t("dashboard.todaysNutrition")}
-          period="Based on your current meal plan"
+          period="Nutritional tracking"
         />
       </motion.div>
 
+      {/* Meal Plans section temporarily hidden */}
+      {/* 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
         <Card>
           <CardHeader>
@@ -284,6 +286,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </motion.div>
+      */}
     </div>
   )
 }

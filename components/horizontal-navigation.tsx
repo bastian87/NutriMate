@@ -56,7 +56,7 @@ export function HorizontalNavigation() {
     main: [
       { name: t("navigation.dashboard"), href: "/dashboard", icon: Home },
       { name: t("navigation.recipes"), href: "/recipes", icon: ChefHat },
-      { name: t("navigation.mealPlans"), href: "/meal-plans", icon: Calendar },
+      // { name: t("navigation.mealPlans"), href: "/meal-plans", icon: Calendar }, // Temporalmente oculto
       { name: t("navigation.groceryList"), href: "/grocery-list", icon: ShoppingCart },
     ],
     nutrition: [

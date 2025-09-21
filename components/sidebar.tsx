@@ -68,7 +68,7 @@ export function Sidebar() {
     { name: t("navigation.dashboard"), href: "/dashboard", icon: Home },
     { name: t("navigation.recipes"), href: "/recipes", icon: ChefHat },
     { name: t("navigation.groceryList"), href: "/grocery-list", icon: ShoppingCart },
-    { name: t("navigation.mealPlans"), href: "/meal-plans", icon: Calendar },
+    // { name: t("navigation.mealPlans"), href: "/meal-plans", icon: Calendar }, // Temporalmente oculto
     { name: t("navigation.nutritionTracking"), href: "/calendar", icon: Calendar },
     { name: "Objetivos", href: "/goals", icon: Target },
     { name: "Gamificación", href: "/gamification", icon: Flame },

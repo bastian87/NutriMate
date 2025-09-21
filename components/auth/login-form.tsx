@@ -21,12 +21,22 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [creatingTestUser, setCreatingTestUser] = useState(false)
+  const [lastAttempt, setLastAttempt] = useState<number>(0)
   const { signIn } = useAuthContext()
   const router = useRouter()
   const { t } = useLanguage()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Debouncing: prevenir múltiples envíos en menos de 2 segundos
+    const now = Date.now()
+    if (now - lastAttempt < 2000) {
+      setError("Por favor, espera un momento antes de intentar nuevamente.")
+      return
+    }
+    
+    setLastAttempt(now)
     setLoading(true)
     setError(null)
 
@@ -44,8 +54,8 @@ export default function LoginForm() {
           errorMessage = "Invalid email or password. Please check your credentials and try again."
         } else if (err.message.includes("Email not confirmed")) {
           errorMessage = "Please check your email and click the confirmation link before signing in."
-        } else if (err.message.includes("Too many requests")) {
-          errorMessage = "Too many login attempts. Please wait a moment and try again."
+        } else if (err.message.includes("Too many requests") || err.message.includes("Demasiados intentos")) {
+          errorMessage = "Demasiados intentos de inicio de sesión. Por favor, espera unos minutos antes de intentar nuevamente."
         } else {
           errorMessage = err.message
         }

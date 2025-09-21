@@ -28,6 +28,7 @@ export default function SignupForm() {
   const [resumeMethod, setResumeMethod] = useState<'email' | 'google' | null>(null)
   const [otpSent, setOtpSent] = useState(false)
   const [otpCode, setOtpCode] = useState("")
+  const [lastAttempt, setLastAttempt] = useState<number>(0)
   const { signUp } = useAuthContext()
   const router = useRouter()
 
@@ -93,6 +94,15 @@ export default function SignupForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Debouncing: prevenir múltiples envíos en menos de 3 segundos
+    const now = Date.now()
+    if (now - lastAttempt < 3000) {
+      setError("Por favor, espera un momento antes de intentar nuevamente.")
+      return
+    }
+    
+    setLastAttempt(now)
     setLoading(true)
     setError(null)
 
@@ -116,6 +126,14 @@ export default function SignupForm() {
           setError(null)
           return
         }
+        
+        // Manejo específico para rate limits
+        if (result.error.message?.includes('Demasiados intentos') || 
+            result.error.message?.includes('Too many requests')) {
+          setError("Demasiados intentos de registro. Por favor, espera unos minutos antes de intentar nuevamente.")
+          return
+        }
+        
         setError(result.error.message || 'An error occurred')
         return
       }
