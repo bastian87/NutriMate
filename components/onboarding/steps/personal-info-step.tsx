@@ -36,23 +36,23 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
   const handleUsernameChange = (value: string) => {
     setUsernameError('')
     
+    // Siempre actualizar el estado, incluso si hay errores de validación
+    onChange({ username: value })
+    
     if (value && !validateUsername(value)) {
       setUsernameError('El usuario debe tener entre 3-20 caracteres y solo letras, números y guiones bajos')
-      return
     }
-    
-    onChange({ username: value })
   }
 
   const handleEmailChange = (value: string) => {
     setEmailError('')
     
+    // Siempre actualizar el estado, incluso si hay errores de validación
+    onChange({ email: value })
+    
     if (value && !validateEmail(value)) {
       setEmailError('Por favor ingresa un email válido')
-      return
     }
-    
-    onChange({ email: value })
   }
 
   const checkUsernameAvailability = async (username: string) => {
