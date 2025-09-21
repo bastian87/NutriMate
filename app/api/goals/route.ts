@@ -101,7 +101,64 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
     }
 
-    // Eliminar el goal
+    // Verificar si hay entradas diarias que referencian este goal
+    const { data: dayEntries, error: entriesError } = await supa
+      .from('day_entries')
+      .select('id, date')
+      .eq('goal_id', goalId)
+      .eq('user_id', userId)
+      .limit(1);
+
+    if (entriesError) {
+      console.error('Error checking day entries:', entriesError);
+      return NextResponse.json({ error: 'Error checking dependencies' }, { status: 500 });
+    }
+
+    if (dayEntries && dayEntries.length > 0) {
+      return NextResponse.json({ 
+        error: 'No se puede eliminar este objetivo porque tiene entradas diarias asociadas. Primero elimina las entradas del calendario o crea un nuevo objetivo.' 
+      }, { status: 400 });
+    }
+
+    // Verificar si hay resúmenes semanales que referencian este goal
+    const { data: weeklySummaries, error: weeklyError } = await supa
+      .from('weekly_summaries')
+      .select('id')
+      .eq('goal_id', goalId)
+      .eq('user_id', userId)
+      .limit(1);
+
+    if (weeklyError) {
+      console.error('Error checking weekly summaries:', weeklyError);
+      return NextResponse.json({ error: 'Error checking dependencies' }, { status: 500 });
+    }
+
+    if (weeklySummaries && weeklySummaries.length > 0) {
+      return NextResponse.json({ 
+        error: 'No se puede eliminar este objetivo porque tiene resúmenes semanales asociados.' 
+      }, { status: 400 });
+    }
+
+    // Verificar si hay resúmenes mensuales que referencian este goal
+    const { data: monthlySummaries, error: monthlyError } = await supa
+      .from('monthly_summaries')
+      .select('id')
+      .eq('goal_id', goalId)
+      .eq('user_id', userId)
+      .limit(1);
+
+    if (monthlyError) {
+      console.error('Error checking monthly summaries:', monthlyError);
+      return NextResponse.json({ error: 'Error checking dependencies' }, { status: 500 });
+    }
+
+    if (monthlySummaries && monthlySummaries.length > 0) {
+      return NextResponse.json({ 
+        error: 'No se puede eliminar este objetivo porque tiene resúmenes mensuales asociados.' 
+      }, { status: 400 });
+    }
+
+    // Si no hay dependencias, eliminar el goal
     const { error: deleteError } = await supa
       .from('goals')
       .delete()
@@ -112,6 +169,7 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ message: 'Goal deleted successfully' });
   } catch (err: any) {
+    console.error('Error deleting goal:', err);
     return NextResponse.json({ error: err?.message ?? 'Invalid request' }, { status: 400 });
   }
 }

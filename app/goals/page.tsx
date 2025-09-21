@@ -124,7 +124,7 @@ export default function GoalsPage() {
   };
 
   // Delete goal
-  const deleteGoal = async () => {
+  const deleteGoal = async (forceDelete = false) => {
     if (!user?.id || !goalToDelete) {
       toast({
         title: t("common.error"),
@@ -136,7 +136,8 @@ export default function GoalsPage() {
 
     setDeleting(goalToDelete);
     try {
-      const response = await fetch(`/api/goals?id=${goalToDelete}`, {
+      const endpoint = forceDelete ? `/api/goals/force-delete?id=${goalToDelete}` : `/api/goals?id=${goalToDelete}`;
+      const response = await fetch(endpoint, {
         method: 'DELETE',
         headers: {
           'x-user-id': user.id
@@ -147,17 +148,37 @@ export default function GoalsPage() {
       if (response.ok) {
         toast({
           title: t("goals.goalDeleted"),
-          description: t("goals.goalDeletedSuccessfully")
+          description: forceDelete 
+            ? "Objetivo y todos los datos asociados eliminados correctamente"
+            : t("goals.goalDeletedSuccessfully")
         });
         fetchGoals(); // Refresh goals list
         setDeleteDialogOpen(false);
         setGoalToDelete(null);
       } else {
-        toast({
-          title: t("common.error"),
-          description: data.error || t("goals.failedToDelete"),
-          variant: "destructive"
-        });
+        // Si el error es por dependencias, ofrecer borrar con cascada
+        if (data.error && data.error.includes('entradas diarias asociadas')) {
+          toast({
+            title: "No se puede eliminar",
+            description: data.error + " ¿Deseas eliminar también todas las entradas asociadas?",
+            variant: "destructive",
+            action: (
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={() => deleteGoal(true)}
+              >
+                Eliminar todo
+              </Button>
+            )
+          });
+        } else {
+          toast({
+            title: t("common.error"),
+            description: data.error || t("goals.failedToDelete"),
+            variant: "destructive"
+          });
+        }
       }
     } catch (error) {
       toast({
@@ -355,7 +376,7 @@ export default function GoalsPage() {
         description={t("goals.confirmDelete")}
         confirmText={t("goals.deleteConfirm")}
         cancelText={t("goals.cancel")}
-        onConfirm={deleteGoal}
+        onConfirm={() => deleteGoal(false)}
         loading={deleting === goalToDelete}
         variant="destructive"
       />
