@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase/client"
 import type { User, Session, AuthError } from "@supabase/supabase-js"
 import { authService } from "@/lib/services/auth-service"
+import { useUserQuery, useUserPreferencesQuery, useUserSubscriptionsQuery } from "@/hooks/use-supabase-query"
 
 // Define a more specific type for the signup/signin response
 interface AuthResponse {
@@ -19,7 +20,7 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<AuthResponse>
-  signUp: (email: string, password: string, fullName?: string) => Promise<AuthResponse>
+  signUp: (email: string, password: string, fullName?: string, username?: string) => Promise<AuthResponse>
   signOut: () => Promise<void>
 }
 
@@ -32,8 +33,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true
+    let isInitializing = false
 
     const initializeAuth = async () => {
+      if (isInitializing) return
+      isInitializing = true
+
       try {
         // 1. Obtener la sesión inicial
         const { data: { session }, error } = await supabase.auth.getSession()
@@ -43,7 +48,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (mounted) {
-        setUser(session?.user ?? null)
+          // Verificar si el usuario está en proceso de onboarding
+          const tempUserData = localStorage.getItem('temp_user_data')
+          const isOnboardingInProgress = tempUserData !== null
+          
+          if (isOnboardingInProgress) {
+            console.log("🚫 Initial auth check: User is in onboarding process, not setting user")
+            setUser(null)
+            // Cerrar la sesión si existe
+            if (session) {
+              console.log("🔐 Signing out user during initial auth check")
+              await supabase.auth.signOut()
+            }
+          } else {
+            setUser(session?.user ?? null)
+          }
+          
           setLoading(false)
           setInitialized(true)
         }
@@ -51,30 +71,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("Error in initializeAuth:", error)
         if (mounted) {
           setUser(null)
-        setLoading(false)
+          setLoading(false)
           setInitialized(true)
         }
+      } finally {
+        isInitializing = false
       }
     }
 
-    // 2. Configurar el listener de cambios de autenticación
+    // Inicializar autenticación
+    initializeAuth()
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  // Listener de cambios de autenticación separado
+  useEffect(() => {
+    let mounted = true
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("Auth state change:", event, session?.user?.id)
+        if (!mounted) return
 
-        if (mounted) {
-      setUser(session?.user ?? null)
-          
-          // Solo cambiar loading a false si ya se inicializó
-          if (initialized) {
-            setLoading(false)
+        console.log("🔄 Auth state change:", event, session?.user?.id, "mounted:", mounted, "initialized:", initialized)
+
+        // Verificar si el usuario está en proceso de onboarding
+        const tempUserData = localStorage.getItem('temp_user_data')
+        const isOnboardingInProgress = tempUserData !== null
+        const isCompletingSignup = event === 'SIGNED_IN' && tempUserData !== null
+        
+        if (isOnboardingInProgress && !isCompletingSignup) {
+          console.log("🚫 User is in onboarding process, not setting user")
+          // No establecer el usuario si está en onboarding (excepto durante la creación)
+          setUser(null)
+          // Cerrar la sesión para evitar acceso no autorizado
+          if (session) {
+            console.log("🔐 Signing out user during onboarding")
+            await supabase.auth.signOut()
           }
+        } else {
+          console.log("👤 Setting user:", session?.user?.id)
+          setUser(session?.user ?? null)
+        }
+        
+        // Solo cambiar loading a false si ya se inicializó
+        if (initialized) {
+          console.log("⏳ Setting loading to false")
+          setLoading(false)
         }
       }
     )
-
-    // Inicializar autenticación
-    initializeAuth()
 
     return () => {
       mounted = false
@@ -95,10 +143,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signUp = async (email: string, password: string, fullName?: string): Promise<AuthResponse> => {
+  const signUp = async (email: string, password: string, fullName?: string, username?: string): Promise<AuthResponse> => {
     setLoading(true)
     try {
-      const response = await authService.signUp(email, password, fullName)
+      const response = await authService.signUp(email, password, fullName, username)
+      
+      // Si el signup fue exitoso y necesita onboarding, no establecer el usuario
+      if (response.data?.needsOnboarding) {
+        setUser(null)
+        return response
+      }
+      
       return response as AuthResponse
     } catch (error) {
       console.error("Error signing up (AuthProvider):", error)
@@ -130,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   // Mostrar loader global mientras se inicializa la autenticación
-  if (!initialized || loading) {
+  if (!initialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">

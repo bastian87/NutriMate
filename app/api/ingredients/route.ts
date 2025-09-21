@@ -5,5 +5,7 @@ export async function GET() {
   const supa = createServerClient();
   const { data, error } = await supa.from("ingredients").select("id,name,group");
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  
+  console.log('Ingredients API - Sample data:', data?.slice(0, 3));
   return NextResponse.json(data ?? []);
 }

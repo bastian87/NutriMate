@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { useGroceryList } from "@/hooks/use-grocery-list"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 
 export default function MobileGroceryListPage() {
   const { groceryList, loading, error, addItem, updateItem, deleteItem } = useGroceryList()

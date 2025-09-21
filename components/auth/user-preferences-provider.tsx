@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { useAuthContext } from "@/components/auth/auth-provider";
+import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { userService } from "@/lib/services/user-service";
 import type { UserPreferences } from "@/lib/types/database";
 

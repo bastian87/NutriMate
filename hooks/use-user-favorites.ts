@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { recipeService, type RecipeWithDetails } from "@/lib/services/recipe-service"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useToast } from "@/hooks/use-toast"
 import { useSubscription } from "@/hooks/use-subscription"
 

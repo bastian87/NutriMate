@@ -21,9 +21,71 @@ export default function ProfileForm({ user }: ProfileFormProps) {
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
+    username: "",
   })
+  const [usernameError, setUsernameError] = useState<string | null>(null)
+  const [checkingUsername, setCheckingUsername] = useState(false)
   const { toast } = useToast()
   const { t } = useLanguage()
+
+  const checkUsernameAvailability = async (username: string) => {
+    if (!username || username.length < 3) {
+      setUsernameError("Username must be at least 3 characters long")
+      return false
+    }
+
+    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
+    if (!usernameRegex.test(username)) {
+      setUsernameError("Username must be 3-20 characters long and contain only letters, numbers, and underscores")
+      return false
+    }
+
+    setCheckingUsername(true)
+    setUsernameError(null)
+
+    try {
+      const response = await fetch("/api/user/check-username", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setUsernameError(data.error || "Error checking username availability")
+        return false
+      }
+
+      if (!data.available) {
+        setUsernameError("Username is already taken")
+        return false
+      }
+
+      setUsernameError(null)
+      return true
+    } catch (error) {
+      setUsernameError("Error checking username availability")
+      return false
+    } finally {
+      setCheckingUsername(false)
+    }
+  }
+
+  const handleUsernameChange = async (value: string) => {
+    setFormData({ ...formData, username: value })
+    setUsernameError(null)
+
+    // Debounce the username check
+    if (value.length >= 3) {
+      const timeoutId = setTimeout(() => {
+        checkUsernameAvailability(value)
+      }, 500)
+      return () => clearTimeout(timeoutId)
+    }
+  }
 
   // Load user data when component mounts
   useEffect(() => {
@@ -36,6 +98,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
           setFormData({
             full_name: profile.full_name || "",
             email: profile.email || "",
+            username: profile.username || "",
           })
         }
       } catch (error) {
@@ -52,10 +115,20 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     
     setLoading(true)
 
+    // Validate username if it has changed
+    if (formData.username && formData.username !== user.username) {
+      const isUsernameValid = await checkUsernameAvailability(formData.username)
+      if (!isUsernameValid) {
+        setLoading(false)
+        return
+      }
+    }
+
     try {
       const updatedProfile = await userService.updateUserProfile(user.id, {
         full_name: formData.full_name,
         email: formData.email,
+        username: formData.username,
       })
 
       if (updatedProfile) {
@@ -115,6 +188,27 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 placeholder={t("profileForm.emailPlaceholder")}
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="username">{t("account.username")}</Label>
+            <Input
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={(e) => handleUsernameChange(e.target.value)}
+              placeholder="Choose a username"
+              className={usernameError ? "border-red-500" : ""}
+            />
+            {checkingUsername && (
+              <p className="text-sm text-blue-600">Checking availability...</p>
+            )}
+            {usernameError && (
+              <p className="text-sm text-red-600">{usernameError}</p>
+            )}
+            {formData.username && !usernameError && !checkingUsername && (
+              <p className="text-sm text-green-600">✓ Username available</p>
+            )}
           </div>
 
           <Button type="submit" disabled={loading}>

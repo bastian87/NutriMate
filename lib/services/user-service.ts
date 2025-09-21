@@ -100,6 +100,52 @@ export class UserService {
     }
   }
 
+  async checkUsernameAvailability(username: string): Promise<{ available: boolean; error?: string }> {
+    try {
+      const { data, error } = await this.supabase
+        .from("users")
+        .select("username")
+        .eq("username", username)
+        .maybeSingle()
+
+      if (error) {
+        console.error("Error checking username availability:", error)
+        return { available: false, error: error.message }
+      }
+
+      return { available: !data }
+    } catch (error) {
+      console.error("Error checking username availability:", error)
+      return { available: false, error: "Failed to check username availability" }
+    }
+  }
+
+  async updateUsername(userId: string, username: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      // First check if username is available
+      const availability = await this.checkUsernameAvailability(username)
+      if (!availability.available) {
+        return { success: false, error: "Username is already taken" }
+      }
+
+      // Update the username
+      const { error } = await this.supabase
+        .from("users")
+        .update({ username })
+        .eq("id", userId)
+
+      if (error) {
+        console.error("Error updating username:", error)
+        return { success: false, error: error.message }
+      }
+
+      return { success: true }
+    } catch (error) {
+      console.error("Error updating username:", error)
+      return { success: false, error: "Failed to update username" }
+    }
+  }
+
   async deleteUserAccount(): Promise<{ error?: any }> {
     try {
       const { data } = await this.supabase.auth.getSession();

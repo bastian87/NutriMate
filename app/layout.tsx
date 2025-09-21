@@ -2,14 +2,13 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
-import { AuthProvider } from "@/components/auth/auth-provider"
+import { SimpleAuthProvider as AuthProvider } from "@/components/auth/simple-auth-provider"
 import { UserProfileProvider } from "@/components/auth/user-profile-provider"
 import { LanguageProvider } from "@/lib/i18n/context"
 import Script from "next/script"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import { UserPreferencesProvider } from "@/components/auth/user-preferences-provider"
-import { Sidebar } from "@/components/sidebar"
 import { ConditionalLayout } from "@/components/conditional-layout"
 
 const inter = Inter({
@@ -32,6 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased min-h-screen bg-background text-foreground`}>
+        <Script src="/scripts/error-handler.js" strategy="beforeInteractive" />
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-SCX9Q55CJF" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
           {`

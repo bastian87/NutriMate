@@ -2,21 +2,21 @@
 
 import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
-import { Search, Filter, Clock, Star, Heart, X, ChefHat, Utensils, Plus, Loader2, Bookmark, ChevronLeft, ChevronRight, BookmarkCheck } from "lucide-react"
+import { Search, Filter, Clock, Star, Heart, X, ChefHat, Utensils, Plus, Loader2, Bookmark, ChevronLeft, ChevronRight, BookmarkCheck, Users, Zap, Flame } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Slider } from "@/components/ui/slider"
 import { useRecipes } from "@/hooks/use-recipes"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { motion, AnimatePresence } from "framer-motion"
 import type { RecipeWithDetails } from "@/lib/services/recipe-service"
 import { useUserFavorites } from "@/hooks/use-user-favorites"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { useSubscription } from "@/hooks/use-subscription"
 import { useLanguage } from "@/lib/i18n/context"
-import { Select, SelectItem, SelectTrigger, SelectContent } from "@/components/ui/select";
+import { Select, SelectItem, SelectTrigger, SelectContent } from "@/components/ui/select"
+import { Card, CardContent } from "@/components/ui/card"
 
 export default function RecipesPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -24,12 +24,13 @@ export default function RecipesPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [maxCookTime, setMaxCookTime] = useState([120])
   const [calorieRange, setCalorieRange] = useState([0, 1000])
+  const [sortOption, setSortOption] = useState<"az" | "za" | "calories-asc" | "calories-desc">("az")
   const { user } = useAuthContext()
   const { tryAddFavorite, showLimitModal, setShowLimitModal, favorites, removeFavorite } = useUserFavorites()
   const { isPremium } = useSubscription()
   const [recipesState, setRecipesState] = useState<RecipeWithDetails[]>([])
   const [favoritedRecipes, setFavoritedRecipes] = useState<Set<string>>(new Set())
-  const { t } = useLanguage();
+  const { t } = useLanguage()
 
   const filters = useMemo(
     () => ({
@@ -46,132 +47,126 @@ export default function RecipesPage() {
 
   useEffect(() => {
     setRecipesState(recipes)
-    // Inicializar favoritos con las recetas que ya están en favoritos
     const favoriteIds = favorites.map(fav => fav.id)
     setFavoritedRecipes(new Set(favoriteIds))
-    
-
   }, [recipes, favorites])
 
   // Definir tipos de comida
-  const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
+  const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"]
 
   // Unir tags y tipos de comida para los filtros
   const allTags = useMemo(() => {
-    if (!recipes || recipes.length === 0) return [];
-    const tags = new Set<string>();
+    if (!recipes || recipes.length === 0) return []
+    const tags = new Set<string>()
     recipes.forEach((recipe) => {
       if (recipe.tags && Array.isArray(recipe.tags)) {
         recipe.tags.forEach((tag) => {
-          if (tag && tag.name) tags.add(tag.name);
-        });
+          if (tag && tag.name) tags.add(tag.name)
+        })
       }
       if (recipe.meal_type && MEAL_TYPES.includes(recipe.meal_type)) {
-        tags.add(recipe.meal_type);
+        tags.add(recipe.meal_type)
       }
-    });
-    return Array.from(tags).filter(Boolean).sort();
-  }, [recipes]);
+    })
+    return Array.from(tags).filter(Boolean).sort()
+  }, [recipes])
 
-  // Estado para paginación con pestañas
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12; // 12 recetas por página (3x4 grid)
+  // Estado para paginación
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 12
 
-  // Filtrado local robusto: nombre, tags y tipo de comida
+  // Filtrado y ordenamiento
   const filteredRecipes = useMemo(() => {
-    let arr = recipes;
+    let arr = recipes
+
     // Filtro por nombre
     if (searchQuery.trim()) {
-      arr = arr.filter(recipe => recipe.name.toLowerCase().includes(searchQuery.trim().toLowerCase()));
+      arr = arr.filter(recipe => recipe.name.toLowerCase().includes(searchQuery.trim().toLowerCase()))
     }
+
     // Filtro por tags y tipo de comida
     if (selectedTags.length) {
       arr = arr.filter((recipe) => {
-        const recipeTagNames = (recipe.tags || []).map((t) => t.name);
-        const hasTag = selectedTags.some((tag) => recipeTagNames.includes(tag));
-        const hasMealType = recipe.meal_type && selectedTags.includes(recipe.meal_type);
-        return hasTag || hasMealType;
-      });
+        const recipeTagNames = (recipe.tags || []).map((t) => t.name)
+        const hasTag = selectedTags.some((tag) => recipeTagNames.includes(tag))
+        const hasMealType = recipe.meal_type && selectedTags.includes(recipe.meal_type)
+        return hasTag || hasMealType
+      })
     }
+
     // Filtro por tiempo máximo
     if (maxCookTime[0] !== 120) {
-      arr = arr.filter(recipe => (recipe.cook_time_minutes || 0) <= maxCookTime[0]);
+      arr = arr.filter(recipe => (recipe.cook_time_minutes || 0) <= maxCookTime[0])
     }
+
     // Filtro por rango calórico
     if (calorieRange[0] !== 0 || calorieRange[1] !== 1000) {
-      arr = arr.filter(recipe => (recipe.calories || 0) >= calorieRange[0] && (recipe.calories || 0) <= calorieRange[1]);
+      arr = arr.filter(recipe => {
+        const calories = recipe.calories || 0
+        return calories >= calorieRange[0] && calories <= calorieRange[1]
+      })
     }
-    return arr;
-  }, [recipes, searchQuery, selectedTags, maxCookTime, calorieRange]);
 
-  // Reiniciar paginación al aplicar un filtro
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, selectedTags, maxCookTime, calorieRange]);
-
-  // Estado para el ordenamiento
-  const [sortOption, setSortOption] = useState<"az" | "za" | "calories-asc" | "calories-desc">("az");
-
-  // Ordenar recetas según la opción seleccionada
-  const sortedRecipes = useMemo(() => {
-    const arr = [...filteredRecipes];
-    if (sortOption === "az") {
-      arr.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortOption === "za") {
-      arr.sort((a, b) => b.name.localeCompare(a.name));
-    } else if (sortOption === "calories-asc") {
-      arr.sort((a, b) => (a.calories || 0) - (b.calories || 0));
-    } else if (sortOption === "calories-desc") {
-      arr.sort((a, b) => (b.calories || 0) - (a.calories || 0));
+    // Ordenamiento
+    switch (sortOption) {
+      case "az":
+        arr.sort((a, b) => a.name.localeCompare(b.name))
+        break
+      case "za":
+        arr.sort((a, b) => b.name.localeCompare(a.name))
+        break
+      case "calories-asc":
+        arr.sort((a, b) => (a.calories || 0) - (b.calories || 0))
+        break
+      case "calories-desc":
+        arr.sort((a, b) => (b.calories || 0) - (a.calories || 0))
+        break
     }
-    return arr;
-  }, [filteredRecipes, sortOption]);
 
-  // Cálculo de paginación
-  const totalPages = Math.ceil(sortedRecipes.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  
-  // Recetas a mostrar en la página actual
-  const visibleRecipes = sortedRecipes.slice(startIndex, endIndex);
+    return arr
+  }, [recipes, searchQuery, selectedTags, maxCookTime, calorieRange, sortOption])
 
-  const toggleTag = (tag: string) => {
-    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]))
-  }
+  // Paginación
+  const totalPages = Math.ceil(filteredRecipes.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedRecipes = filteredRecipes.slice(startIndex, startIndex + itemsPerPage)
+
+  // Contador de filtros activos
+  const activeFiltersCount = useMemo(() => {
+    let count = 0
+    if (searchQuery.trim()) count++
+    if (selectedTags.length > 0) count++
+    if (maxCookTime[0] !== 120) count++
+    if (calorieRange[0] !== 0 || calorieRange[1] !== 1000) count++
+    return count
+  }, [searchQuery, selectedTags, maxCookTime, calorieRange])
 
   const clearFilters = () => {
     setSearchQuery("")
     setSelectedTags([])
     setMaxCookTime([120])
     setCalorieRange([0, 1000])
+    setCurrentPage(1)
   }
 
-  const goToPage = (page: number) => {
-    setCurrentPage(page);
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    )
+    setCurrentPage(1)
   }
 
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  }
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  }
-
-  const activeFiltersCount =
-    (searchQuery ? 1 : 0) +
-    selectedTags.length +
-    (maxCookTime[0] !== 120 ? 1 : 0) +
-    (calorieRange[0] !== 0 || calorieRange[1] !== 1000 ? 1 : 0)
-
-  if (loading && recipes.length === 0) {
+  if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[calc(100vh-200px)]">
-        <Loader2 className="h-12 w-12 animate-spin text-orange-600" />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Cargando recetas...</span>
+          </div>
+        </div>
       </div>
     )
   }
@@ -179,9 +174,9 @@ export default function RecipesPage() {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
-        <p className="text-red-600 dark:text-red-400 mb-4">Error fetching recipes: {error}</p>
+        <p className="text-red-600 dark:text-red-400 mb-4">Error cargando recetas: {error}</p>
         <Button onClick={() => window.location.reload()} className="bg-orange-600 hover:bg-orange-700">
-          Try Again
+          Intentar de nuevo
         </Button>
       </div>
     )
@@ -189,6 +184,7 @@ export default function RecipesPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 font-sans">
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -214,6 +210,7 @@ export default function RecipesPage() {
         </div>
       </motion.div>
 
+      {/* Search and Filters */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -254,7 +251,7 @@ export default function RecipesPage() {
               className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 space-y-6 border border-gray-200 dark:border-gray-700"
             >
               <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-lg">Advanced Filters</h3>
+                <h3 className="font-semibold text-lg">Filtros Avanzados</h3>
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"
@@ -275,15 +272,15 @@ export default function RecipesPage() {
                 </div>
               </div>
 
-              {/* Selector de ordenamiento dentro de filtros */}
+              {/* Ordenamiento */}
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">Ordenar recetas</label>
                 <Select value={sortOption} onValueChange={(v: string) => setSortOption(v as any)}> 
                   <SelectTrigger className="min-w-[140px] w-[200px] h-10 text-sm px-4 py-2">
                     {sortOption === "az" && "De A a la Z"}
                     {sortOption === "za" && "De Z a la A"}
-                    {sortOption === "calories-asc" && "Calorías: menor a mayor"}
-                    {sortOption === "calories-desc" && "Calorías: mayor a menor"}
+                    {sortOption === "calories-asc" && t("recipes.sortCaloriesAsc")}
+                    {sortOption === "calories-desc" && t("recipes.sortCaloriesDesc")}
                   </SelectTrigger>
                   <SelectContent className="min-w-[150px] w-[180px] text-xs">
                     <SelectItem value="az">De A a la Z</SelectItem>
@@ -294,54 +291,57 @@ export default function RecipesPage() {
                 </Select>
               </div>
 
+              {/* Tags */}
               {allTags.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium mb-3">Dietary Preferences, Tags & Tipo de comida</label>
+                  <label className="block text-sm font-medium mb-3">Preferencias Dietéticas y Tags</label>
                   <div className="flex flex-wrap gap-2">
                     {allTags.map((tag) => (
-                      tag ? (
-                        <motion.div key={tag} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                          <Badge
-                            variant={selectedTags.includes(tag) ? "default" : "outline"}
-                            className={`cursor-pointer transition-all duration-200 text-xs px-2 py-1 rounded-full ${
-                              selectedTags.includes(tag)
-                                ? "bg-orange-600 text-white hover:bg-orange-700"
-                                : "border-gray-300 hover:bg-orange-50 dark:border-gray-600 dark:hover:bg-orange-950"
-                            }`}
-                            onClick={() => toggleTag(tag)}
-                          >
-                            {tag.charAt(0).toUpperCase() + tag.slice(1)}
-                          </Badge>
-                        </motion.div>
-                      ) : null
+                      <Button
+                        key={tag}
+                        variant={selectedTags.includes(tag) ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleTag(tag)}
+                        className={`text-xs px-3 py-1 h-auto ${
+                          selectedTags.includes(tag)
+                            ? "bg-orange-600 text-white hover:bg-orange-700"
+                            : "border-gray-300 dark:border-gray-600 hover:bg-orange-50 dark:hover:bg-orange-950"
+                        }`}
+                      >
+                        {tag}
+                      </Button>
                     ))}
                   </div>
                 </div>
               )}
 
+              {/* Tiempo de cocción */}
               <div>
-                <label className="block text-sm font-medium mb-3">Max Cook Time: {maxCookTime[0]} minutes</label>
+                <label className="block text-sm font-medium mb-2">
+                  Tiempo máximo de cocción: {maxCookTime[0]} minutos
+                </label>
                 <Slider
                   value={maxCookTime}
                   onValueChange={setMaxCookTime}
-                  max={120}
-                  min={5}
-                  step={5}
-                  className="w-full [&>span:first-child]:h-1 [&>span:first-child]:bg-orange-300 [&_[role=slider]]:bg-orange-600 [&_[role=slider]]:border-orange-600"
+                  max={300}
+                  min={15}
+                  step={15}
+                  className="w-full"
                 />
               </div>
 
+              {/* Rango calórico */}
               <div>
-                <label className="block text-sm font-medium mb-3">
-                  {t("recipes.calorieRange")}: {calorieRange[0]} - {calorieRange[1]} {t("recipes.calories")}
+                <label className="block text-sm font-medium mb-2">
+                  Rango calórico: {calorieRange[0]} - {calorieRange[1]} kcal
                 </label>
                 <Slider
                   value={calorieRange}
                   onValueChange={setCalorieRange}
-                  max={1000}
+                  max={2000}
                   min={0}
                   step={50}
-                  className="w-full [&>span:first-child]:h-1 [&>span:first-child]:bg-orange-300 [&_[role=slider]]:bg-orange-600 [&_[role=slider]]:border-orange-600"
+                  className="w-full"
                 />
               </div>
             </motion.div>
@@ -349,311 +349,263 @@ export default function RecipesPage() {
         </AnimatePresence>
       </motion.div>
 
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mb-6">
-        <div className="flex justify-between items-center">
-          <p className="text-gray-600 dark:text-gray-400">
-            {totalPages > 1 
-              ? `Mostrando ${startIndex + 1}-${Math.min(endIndex, sortedRecipes.length)} de ${sortedRecipes.length} recetas`
-              : `${sortedRecipes.length} recetas encontradas`
-            }
-          </p>
-          {totalPages > 1 && (
-            <p className="text-sm text-gray-500">
-              Página {currentPage} de {totalPages}
-            </p>
-          )}
-        </div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-      >
-        <AnimatePresence>
-          {visibleRecipes &&
-            visibleRecipes.map((recipe: RecipeWithDetails, index: number) => (
-              <motion.div
-                key={recipe.id}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ delay: index * 0.05, duration: 0.3 }}
-                whileHover={{ y: -5 }}
-                className="group flex flex-col"
-              >
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col flex-grow">
-                  <div className="relative h-48 overflow-hidden">
-                    <Link href={`/recipes/${recipe.id}`} className="block w-full h-full">
-                      <Image
-                        src={
-                          recipe.image_url ||
-                          `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(recipe.name) || "/placeholder.svg"}`
-                        }
-                        alt={recipe.name}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </Link>
-                    <div className="absolute top-2 right-2 flex gap-2">
-                      {user && (
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => {
-                            const isFav = favoritedRecipes.has(recipe.id)
-                            if (isFav) {
-                              removeFavorite(recipe.id)
-                              setFavoritedRecipes(prev => {
-                                const newSet = new Set(prev)
-                                newSet.delete(recipe.id)
-                                return newSet
-                              })
-                            } else {
-                              const currentFavoritesCount = favoritedRecipes.size
-                              if (!isPremium && currentFavoritesCount >= 10) {
-                                setShowLimitModal(true)
-                                return
-                              }
-                              tryAddFavorite(recipe.id).then(success => {
-                                if (success) {
-                                  setFavoritedRecipes(prev => new Set([...prev, recipe.id]))
-                                }
-                              })
-                            }
-                          }}
-                          className={`p-1.5 rounded-full backdrop-blur-sm transition-all duration-200 ${
-                            favoritedRecipes.has(recipe.id) ? "bg-red-500 text-white" : "bg-white/80 text-gray-600 hover:bg-white"
-                          }`}
-                          aria-label={favoritedRecipes.has(recipe.id) ? "Remove from favorites" : "Add to favorites"}
-                        >
-                          <Heart className={`h-4 w-4 ${favoritedRecipes.has(recipe.id) ? "fill-current" : ""}`} />
-                        </motion.button>
-                      )}
-                      <div className="bg-white/90 backdrop-blur-sm text-orange-600 rounded-full px-2 py-1 text-xs font-semibold flex items-center">
-                        <Star className="h-3 w-3 mr-1 fill-orange-600 text-orange-600" />
-                        {recipe.average_rating !== null && recipe.average_rating !== undefined ? (
-                          <span>
-                            {recipe.average_rating.toFixed(1)}
-                            {recipe.rating_count && recipe.rating_count > 0 && (
-                              <span className="text-xs opacity-75 ml-1">({recipe.rating_count})</span>
-                            )}
-                          </span>
-                        ) : (
-                          "N/A"
-                        )}
-                      </div>
-                    </div>
-                    <div className="absolute bottom-2 left-2">
-                      <Badge className="bg-black/70 text-white text-xs">{recipe.calories || 0} kcal</Badge>
-                    </div>
-                  </div>
-                  <div className="p-4 flex flex-col flex-grow">
-                    <Link href={`/recipes/${recipe.id}`} className="block">
-                      <h3 className="font-bold text-lg group-hover:text-orange-600 transition-colors duration-200 mb-1 line-clamp-2">
-                        {recipe.name}
-                      </h3>
-                    </Link>
-                    <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 mb-2">
-                      <div className="flex items-center">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {(recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0)} min
-                      </div>
-                      <div className="flex items-center">
-                        <Utensils className="h-3 w-3 mr-1" />
-                        {recipe.servings || 1} servings
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-x-2 mb-3 text-center">
-                      <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Protein</p>
-                        <p className="font-semibold text-sm">{recipe.protein || 0}g</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Carbs</p>
-                        <p className="font-semibold text-sm">{recipe.carbs || 0}g</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Fat</p>
-                        <p className="font-semibold text-sm">{recipe.fat || 0}g</p>
-                      </div>
-                    </div>
-                    {recipe.tags && recipe.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {recipe.tags.slice(0, 3).map((tag) => (
-                          <Badge
-                            key={tag.id}
-                            variant="outline"
-                            className="text-xs px-1.5 py-0.5 border-gray-300 dark:border-gray-600"
-                          >
-                            {tag.name}
-                          </Badge>
-                        ))}
-                        {recipe.tags.length > 3 && (
-                          <Badge
-                            variant="outline"
-                            className="text-xs px-1.5 py-0.5 border-gray-300 dark:border-gray-600"
-                          >
-                            +{recipe.tags.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                    <div className="mt-auto">
-                      <Button
-                        asChild
-                        className="w-full bg-orange-600 hover:bg-orange-700 transition-colors duration-200 text-sm py-2"
-                      >
-                        <Link href={`/recipes/${recipe.id}`}>View Recipe</Link>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-        </AnimatePresence>
-      </motion.div>
-
-      {filteredRecipes && filteredRecipes.length === 0 && !loading && (
+      {/* Recipes Grid - Diseño Moderno sin Imágenes */}
+      {filteredRecipes.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg mt-8"
+          className="text-center py-12"
         >
           <ChefHat className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400 mb-4">No recipes match your criteria.</p>
-          <div className="space-x-2">
-            <Button onClick={clearFilters} className="bg-orange-600 hover:bg-orange-700">
-              Clear All Filters
-            </Button>
-            {user && (
-              <Link href="/recipes/new">
-                <Button
-                  variant="outline"
-                  className="border-orange-600 text-orange-600 hover:bg-orange-50 dark:border-orange-500 dark:text-orange-500 dark:hover:bg-orange-950"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Your First Recipe
-                </Button>
-              </Link>
-            )}
-          </div>
+          <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
+            No se encontraron recetas
+          </h3>
+          <p className="text-gray-500 dark:text-gray-500">
+            Intenta ajustar tus filtros de búsqueda
+          </p>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {paginatedRecipes.map((recipe, index) => (
+            <motion.div
+              key={recipe.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="group"
+            >
+              <Card className="h-full hover:shadow-lg transition-all duration-300 border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600">
+                <CardContent className="p-6 h-full flex flex-col">
+                  {/* Header con título y acciones */}
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1 min-w-0">
+                      <Link href={`/recipes/${recipe.id}`} className="block">
+                        <h3 className="font-bold text-lg group-hover:text-orange-600 transition-colors duration-200 mb-1 line-clamp-2 leading-tight">
+                          {recipe.name}
+                        </h3>
+                      </Link>
+                      {recipe.description && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">
+                          {recipe.description}
+                        </p>
+                      )}
+                    </div>
+                    
+                    {/* Botón de favoritos */}
+                    {user && (
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => {
+                          const isFav = favoritedRecipes.has(recipe.id)
+                          if (isFav) {
+                            removeFavorite(recipe.id)
+                            setFavoritedRecipes(prev => {
+                              const newSet = new Set(prev)
+                              newSet.delete(recipe.id)
+                              return newSet
+                            })
+                          } else {
+                            const currentFavoritesCount = favoritedRecipes.size
+                            if (!isPremium && currentFavoritesCount >= 10) {
+                              setShowLimitModal(true)
+                              return
+                            }
+                            tryAddFavorite(recipe.id).then(success => {
+                              if (success) {
+                                setFavoritedRecipes(prev => new Set([...prev, recipe.id]))
+                              }
+                            })
+                          }
+                        }}
+                        className={`p-2 rounded-full transition-all duration-200 ${
+                          favoritedRecipes.has(recipe.id) 
+                            ? "bg-red-500 text-white hover:bg-red-600" 
+                            : "bg-gray-100 dark:bg-gray-800 text-gray-600 hover:bg-red-50 hover:text-red-500"
+                        }`}
+                        aria-label={favoritedRecipes.has(recipe.id) ? t("recipes.removeFromFavorites") : t("recipes.addToFavorites")}
+                      >
+                        <Heart className={`h-4 w-4 ${favoritedRecipes.has(recipe.id) ? "fill-current" : ""}`} />
+                      </motion.button>
+                    )}
+                  </div>
+
+                  {/* Información nutricional destacada */}
+                  <div className="grid grid-cols-4 gap-3 mb-4">
+                    <div className="text-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                      <div className="text-lg font-bold text-orange-600">{recipe.calories || 0}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">kcal</div>
+                    </div>
+                    <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="text-lg font-bold text-blue-600">{recipe.protein || 0}g</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">proteína</div>
+                    </div>
+                    <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="text-lg font-bold text-green-600">{recipe.carbs || 0}g</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">carbos</div>
+                    </div>
+                    <div className="text-center p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                      <div className="text-lg font-bold text-purple-600">{recipe.fat || 0}g</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">grasas</div>
+                    </div>
+                  </div>
+
+                  {/* Ingredientes principales */}
+                  {recipe.ingredients && recipe.ingredients.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                        <Utensils className="h-4 w-4 mr-1" />
+                        Ingredientes principales
+                      </h4>
+                      <div className="flex flex-wrap gap-1">
+                        {recipe.ingredients.slice(0, 4).map((ingredient, idx) => (
+                          <Badge
+                            key={idx}
+                            variant="outline"
+                            className="text-xs px-2 py-1 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-600"
+                          >
+                            {ingredient.amount} {ingredient.name}
+                          </Badge>
+                        ))}
+                        {recipe.ingredients.length > 4 && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs px-2 py-1 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-600"
+                          >
+                            +{recipe.ingredients.length - 4} más
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Información adicional */}
+                  <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-1" />
+                      {(recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0)} min
+                    </div>
+                    <div className="flex items-center">
+                      <Users className="h-4 w-4 mr-1" />
+                      {recipe.servings || 1} porciones
+                    </div>
+                    <div className="flex items-center">
+                      <Star className="h-4 w-4 mr-1 fill-orange-400 text-orange-400" />
+                      {recipe.average_rating ? recipe.average_rating.toFixed(1) : "N/A"}
+                    </div>
+                  </div>
+
+                  {/* Tags */}
+                  {recipe.tags && recipe.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {recipe.tags.slice(0, 3).map((tag) => (
+                        <Badge
+                          key={tag.id}
+                          variant="secondary"
+                          className="text-xs px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
+                        >
+                          {tag.name}
+                        </Badge>
+                      ))}
+                      {recipe.tags.length > 3 && (
+                        <Badge
+                          variant="secondary"
+                          className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                        >
+                          +{recipe.tags.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Botón de acción */}
+                  <div className="mt-auto">
+                    <Link href={`/recipes/${recipe.id}`} className="block">
+                      <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+                        Ver Receta
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
         </motion.div>
       )}
 
-      {/* Sistema de paginación */}
-      {totalPages > 1 && !loading && (
-        <div className="flex justify-center mt-8">
-          <div className="flex items-center gap-2">
-            {/* Botón Anterior */}
-            <Button
-              variant="outline"
-              onClick={goToPreviousPage}
-              disabled={currentPage === 1}
-              className="flex items-center gap-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Anterior
-            </Button>
-
-            {/* Números de página */}
-            <div className="flex items-center gap-1">
-              {/* Primera página */}
-              {currentPage > 3 && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => goToPage(1)}
-                    className="w-10 h-10"
-                  >
-                    1
-                  </Button>
-                  {currentPage > 4 && (
-                    <span className="px-2 text-gray-500">...</span>
-                  )}
-                </>
-              )}
-
-              {/* Páginas alrededor de la actual */}
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-                if (pageNum > totalPages) return null;
-                
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={pageNum === currentPage ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => goToPage(pageNum)}
-                    className={`w-10 h-10 ${
-                      pageNum === currentPage 
-                        ? "bg-orange-600 hover:bg-orange-700 text-white" 
-                        : ""
-                    }`}
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              })}
-
-              {/* Última página */}
-              {currentPage < totalPages - 2 && (
-                <>
-                  {currentPage < totalPages - 3 && (
-                    <span className="px-2 text-gray-500">...</span>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => goToPage(totalPages)}
-                    className="w-10 h-10"
-                  >
-                    {totalPages}
-                  </Button>
-                </>
-              )}
-            </div>
-
-            {/* Botón Siguiente */}
-            <Button
-              variant="outline"
-              onClick={goToNextPage}
-              disabled={currentPage === totalPages}
-              className="flex items-center gap-2"
-            >
-              Siguiente
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="flex justify-center items-center gap-2 mt-8"
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className="flex items-center gap-1"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Anterior
+          </Button>
+          
+          <div className="flex items-center gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <Button
+                key={page}
+                variant={currentPage === page ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCurrentPage(page)}
+                className={`w-8 h-8 p-0 ${
+                  currentPage === page 
+                    ? "bg-orange-600 text-white hover:bg-orange-700" 
+                    : "hover:bg-orange-50 dark:hover:bg-orange-950"
+                }`}
+              >
+                {page}
+              </Button>
+            ))}
           </div>
-        </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            className="flex items-center gap-1"
+          >
+            Siguiente
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </motion.div>
       )}
 
-      {/* Información de paginación */}
-      {totalPages > 1 && !loading && (
-        <div className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
-          Página {currentPage} de {totalPages} • 
-          Mostrando {startIndex + 1}-{Math.min(endIndex, sortedRecipes.length)} de {sortedRecipes.length} recetas
-        </div>
-      )}
-
+      {/* Modal de límite de favoritos */}
       <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Límite alcanzado</DialogTitle>
+            <DialogTitle>Límite de Favoritos Alcanzado</DialogTitle>
             <DialogDescription>
-              No puedes guardar más de 10 recetas en la versión gratuita. Hazte premium para guardar recetas ilimitadas.
+              Has alcanzado el límite de 10 recetas favoritas en el plan gratuito. 
+              Actualiza a Premium para guardar recetas ilimitadas.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
-              <Button autoFocus>Aceptar</Button>
+              <Button variant="outline">Cerrar</Button>
             </DialogClose>
             <Link href="/pricing">
-              <Button variant="outline">Hazte Premium</Button>
+              <Button className="bg-orange-600 hover:bg-orange-700">
+                Actualizar a Premium
+              </Button>
             </Link>
           </DialogFooter>
         </DialogContent>

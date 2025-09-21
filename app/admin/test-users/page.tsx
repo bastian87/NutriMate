@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import TestUserPanel from "@/components/admin/test-user-panel"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 
 export default function TestUsersPage() {
   const { user, loading } = useAuthContext()

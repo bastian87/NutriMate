@@ -9,8 +9,27 @@ export async function POST(req: NextRequest) {
   const supa = createServerClient();
   try {
     const userId = await getUserId(req as unknown as Request);
-    const body = DayEntryUpsertSchema.parse(await req.json());
+    const rawBody = await req.json();
+    console.log('Day Entries API - Raw body received:', rawBody);
+    
+    let body;
+    try {
+      body = DayEntryUpsertSchema.parse(rawBody);
+    } catch (validationError) {
+      console.error('Day Entries API - Validation error:', validationError);
+      throw validationError;
+    }
+    
     const { date, goalId, items } = body;
+    
+    console.log('Day Entries API - Received data:', { userId, date, goalId, items });
+
+    // Test Supabase connection
+    const { data: testData, error: testError } = await supa
+      .from('ingredients')
+      .select('count')
+      .limit(1);
+    console.log('Day Entries API - Supabase connection test:', { testData, testError });
 
     // Fetch ingredients to compute kcal + group
     const ingredientIds = items.map(i => i.ingredientId);
@@ -40,23 +59,37 @@ export async function POST(req: NextRequest) {
     const evalRes = evaluateDay(enriched, goal.target_kcal_day);
 
     // Upsert day_entries
+    const dayEntryData = {
+      user_id: userId,
+      date,
+      goal_id: goalId,
+      total_kcal: evalRes.totalsKcal,
+      has_carb: evalRes.flags.hasCarb,
+      has_protein: evalRes.flags.hasProtein,
+      has_fat: evalRes.flags.hasFat,
+      has_vegfruit: evalRes.flags.hasVegFruit,
+      extras_count: evalRes.flags.extrasCount,
+      is_success: evalRes.isSuccess,
+    };
+    
+    console.log('Day Entries API - Upserting day entry:', dayEntryData);
+    
     const { data: dayRow, error: upErr } = await supa
       .from('day_entries')
-      .upsert({
-        user_id: userId,
-        date,
-        goal_id: goalId,
-        total_kcal: evalRes.totalsKcal,
-        has_carb: evalRes.flags.hasCarb,
-        has_protein: evalRes.flags.hasProtein,
-        has_fat: evalRes.flags.hasFat,
-        has_vegfruit: evalRes.flags.hasVegFruit,
-        extras_count: evalRes.flags.extrasCount,
-        is_success: evalRes.isSuccess,
-      }, { onConflict: 'user_id,date' })
+      .upsert(dayEntryData, { onConflict: 'user_id,date' })
       .select('id')
       .single();
     if (upErr) throw upErr;
+    
+    console.log('Day Entries API - Day entry upserted successfully:', dayRow);
+
+    // Test if we can query day_entries
+    const { data: testDayEntries, error: testDayError } = await supa
+      .from('day_entries')
+      .select('id, date, user_id')
+      .eq('user_id', userId)
+      .limit(1);
+    console.log('Day Entries API - Test query day_entries:', { testDayEntries, testDayError });
 
     // Replace items
     await supa.from('day_entry_items').delete().eq('day_entry_id', dayRow.id);
@@ -67,8 +100,22 @@ export async function POST(req: NextRequest) {
       kcal: i.kcal!,
       group: i.group!,
     }));
-    const { error: insErr } = await supa.from('day_entry_items').insert(toInsert);
-    if (insErr) throw insErr;
+    console.log('Day Entries API - Inserting items:', toInsert);
+    
+    // Test if we can query day_entry_items
+    const { data: testItems, error: testItemsError } = await supa
+      .from('day_entry_items')
+      .select('id')
+      .limit(1);
+    console.log('Day Entries API - Test query day_entry_items:', { testItems, testItemsError });
+    
+    const { data: insertedItems, error: insErr } = await supa.from('day_entry_items').insert(toInsert).select('id');
+    if (insErr) {
+      console.error('Day Entries API - Error inserting items:', insErr);
+      throw insErr;
+    }
+    
+    console.log('Day Entries API - Items inserted successfully:', insertedItems);
 
     // Streaks + XP
     const yesterday = new Date(date);
@@ -122,6 +169,7 @@ export async function POST(req: NextRequest) {
       streakCurrent: current,
     });
   } catch (err: any) {
+    console.error('Day Entries API - Error:', err);
     return NextResponse.json({ error: err?.message ?? 'Bad Request' }, { status: 400 });
   }
 }

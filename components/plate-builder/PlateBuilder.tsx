@@ -5,8 +5,6 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +32,139 @@ interface PlateSlot {
   group: MacroGroup;
   items: DayEntryItemWithId[];
   maxItems: number;
+}
+
+/**
+ * Droppable plate slot component using native HTML5 drag & drop
+ */
+function DroppablePlateSlot({ 
+  slot, 
+  children, 
+  onDrop 
+}: { 
+  slot: PlateSlot; 
+  children: React.ReactNode;
+  onDrop: (ingredient: Ingredient, slotId: string) => void;
+}) {
+  const [isOver, setIsOver] = useState(false);
+  const [dragData, setDragData] = useState<Ingredient | null>(null);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsOver(true);
+    
+    // Get drag data - but only if we don't already have it
+    if (!dragData) {
+      const ingredientData = e.dataTransfer.getData('application/json');
+      if (ingredientData) {
+        try {
+          const ingredient = JSON.parse(ingredientData);
+          setDragData(ingredient);
+        } catch (error) {
+          console.error('Error parsing drag data:', error);
+        }
+      }
+    }
+  };
+
+  const handleDragLeave = () => {
+    setIsOver(false);
+    setDragData(null);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsOver(false);
+    
+    const ingredientData = e.dataTransfer.getData('application/json');
+    if (ingredientData) {
+      try {
+        const ingredient = JSON.parse(ingredientData);
+        onDrop(ingredient, slot.id);
+      } catch (error) {
+        console.error('Error parsing drop data:', error);
+      }
+    }
+    setDragData(null);
+  };
+
+  // Determine if the dragged ingredient is valid for this slot
+  const isValidDrop = dragData ? (
+    (slot.group === 'carb' && dragData.group === 'carb') ||
+    (slot.group === 'protein' && dragData.group === 'protein') ||
+    (slot.group === 'fat' && dragData.group === 'fat') ||
+    (slot.group === 'vegfruit' && dragData.group === 'vegfruit') ||
+    (slot.group === 'treat' && dragData.group === 'treat')
+  ) : true; // If no drag data, don't show any color (neutral)
+
+  return (
+    <div
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`transition-all duration-200 ${
+        isOver 
+          ? isValidDrop
+            ? 'bg-green-50 border-green-300 ring-2 ring-green-200 scale-105' 
+            : 'bg-red-50 border-red-300 ring-2 ring-red-200 scale-105'
+          : 'hover:bg-gray-50'
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Draggable ingredient component using native HTML5 drag & drop
+ */
+function DraggableIngredient({ ingredient }: { ingredient: Ingredient }) {
+  const [isDragging, setIsDragging] = useState(false);
+
+  const getCategoryColor = (group: string) => {
+    switch (group) {
+      case 'carb': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'protein': return 'bg-red-100 text-red-800 border-red-200';
+      case 'fat': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'vegfruit': return 'bg-green-100 text-green-800 border-green-200';
+      case 'treat': return 'bg-orange-100 text-orange-800 border-orange-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent) => {
+    setIsDragging(true);
+    e.dataTransfer.setData('application/json', JSON.stringify(ingredient));
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  return (
+    <div
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      className={`flex items-center justify-between p-2 bg-white border rounded cursor-grab hover:bg-gray-50 transition-all duration-200 ${
+        isDragging ? 'opacity-30 scale-95' : 'hover:shadow-md'
+      }`}
+    >
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <div className="font-medium">{ingredient.name}</div>
+          <span className={`px-2 py-1 text-xs rounded-full border ${getCategoryColor(ingredient.group)}`}>
+            {ingredient.group}
+          </span>
+        </div>
+        <div className="text-xs text-gray-500">{ingredient.kcalPer100g} kcal/100g</div>
+      </div>
+      <Button variant="ghost" size="sm">
+        <Plus className="w-4 h-4" />
+      </Button>
+    </div>
+  );
 }
 
 /**
@@ -90,8 +221,9 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<MacroGroup>('carb');
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+  const [loadingIngredients, setLoadingIngredients] = useState(true);
 
   // Initialize plate slots
   const [plateSlots, setPlateSlots] = useState<PlateSlot[]>([
@@ -103,9 +235,34 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
 
   const [extrasBasket, setExtrasBasket] = useState<DayEntryItemWithId[]>([]);
 
+  // Load real ingredients from API
+  useEffect(() => {
+    const loadIngredients = async () => {
+      try {
+        const response = await fetch('/api/ingredients');
+        if (response.ok) {
+          const data = await response.json();
+          setIngredients(data);
+        } else {
+          console.error('Failed to load ingredients');
+          // Fallback to mock data
+          setIngredients(mockIngredients);
+        }
+      } catch (error) {
+        console.error('Error loading ingredients:', error);
+        // Fallback to mock data
+        setIngredients(mockIngredients);
+      } finally {
+        setLoadingIngredients(false);
+      }
+    };
+
+    loadIngredients();
+  }, []);
+
   // Filter ingredients based on search and active tab
   const filteredIngredients = useMemo(() => {
-    let filtered = mockIngredients;
+    let filtered = ingredients;
     
     if (activeTab !== 'treat') {
       filtered = filtered.filter(ing => ing.group === activeTab);
@@ -132,27 +289,9 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
   }, [allItems, targetKcal]);
 
   /**
-   * Handle drag start
+   * Handle drop on plate slots
    */
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  };
-
-  /**
-   * Handle drag end
-   */
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    // Find the ingredient being dragged
-    const ingredient = mockIngredients.find(ing => ing.id === activeId);
-    if (!ingredient) return;
-
+  const handleDrop = (ingredient: Ingredient, slotId: string) => {
     // Create day entry item
     const dayEntryItem: DayEntryItemWithId = {
       id: `item-${Date.now()}-${Math.random()}`,
@@ -163,23 +302,47 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
     };
 
     // Handle dropping on plate slots
-    if (overId.includes('-slot')) {
-      const targetSlot = plateSlots.find(slot => slot.id === overId);
+    if (slotId.includes('-slot')) {
+      const targetSlot = plateSlots.find(slot => slot.id === slotId);
       if (targetSlot && targetSlot.items.length < targetSlot.maxItems) {
-        setPlateSlots(prev => prev.map(slot => 
-          slot.id === overId 
-            ? { ...slot, items: [...slot.items, dayEntryItem] }
-            : slot
-        ));
+        // Validate that the ingredient belongs to the correct category
+        const isValidCategory = (
+          (targetSlot.group === 'carb' && ingredient.group === 'carb') ||
+          (targetSlot.group === 'protein' && ingredient.group === 'protein') ||
+          (targetSlot.group === 'fat' && ingredient.group === 'fat') ||
+          (targetSlot.group === 'vegfruit' && ingredient.group === 'vegfruit')
+        );
+        
+        if (isValidCategory) {
+          setPlateSlots(prev => prev.map(slot => 
+            slot.id === slotId 
+              ? { ...slot, items: [...slot.items, dayEntryItem] }
+              : slot
+          ));
+        } else {
+          // Show error message for invalid category
+          toast({
+            title: "Categoría incorrecta",
+            description: `${ingredient.name} pertenece a ${ingredient.group}, no a ${targetSlot.group}`,
+            variant: "destructive"
+          });
+        }
       }
     }
     
     // Handle dropping on extras basket
-    if (overId === 'extras-basket') {
-      setExtrasBasket(prev => [...prev, dayEntryItem]);
+    if (slotId === 'extras-basket') {
+      // Only allow treats in extras basket
+      if (ingredient.group === 'treat') {
+        setExtrasBasket(prev => [...prev, dayEntryItem]);
+      } else {
+        toast({
+          title: "Categoría incorrecta",
+          description: `${ingredient.name} no es un treat. Úsalo en la categoría ${ingredient.group}`,
+          variant: "destructive"
+        });
+      }
     }
-
-    setActiveId(null);
   };
 
   /**
@@ -288,13 +451,19 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
     }
   };
 
+  if (loadingIngredients) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-2"></div>
+          <p className="text-sm text-gray-600">Cargando ingredientes...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <TooltipProvider>
-      <DndContext
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
         <div className="flex h-full">
           {/* Left panel - Ingredient library */}
           <div className="w-80 border-r bg-gray-50 p-4">
@@ -324,18 +493,7 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
                 <TabsContent value={activeTab} className="mt-4">
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {filteredIngredients.map((ingredient) => (
-                      <div
-                        key={ingredient.id}
-                        draggable
-                        className="flex items-center justify-between p-2 bg-white border rounded cursor-move hover:bg-gray-50"
-                        onClick={() => addIngredientBySearch(ingredient)}
-                      >
-                        <div>
-                          <div className="font-medium text-sm">{ingredient.name}</div>
-                          <div className="text-xs text-gray-500">{ingredient.kcalPer100g} kcal/100g</div>
-                        </div>
-                        <Plus className="w-4 h-4 text-gray-400" />
-                      </div>
+                      <DraggableIngredient key={ingredient.id} ingredient={ingredient} />
                     ))}
                   </div>
                 </TabsContent>
@@ -361,7 +519,12 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
               {/* Plate slots */}
               <div className="grid grid-cols-2 gap-4">
                 {plateSlots.map((slot) => (
-                  <Card key={slot.id} id={slot.id} className="min-h-32">
+                  <DroppablePlateSlot 
+                    key={slot.id} 
+                    slot={slot}
+                    onDrop={handleDrop}
+                  >
+                    <Card className="min-h-32">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center justify-between">
                         <span className="capitalize">
@@ -373,37 +536,40 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <SortableContext items={slot.items.map(item => item.id)} strategy={verticalListSortingStrategy}>
-                        <div className="space-y-2">
-                          {slot.items.map((item) => (
-                            <div
-                              key={item.id}
-                              className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm"
-                            >
-                              <div>
-                                <div className="font-medium">
-                                  {mockIngredients.find(ing => ing.id === item.ingredientId)?.name}
-                                </div>
-                                <div className="text-xs text-gray-500">{item.kcal} kcal</div>
+                      <div className="space-y-2">
+                        {slot.items.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm"
+                          >
+                            <div>
+                              <div className="font-medium">
+                                {ingredients.find(ing => ing.id === item.ingredientId)?.name}
                               </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeItem(slot.id, item.id)}
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </Button>
+                              <div className="text-xs text-gray-500">{item.kcal} kcal</div>
                             </div>
-                          ))}
-                        </div>
-                      </SortableContext>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeItem(slot.id, item.id)}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
                     </CardContent>
-                  </Card>
+                    </Card>
+                  </DroppablePlateSlot>
                 ))}
               </div>
 
               {/* Extras basket */}
-              <Card id="extras-basket" className="border-red-200">
+              <DroppablePlateSlot 
+                slot={{ id: 'extras-basket', group: 'treat', items: extrasBasket, maxItems: 999 }}
+                onDrop={handleDrop}
+              >
+                <Card className="border-red-200">
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center justify-between text-red-600">
                     <span>{PLATE_BUILDER.LABELS.EXTRAS_TREATS}</span>
@@ -421,7 +587,7 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
                       >
                         <div>
                           <div className="font-medium">
-                            {mockIngredients.find(ing => ing.id === item.ingredientId)?.name}
+                            {ingredients.find(ing => ing.id === item.ingredientId)?.name}
                           </div>
                           <div className="text-xs text-gray-500">{item.kcal} kcal</div>
                         </div>
@@ -436,7 +602,8 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
                     ))}
                   </div>
                 </CardContent>
-              </Card>
+                </Card>
+              </DroppablePlateSlot>
 
               {/* Status indicators */}
               <div className="flex items-center justify-center space-x-4">
@@ -519,14 +686,6 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
           </div>
         </div>
 
-        <DragOverlay>
-          {activeId ? (
-            <div className="p-2 bg-white border rounded shadow-lg">
-              {mockIngredients.find(ing => ing.id === activeId)?.name}
-            </div>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
     </TooltipProvider>
   );
 }

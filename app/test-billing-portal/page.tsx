@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useToast } from "@/components/ui/use-toast"
 
 export default function TestBillingPortalPage() {

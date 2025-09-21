@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useGroceryList } from "@/hooks/use-grocery-list"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { supabase } from "@/lib/supabase/client"
 import { getRecipeById } from "@/lib/services/recipe-service"
 

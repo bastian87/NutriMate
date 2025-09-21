@@ -6,8 +6,7 @@ let supabaseClient: ReturnType<typeof createClientComponentClient<Database>> | n
 export function createClientSupabaseClient() {
   if (!supabaseClient) {
     try {
-      // In Next.js 13+, the auth helpers automatically use the environment variables
-      // We don't need to pass them explicitly
+      // Crear cliente simple sin interceptores complejos
       supabaseClient = createClientComponentClient<Database>()
     } catch (error) {
       console.error("Failed to create Supabase client:", error)

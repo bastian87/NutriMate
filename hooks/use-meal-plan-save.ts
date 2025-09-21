@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthContext } from "@/components/auth/auth-provider";
+import { useAuthContext } from "@/components/auth/simple-auth-provider";
 
 const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 const MEALS = ["breakfast", "lunch", "dinner", "snack"];

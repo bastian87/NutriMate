@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useIsPremium } from "@/components/auth/user-profile-provider"
 import { supabase } from "@/lib/supabase/client"
 

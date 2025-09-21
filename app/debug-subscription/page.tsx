@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useUserProfile, useIsPremium, useAccountType } from "@/components/auth/user-profile-provider"
 import { getUserSubscription } from "@/lib/subscription-service"
 import { supabase } from "@/lib/supabase/client"

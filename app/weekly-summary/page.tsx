@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useAuthContext } from "@/components/auth/auth-provider";
+import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar, Target, Zap, TrendingUp, CheckCircle, XCircle } from "lucide-react";
 
@@ -52,7 +52,8 @@ export default function WeeklySummaryPage() {
     const d = new Date(date);
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-    return new Date(d.setDate(diff));
+    d.setDate(diff);
+    return d;
   };
 
   const [selectedWeek, setSelectedWeek] = useState(() => {

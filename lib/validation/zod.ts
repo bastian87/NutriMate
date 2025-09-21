@@ -13,7 +13,7 @@ export const GoalUpsertSchema = z.object({
 });
 
 export const DayEntryItemSchema = z.object({
-  ingredientId: z.string().uuid(),
+  ingredientId: z.string().min(1),
   quantityGrams: z.number().int().min(1).max(2000),
 });
 

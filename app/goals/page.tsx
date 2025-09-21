@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAuthContext } from "@/components/auth/auth-provider";
+import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/lib/i18n/context";
 import { Target, Calendar, Zap } from "lucide-react";
 
 interface Goal {
@@ -24,6 +25,7 @@ interface Goal {
 export default function GoalsPage() {
   const { user } = useAuthContext();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -58,8 +60,8 @@ export default function GoalsPage() {
   const createGoal = async () => {
     if (!user?.id) {
       toast({
-        title: "Error",
-        description: "Debes estar logueado para crear objetivos",
+        title: t("common.error"),
+        description: t("goals.mustBeLoggedIn"),
         variant: "destructive"
       });
       return;
@@ -84,8 +86,8 @@ export default function GoalsPage() {
       const data = await response.json();
       if (response.ok) {
         toast({
-          title: "¡Objetivo creado!",
-          description: "Tu objetivo nutricional ha sido configurado correctamente"
+          title: t("goals.goalCreated"),
+          description: t("goals.goalCreated")
         });
         fetchGoals(); // Refresh goals list
         // Reset form
@@ -95,15 +97,15 @@ export default function GoalsPage() {
         setEndDate('');
       } else {
         toast({
-          title: "Error",
-          description: data.error || "No se pudo crear el objetivo",
+        title: t("common.error"),
+        description: data.error || t("goals.failedToCreate"),
           variant: "destructive"
         });
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Error de conexión al crear el objetivo",
+        title: t("common.error"),
+        description: t("goals.connectionError"),
         variant: "destructive"
       });
     } finally {
@@ -119,12 +121,12 @@ export default function GoalsPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">Acceso Requerido</h2>
+          <h2 className="text-2xl font-bold mb-4">{t("goals.accessRequired")}</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Necesitas iniciar sesión para gestionar tus objetivos nutricionales
+            {t("goals.mustSignIn")}
           </p>
           <Button asChild>
-            <a href="/login">Iniciar Sesión</a>
+            <a href="/login">{t("goals.signIn")}</a>
           </Button>
         </div>
       </div>
@@ -133,10 +135,10 @@ export default function GoalsPage() {
 
   const getObjectiveLabel = (obj: string) => {
     switch (obj) {
-      case 'lose': return 'Perder peso';
-      case 'maintain': return 'Mantener peso';
-      case 'gain': return 'Ganar peso';
-      case 'muscle': return 'Ganar músculo';
+      case 'lose': return t("goals.loseWeight");
+      case 'maintain': return t("goals.maintainWeight");
+      case 'gain': return t("goals.gainWeight");
+      case 'muscle': return t("goals.gainMuscle");
       default: return obj;
     }
   };
@@ -144,9 +146,9 @@ export default function GoalsPage() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Objetivos Nutricionales</h1>
+        <h1 className="text-3xl font-bold mb-2">{t("goals.title")}</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Gestiona tus objetivos de calorías y macronutrientes
+          {t("goals.manageGoals")}
         </p>
       </div>
 
@@ -155,13 +157,13 @@ export default function GoalsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="w-5 h-5" />
-            Crear Nuevo Objetivo
+            {t("goals.createNewGoal")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="targetKcal">Calorías Diarias</Label>
+              <Label htmlFor="targetKcal">{t("goals.dailyCalories")}</Label>
               <Input
                 id="targetKcal"
                 type="number"
@@ -173,22 +175,22 @@ export default function GoalsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="objective">Objetivo</Label>
+              <Label htmlFor="objective">{t("goals.objective")}</Label>
               <Select value={objective} onValueChange={(value: any) => setObjective(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="lose">Perder peso</SelectItem>
-                  <SelectItem value="maintain">Mantener peso</SelectItem>
-                  <SelectItem value="gain">Ganar peso</SelectItem>
-                  <SelectItem value="muscle">Ganar músculo</SelectItem>
+                  <SelectItem value="lose">{t("goals.loseWeight")}</SelectItem>
+                  <SelectItem value="maintain">{t("goals.maintainWeight")}</SelectItem>
+                  <SelectItem value="gain">{t("goals.gainWeight")}</SelectItem>
+                  <SelectItem value="muscle">{t("goals.gainMuscle")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="startDate">Fecha de Inicio</Label>
+              <Label htmlFor="startDate">{t("goals.startDateLabel")}</Label>
               <Input
                 id="startDate"
                 type="date"
@@ -198,7 +200,7 @@ export default function GoalsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="endDate">Fecha de Fin (opcional)</Label>
+              <Label htmlFor="endDate">{t("goals.endDateLabel")}</Label>
               <Input
                 id="endDate"
                 type="date"
@@ -214,7 +216,7 @@ export default function GoalsPage() {
               disabled={creating}
               className="bg-orange-600 hover:bg-orange-700"
             >
-              {creating ? "Creando..." : "Crear Objetivo"}
+              {creating ? t("goals.creating") : t("goals.createGoal")}
             </Button>
           </div>
         </CardContent>
@@ -225,23 +227,23 @@ export default function GoalsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
-            Mis Objetivos
+            {t("goals.myGoals")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600">Cargando objetivos...</p>
+              <p className="mt-2 text-gray-600">{t("goals.loadingGoals")}</p>
             </div>
           ) : goals.length === 0 ? (
             <div className="text-center py-8">
               <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600 dark:text-gray-400">
-                No tienes objetivos configurados aún
+                {t("goals.noGoalsConfigured")}
               </p>
               <p className="text-sm text-gray-500 mt-2">
-                Crea tu primer objetivo para comenzar el seguimiento nutricional
+                {t("goals.createFirstGoal")}
               </p>
             </div>
           ) : (
@@ -258,13 +260,13 @@ export default function GoalsPage() {
                       </p>
                       <p className="text-sm text-gray-500">
                         {new Date(goal.start_date).toLocaleDateString('es-ES')} - 
-                        {goal.end_date ? new Date(goal.end_date).toLocaleDateString('es-ES') : 'Sin fecha límite'}
+                        {goal.end_date ? new Date(goal.end_date).toLocaleDateString('es-ES') : t("goals.noEndDate")}
                       </p>
                     </div>
                     <div className="text-right">
                       <div className="flex items-center gap-1 text-sm text-gray-600">
                         <Zap className="w-4 h-4" />
-                        <span>Objetivo activo</span>
+                        <span>{t("goals.activeGoal")}</span>
                       </div>
                     </div>
                   </div>

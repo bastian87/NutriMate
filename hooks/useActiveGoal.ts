@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuthContext } from '@/components/auth/auth-provider';
+import { useAuthContext } from '@/components/auth/simple-auth-provider';
 import { useToast } from '@/hooks/use-toast';
 
 interface Goal {

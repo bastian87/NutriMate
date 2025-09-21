@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { analytics } from "@/lib/analytics"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { usePathname } from "next/navigation"
 
 export function useAnalytics() {

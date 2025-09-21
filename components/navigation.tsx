@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { Home, BookOpen, ShoppingCart, User, Sparkles, Calculator } from "lucide-react"
 import Image from "next/image"
 import { useLanguage } from "@/lib/i18n/context"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { Button } from "@/components/ui/button"
 
 export function Navigation() {

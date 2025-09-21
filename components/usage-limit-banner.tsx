@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Crown, AlertTriangle, X } from "lucide-react"
 import Link from "next/link"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { getUserUsage, type UsageLimit } from "@/lib/subscription-service"
 import { useLanguage } from "@/lib/i18n/context"
 

@@ -19,9 +19,15 @@ export interface RecipeWithDetails {
   cuisine_type?: string
   meal_type?: string
   instructions: string
-  ingredients: Array<{ id?: string; name: string; quantity: string; unit?: string; original?: string }>
+  ingredients: Array<{ id?: string; name: string; amount: string; original?: string }>
   created_at: string
   updated_at: string
+  created_by?: string
+  creator?: {
+    id: string
+    username: string | null
+    full_name: string | null
+  }
   average_rating: number
   total_ratings?: number
   rating_count?: number
@@ -134,8 +140,7 @@ export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDet
         ingredients: recipeIngredients.map((ing) => ({
           id: ing.id,
           name: ing.name,
-          quantity: ing.quantity,
-          unit: ing.unit,
+          amount: ing.amount,
           original: ing.original,
         })),
         average_rating: Number(averageRating.toFixed(1)),
@@ -174,7 +179,7 @@ export const getRecipeById = async (id: string, userId?: string): Promise<Recipe
     if (error) throw error
     if (!recipe) return null
 
-    const [{ data: ingredientsData }, { data: ratingsData }, { data: favoriteData }, { data: tagAssociationsData }] =
+    const [{ data: ingredientsData }, { data: ratingsData }, { data: favoriteData }, { data: tagAssociationsData }, { data: creatorData }] =
       await Promise.all([
         supabase.from("recipe_ingredients").select("*").eq("recipe_id", recipe.id),
         supabase.from("recipe_ratings").select("*").eq("recipe_id", recipe.id),
@@ -185,6 +190,9 @@ export const getRecipeById = async (id: string, userId?: string): Promise<Recipe
           .from("recipe_tag_associations")
           .select(`tag_id, recipe_tags!inner(id, name)`)
           .eq("recipe_id", recipe.id),
+        recipe.created_by
+          ? supabase.from("users").select("id, username, full_name").eq("id", recipe.created_by).single()
+          : Promise.resolve({ data: null }),
       ])
 
     const recipeRatings = ratingsData || []
@@ -201,9 +209,13 @@ export const getRecipeById = async (id: string, userId?: string): Promise<Recipe
         ingredientsData?.map((ing) => ({
           id: ing.id,
           name: ing.name,
-          quantity: ing.quantity,
-          unit: ing.unit,
+          amount: ing.amount,
         })) || [],
+      creator: creatorData ? {
+        id: creatorData.id,
+        username: creatorData.username,
+        full_name: creatorData.full_name,
+      } : undefined,
       average_rating: Number(averageRating.toFixed(1)),
       rating_count: recipeRatings.length,
       total_ratings: recipeRatings.length,
@@ -243,21 +255,226 @@ export const createRecipe = async (
     | "rating_count"
     | "total_ratings"
     | "user_rating"
-  > & { ingredients: Array<{ name: string; quantity: string; unit?: string }>; tagsInput?: string[] },
+  > & { ingredients: Array<{ name: string; amount: string }>; tagsInput?: string[] },
 ): Promise<RecipeWithDetails | null> => {
-  // ... (implementation from v330 - assuming it's correct)
-  // This function is not directly used by saved recipes page, but good to have it complete.
-  // For brevity, I'll skip re-listing its full body if it's unchanged from v330.
-  // Ensure it returns RecipeWithDetails or null
-  return null // Placeholder if not re-listing
+  try {
+    // Crear la receta principal
+    const { data: recipe, error: recipeError } = await supabase
+      .from("recipes")
+      .insert({
+        name: recipeData.name,
+        description: recipeData.description,
+        image_url: recipeData.image_url,
+        prep_time_minutes: recipeData.prep_time_minutes,
+        cook_time_minutes: recipeData.cook_time_minutes,
+        servings: recipeData.servings,
+        calories: recipeData.calories,
+        protein: recipeData.protein,
+        carbs: recipeData.carbs,
+        fat: recipeData.fat,
+        fiber: recipeData.fiber,
+        sugar: recipeData.sugar,
+        sodium: recipeData.sodium,
+        difficulty_level: recipeData.difficulty_level,
+        cuisine_type: recipeData.cuisine_type,
+        meal_type: recipeData.meal_type,
+        instructions: recipeData.instructions,
+        created_by: recipeData.created_by,
+      })
+      .select()
+      .single()
+
+    if (recipeError) {
+      console.error("Error creating recipe:", recipeError)
+      throw recipeError
+    }
+
+    if (!recipe) {
+      throw new Error("Failed to create recipe")
+    }
+
+    // Crear los ingredientes
+    if (recipeData.ingredients && recipeData.ingredients.length > 0) {
+      const ingredientsToInsert = recipeData.ingredients.map((ingredient) => ({
+        recipe_id: recipe.id,
+        name: ingredient.name,
+        amount: ingredient.amount, // Ahora usamos amount en lugar de quantity y unit
+      }))
+
+      const { error: ingredientsError } = await supabase
+        .from("recipe_ingredients")
+        .insert(ingredientsToInsert)
+
+      if (ingredientsError) {
+        console.error("Error creating ingredients:", ingredientsError)
+        // No lanzamos error aquí, solo logueamos
+      }
+    }
+
+    // Crear tags si se proporcionan
+    if (recipeData.tagsInput && recipeData.tagsInput.length > 0) {
+      // Primero obtener o crear los tags
+      const tagIds: string[] = []
+      
+      for (const tagName of recipeData.tagsInput) {
+        // Buscar si el tag ya existe
+        const { data: existingTag } = await supabase
+          .from("tags")
+          .select("id")
+          .eq("name", tagName)
+          .single()
+
+        if (existingTag) {
+          tagIds.push(existingTag.id)
+        } else {
+          // Crear el tag si no existe
+          const { data: newTag, error: tagError } = await supabase
+            .from("tags")
+            .insert({ name: tagName })
+            .select()
+            .single()
+
+          if (tagError) {
+            console.error("Error creating tag:", tagError)
+            continue
+          }
+
+          if (newTag) {
+            tagIds.push(newTag.id)
+          }
+        }
+      }
+
+      // Asociar los tags con la receta
+      if (tagIds.length > 0) {
+        const recipeTags = tagIds.map((tagId) => ({
+          recipe_id: recipe.id,
+          tag_id: tagId,
+        }))
+
+        const { error: recipeTagsError } = await supabase
+          .from("recipe_tags")
+          .insert(recipeTags)
+
+        if (recipeTagsError) {
+          console.error("Error creating recipe tags:", recipeTagsError)
+        }
+      }
+    }
+
+    // Obtener la receta completa con todos los datos
+    const { data: fullRecipe, error: fetchError } = await supabase
+      .from("recipes")
+      .select(`
+        *,
+        recipe_ingredients (
+          id,
+          name,
+          amount
+        ),
+        recipe_tags (
+          tags (
+            id,
+            name
+          )
+        )
+      `)
+      .eq("id", recipe.id)
+      .single()
+
+    if (fetchError) {
+      console.error("Error fetching created recipe:", fetchError)
+      // Retornar la receta básica si no podemos obtener los detalles completos
+      return {
+        ...recipe,
+        ingredients: recipeData.ingredients,
+        tags: [],
+        average_rating: 0,
+        is_favorited: false,
+        created_at: recipe.created_at,
+        updated_at: recipe.updated_at,
+      } as RecipeWithDetails
+    }
+
+    // Transformar los datos para que coincidan con la interfaz
+    const transformedRecipe: RecipeWithDetails = {
+      ...fullRecipe,
+      ingredients: fullRecipe.recipe_ingredients || [],
+      tags: fullRecipe.recipe_tags?.map((rt: any) => rt.tags) || [],
+      average_rating: 0,
+      is_favorited: false,
+    }
+
+    return transformedRecipe
+  } catch (error) {
+    console.error("Error in createRecipe:", error)
+    throw error
+  }
 }
 
 export const updateRecipe = async (
   id: string,
-  recipe: Partial<RecipeWithDetails>,
+  recipeData: {
+    name: string
+    description?: string
+    prep_time_minutes: number
+    cook_time_minutes: number
+    servings: number
+    meal_type: string
+    instructions: string
+    ingredients: Array<{ name: string; amount: string }>
+  }
 ): Promise<RecipeWithDetails | null> => {
-  // ... (implementation from v330)
-  return null // Placeholder
+  try {
+    // Update the main recipe record
+    const { data: recipe, error: recipeError } = await supabase
+      .from("recipes")
+      .update({
+        name: recipeData.name,
+        description: recipeData.description,
+        prep_time_minutes: recipeData.prep_time_minutes,
+        cook_time_minutes: recipeData.cook_time_minutes,
+        servings: recipeData.servings,
+        meal_type: recipeData.meal_type,
+        instructions: recipeData.instructions,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single()
+
+    if (recipeError) throw recipeError
+    if (!recipe) return null
+
+    // Delete existing ingredients
+    const { error: deleteIngredientsError } = await supabase
+      .from("recipe_ingredients")
+      .delete()
+      .eq("recipe_id", id)
+
+    if (deleteIngredientsError) throw deleteIngredientsError
+
+    // Insert new ingredients
+    if (recipeData.ingredients.length > 0) {
+      const ingredientsToInsert = recipeData.ingredients.map(ingredient => ({
+        recipe_id: id,
+        name: ingredient.name,
+        amount: ingredient.amount,
+      }))
+
+      const { error: insertIngredientsError } = await supabase
+        .from("recipe_ingredients")
+        .insert(ingredientsToInsert)
+
+      if (insertIngredientsError) throw insertIngredientsError
+    }
+
+    // Return the updated recipe with full details
+    return await getRecipeById(id)
+  } catch (error) {
+    console.error("Error updating recipe:", error)
+    return null
+  }
 }
 
 export const deleteRecipe = async (id: string): Promise<boolean> => {

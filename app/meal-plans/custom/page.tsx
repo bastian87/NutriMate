@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useAuthContext } from "@/components/auth/auth-provider";
+import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useMealPlanRecipeSelection } from "@/hooks/use-meal-plan-recipe-selection";
 import { useMealPlanSave } from "@/hooks/use-meal-plan-save";
 import { useRecipes } from "@/hooks/use-recipes";

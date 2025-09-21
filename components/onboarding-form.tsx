@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -11,14 +11,17 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, ArrowRight, AlertCircle } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/context"
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { SuccessDialog } from "@/components/ui/success-dialog"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { userService } from "@/lib/services/user-service"
+import { authService } from "@/lib/services/auth-service"
+import { supabase } from "@/lib/supabase/client"
 
 type HealthGoal = "weight_loss" | "muscle_gain" | "maintenance" | "health_improvement" | "energy_boost"
 type ActivityLevel = "sedentary" | "light" | "moderate" | "active" | "very_active"
 
 interface ValidationErrors {
+  username?: string
   age?: string
   height?: string
   weight?: string
@@ -44,10 +47,15 @@ export default function OnboardingForm() {
   const router = useRouter()
   const { t } = useLanguage()
   const { user } = useAuthContext()
+  
+  // Obtener datos temporales del usuario
+  const [tempUserData, setTempUserData] = useState<any>(null)
+  
   const [currentStep, setCurrentStep] = useState(1)
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [formData, setFormData] = useState({
     // Basic info
+    username: "",
     age: 30,
     gender: "male",
     height: 175, // in cm
@@ -73,12 +81,126 @@ export default function OnboardingForm() {
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft">("cm")
   const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg")
   const [showConfirmation, setShowConfirmation] = useState(false)
+  const [usernameError, setUsernameError] = useState<string | null>(null)
+  const [checkingUsername, setCheckingUsername] = useState(false)
+
+  // Cargar datos temporales al montar el componente
+  useEffect(() => {
+    const tempData = localStorage.getItem('temp_user_data')
+    if (tempData) {
+      const parsedData = JSON.parse(tempData)
+      setTempUserData(parsedData)
+      
+      // Pre-llenar el formulario con los datos temporales
+      setFormData(prev => ({
+        ...prev,
+        username: parsedData.username || "",
+        // Otros campos se pueden pre-llenar aquí si es necesario
+      }))
+    } else {
+      // Si no hay datos temporales, redirigir al signup
+      console.log("🚫 No temp user data found, redirecting to signup")
+      router.push("/signup")
+    }
+  }, [router])
+
+  // Limpiar datos temporales si el usuario navega fuera del onboarding
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Solo limpiar si no se completó el onboarding
+      if (tempUserData && !showConfirmation) {
+        localStorage.removeItem('temp_user_data')
+        const existingUsers = JSON.parse(localStorage.getItem('temp_users') || '[]')
+        const updatedUsers = existingUsers.filter((user: any) => user.id !== tempUserData?.id)
+        localStorage.setItem('temp_users', JSON.stringify(updatedUsers))
+        console.log("🧹 Cleaned temp data on page unload")
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [tempUserData, showConfirmation])
 
   const totalSteps = 4
+
+  // Load user's current username
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!user?.id) return
+      try {
+        const profile = await userService.getUserProfile(user.id)
+        if (profile?.username) {
+          setFormData(prev => ({ ...prev, username: profile.username || "" }))
+        }
+      } catch (error) {
+        console.error("Error loading user profile:", error)
+      }
+    }
+    loadUserProfile()
+  }, [user?.id])
+
+  // Check username availability
+  const checkUsernameAvailability = async (username: string) => {
+    if (!username || username.length < 3) return false
+    
+    setCheckingUsername(true)
+    setUsernameError(null)
+    
+    try {
+      const response = await fetch('/api/user/check-username', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok) {
+        if (data.available) {
+          setUsernameError(null)
+          return true
+        } else {
+          setUsernameError(t("auth.usernameTaken"))
+          return false
+        }
+      } else {
+        setUsernameError(data.error || t("common.error"))
+        return false
+      }
+    } catch (error) {
+      console.error("Error checking username:", error)
+      setUsernameError(t("common.error"))
+      return false
+    } finally {
+      setCheckingUsername(false)
+    }
+  }
+
+  const handleUsernameChange = async (value: string) => {
+    setFormData(prev => ({ ...prev, username: value }))
+    setUsernameError(null)
+    
+    if (value.length >= 3) {
+      const timeoutId = setTimeout(() => {
+        checkUsernameAvailability(value)
+      }, 500)
+      return () => clearTimeout(timeoutId)
+    }
+  }
 
   // Validation functions
   const validateStep1 = (): boolean => {
     const newErrors: ValidationErrors = {}
+
+    if (!formData.username || formData.username.trim().length === 0) {
+      newErrors.username = t("onboardingForm.validation.usernameRequired")
+    } else if (formData.username.length < 3) {
+      newErrors.username = t("onboardingForm.validation.usernameMinimum")
+    } else if (usernameError) {
+      newErrors.username = usernameError
+    }
 
     if (!formData.age || formData.age <= 0) {
       newErrors.age = t("onboardingForm.validation.ageRequired")
@@ -168,10 +290,6 @@ export default function OnboardingForm() {
   }
 
   const handleNext = async () => {
-    if (!user) {
-      setErrors({ general: t("onboardingForm.loginRequired") })
-      return
-    }
     // Clear previous errors
     setErrors({})
 
@@ -204,6 +322,37 @@ export default function OnboardingForm() {
       setIsSubmitting(true)
 
       try {
+        console.log("🚀 Starting onboarding completion for temp user:", tempUserData?.id)
+        
+        if (!tempUserData) {
+          setErrors({ general: "No temporary user data found. Please start over." })
+          return
+        }
+
+        // 1. Completar el registro del usuario
+        console.log("🔐 Completing user signup...")
+        const { data: authData, error: authError } = await authService.completeSignUp()
+
+        if (authError) {
+          console.error("❌ Error completing signup:", authError)
+          setErrors({ general: "Error completing signup. Please try again." })
+          return
+        }
+
+        if (!authData?.user) {
+          console.error("❌ No user returned from completeSignUp")
+          setErrors({ general: "Error creating user account. Please try again." })
+          return
+        }
+
+        console.log("✅ User signup completed successfully")
+
+        // 3. Limpiar datos temporales
+        localStorage.removeItem('temp_user_data')
+        localStorage.removeItem('temp_users')
+
+        // 4. Luego guardar las preferencias del usuario
+        console.log("💾 Saving user preferences...")
         const dataToSubmit = {
           age: formData.age,
           gender: formData.gender,
@@ -221,9 +370,12 @@ export default function OnboardingForm() {
           macro_priority: formData.macro_priority,
         }
 
-        await userService.saveUserPreferences(user.id, { user_id: user.id, ...dataToSubmit })
+        // Usar el ID del usuario real de Supabase Auth
+        await userService.saveUserPreferences(authData.user.id, { user_id: authData.user.id, ...dataToSubmit })
+        console.log("✅ User preferences saved successfully")
 
-        // Show confirmation dialog with actual user email
+        // 3. Mostrar confirmación
+        console.log("🎉 Onboarding completed successfully!")
         setShowConfirmation(true)
       } catch (error) {
         console.error("Error saving preferences:", error)
@@ -244,8 +396,8 @@ export default function OnboardingForm() {
 
   const handleConfirmationClose = () => {
     setShowConfirmation(false)
-    // Redirect to dashboard after closing confirmation
-    router.push("/dashboard")
+    // Redirigir al login después de cerrar la confirmación
+    router.push("/login")
   }
 
   const toggleDietaryPreference = (preference: string) => {
@@ -326,6 +478,31 @@ export default function OnboardingForm() {
               <p className="text-gray-600 dark:text-gray-400 mb-4">{t("onboardingForm.step1Desc")}</p>
 
               <div className="space-y-4">
+                <div>
+                  <Label htmlFor="username">{t("account.username")}</Label>
+                  <Input
+                    id="username"
+                    value={formData.username}
+                    onChange={(e) => handleUsernameChange(e.target.value)}
+                    placeholder="Choose a username"
+                    className={errors.username ? "border-red-500" : ""}
+                    autoComplete="username"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
+                  />
+                  {checkingUsername && (
+                    <p className="text-sm text-blue-600 mt-1">Checking availability...</p>
+                  )}
+                  {usernameError && (
+                    <p className="text-sm text-red-600 mt-1">{usernameError}</p>
+                  )}
+                  {formData.username && !usernameError && !checkingUsername && (
+                    <p className="text-sm text-green-600 mt-1">✓ Username available</p>
+                  )}
+                  <ErrorMessage error={errors.username} />
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="age">{t("onboardingForm.age")}</Label>
@@ -665,10 +842,10 @@ export default function OnboardingForm() {
         </CardContent>
       </Card>
 
-      <ConfirmationDialog
+      <SuccessDialog
         open={showConfirmation}
         onOpenChange={handleConfirmationClose}
-        email={user?.email || "No email available"}
+        email={tempUserData?.email || "No email available"}
       />
     </>
   )

@@ -1,7 +1,7 @@
 "use client"
 import { useLanguage } from "@/lib/i18n/context"
 import { ThemeToggle } from "./theme-toggle"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 

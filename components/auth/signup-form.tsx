@@ -8,67 +8,124 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useAuthContext } from "./auth-provider"
+import { useAuthContext } from "./simple-auth-provider"
 import Link from "next/link"
-import { supabase } from "@/lib/supabase/client"
 import { ArrowLeft } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/context"
+import { supabase } from "@/lib/supabase/client"
 
 export default function SignupForm() {
   const { t } = useLanguage()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [fullName, setFullName] = useState("")
+  const [username, setUsername] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [usernameError, setUsernameError] = useState<string | null>(null)
+  const [checkingUsername, setCheckingUsername] = useState(false)
   const { signUp } = useAuthContext()
   const router = useRouter()
+
+  const checkUsernameAvailability = async (username: string) => {
+    if (!username || username.length < 3) {
+      setUsernameError("Username must be at least 3 characters long")
+      return false
+    }
+
+    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
+    if (!usernameRegex.test(username)) {
+      setUsernameError("Username must be 3-20 characters long and contain only letters, numbers, and underscores")
+      return false
+    }
+
+    setCheckingUsername(true)
+    try {
+      const response = await fetch('/api/user/check-username', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username }),
+      })
+
+      const data = await response.json()
+      
+      if (data.available) {
+        setUsernameError(null)
+        return true
+      } else {
+        setUsernameError("Username is already taken")
+        return false
+      }
+    } catch (error) {
+      console.error('Error checking username:', error)
+      setUsernameError("Error checking username availability")
+      return false
+    } finally {
+      setCheckingUsername(false)
+    }
+  }
+
+  const handleUsernameChange = (value: string) => {
+    // Check if the value looks like an email and clear it
+    if (value.includes("@") && value.includes(".")) {
+      setUsername("")
+      setUsernameError(t("auth.usernameNotEmail"))
+      return
+    }
+    
+    setUsername(value)
+    setUsernameError(null)
+
+    // Debounce the username check
+    if (value.length >= 3) {
+      const timeoutId = setTimeout(() => {
+        checkUsernameAvailability(value)
+      }, 500)
+      return () => clearTimeout(timeoutId)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
+    // Validate username before proceeding
+    const isUsernameValid = checkUsernameAvailability(username)
+    if (!isUsernameValid) {
+      setLoading(false)
+      return
+    }
+
     try {
-      const { data, error: signUpError } = await signUp(email, password, fullName)
-
-      if (signUpError) {
-        throw signUpError
+      const result = await signUp(email, password, fullName, username)
+      
+      if (result.error) {
+        setError(result.error)
+        return
       }
 
-      if (data?.session) {
-        // La redirección se maneja automáticamente en ConditionalLayout
-      } else if (data?.user && !data?.session) {
-        setError(
-          "Account created, but failed to start a session. Please ensure email confirmation is OFF in Supabase and try logging in.",
-        )
-      } else {
-        throw new Error("Signup failed or user session is unclear.")
+      // Si necesita onboarding, redirigir
+      if (result.data?.needsOnboarding) {
+        router.push("/onboarding")
+        return
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to sign up. Please try again.")
+
+      // Si no necesita onboarding (caso raro), ir al dashboard
+      router.push("/dashboard")
+      
+    } catch (error) {
+      console.error("Error during signup:", error)
+      setError("Error creating account. Please try again.")
     } finally {
       setLoading(false)
     }
   }
 
-  const handleGoogleSignup = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const redirectTo = typeof window !== 'undefined' && window.location.origin
-        ? `${window.location.origin}/auth/callback`
-        : undefined;
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo }
-      });
-      if (error) throw error;
-    } catch (err) {
-      setError('Error al registrarse con Google');
-    } finally {
-      setLoading(false);
-    }
+  const handleGoogleSignup = () => {
+    setError('Google signup not available during onboarding process');
   };
 
   return (
@@ -119,6 +176,33 @@ export default function SignupForm() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="username">{t("account.username")}</Label>
+              <Input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => handleUsernameChange(e.target.value)}
+                required
+                disabled={loading}
+                placeholder="Choose a username"
+                className={usernameError ? "border-red-500" : ""}
+                autoComplete="username"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
+              />
+              {checkingUsername && (
+                <p className="text-sm text-blue-600">Checking availability...</p>
+              )}
+              {usernameError && (
+                <p className="text-sm text-red-600">{usernameError}</p>
+              )}
+              {username && !usernameError && !checkingUsername && (
+                <p className="text-sm text-green-600">✓ Username available</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -128,6 +212,10 @@ export default function SignupForm() {
                 required
                 disabled={loading}
                 placeholder="Enter your email address"
+                autoComplete="email"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
               />
             </div>
 

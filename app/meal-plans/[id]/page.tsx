@@ -20,7 +20,7 @@ const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"
 
 export default function MealPlanDetailPage({ params }: { params: { id: string } }) {
   const { mealPlan, loading, error, setMealPlan, regenerateMeal } = useMealPlan(params.id)
-  const { addAllMealPlanIngredients } = useGroceryList()
+  const { addAllMealPlanIngredients } = useGroceryList(false)
   const { openRecipeSelector, confirmRecipeSelection, modalProps, currentMeal } = useMealPlanRecipeSelector(mealPlan)
   const [isAddingToGrocery, setIsAddingToGrocery] = useState(false)
   const { t } = useLanguage()

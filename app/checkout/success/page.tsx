@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle, Crown, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import confetti from "canvas-confetti"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useSubscription } from "@/hooks/use-subscription"
 
 export default function CheckoutSuccessPage() {

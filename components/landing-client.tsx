@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSelector } from "@/components/language-selector"
 import { ThemeToggle } from "./theme-toggle"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 
 interface Recipe {
   id: string
@@ -440,6 +440,7 @@ export default function LandingClient({ featuredRecipes }: LandingClientProps) {
                   alt="Meal planning app illustration"
                   width={500}
                   height={400}
+                  style={{ width: "auto", height: "auto" }}
                   className="relative rounded-2xl shadow-2xl"
                   priority
                 />

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react"
-import { useAuthContext } from "./auth-provider"
+import { useAuthContext } from "./simple-auth-provider"
 import { supabase } from "@/lib/supabase/client"
 import type { UserPreferences } from "@/lib/types/database"
 import { Subscription, UsageLimit, getUserSubscription, getUserUsage } from "@/lib/subscription-service"

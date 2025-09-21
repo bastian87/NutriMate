@@ -11,18 +11,19 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Minus, ArrowLeft } from "lucide-react"
 import { recipeService } from "@/lib/services/recipe-service"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
+import { useLanguage } from "@/lib/i18n/context"
 import Link from "next/link"
 
 interface Ingredient {
   name: string
-  quantity: string
-  unit: string
+  amount: string // Cantidad libre como "1 taza", "2 cucharadas", etc.
 }
 
 export default function NewRecipePage() {
   const router = useRouter()
   const { user } = useAuthContext()
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -37,14 +38,13 @@ export default function NewRecipePage() {
     protein: 0,
     carbs: 0,
     fat: 0,
-    image_url: "",
-    meal_type: "Breakfast"
+    meal_type: "Desayuno"
   })
 
-  const [ingredients, setIngredients] = useState<Ingredient[]>([{ name: "", quantity: "", unit: "" }])
+  const [ingredients, setIngredients] = useState<Ingredient[]>([{ name: "", amount: "" }])
 
   const addIngredient = () => {
-    setIngredients([...ingredients, { name: "", quantity: "", unit: "" }])
+    setIngredients([...ingredients, { name: "", amount: "" }])
   }
 
   const removeIngredient = (index: number) => {
@@ -60,56 +60,66 @@ export default function NewRecipePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("Form submitted!")
 
     if (!user) {
-      setError("You must be logged in to create recipes")
+      setError(t("recipes.mustBeLoggedIn"))
       return
     }
 
     if (!formData.name.trim()) {
-      setError("Recipe name is required")
+      setError(t("recipes.recipeNameRequired"))
       return
     }
 
     if (!formData.instructions.trim()) {
-      setError("Instructions are required")
+      setError(t("recipes.instructionsRequired"))
       return
     }
 
-    const validIngredients = ingredients.filter((ing) => ing.name.trim() && ing.quantity.trim())
+    const validIngredients = ingredients.filter((ing) => ing.name.trim() && ing.amount.trim())
     if (validIngredients.length === 0) {
-      setError("At least one ingredient is required")
+      setError(t("recipes.atLeastOneIngredient"))
       return
     }
 
+    console.log("Validation passed, creating recipe...")
     setLoading(true)
     setError(null)
 
     try {
-      const recipe = await recipeService.createRecipe({
+      const recipeData = {
         ...formData,
         ingredients: validIngredients,
-      })
+        created_by: user.id,
+      }
+      
+      console.log("Recipe data:", recipeData)
+      
+      const recipe = await recipeService.createRecipe(recipeData)
+      console.log("Recipe created:", recipe)
 
       if (recipe) {
         router.push(`/recipes/${recipe.id}`)
-      }
-    } catch (err) {
-      console.error("Error creating recipe:", err)
-      setError(err instanceof Error ? err.message : "Failed to create recipe")
-    } finally {
-      setLoading(false)
-    }
+            } else {
+              setError(t("recipes.noDataReturned"))
+            }
+          } catch (err) {
+            console.error("Error creating recipe:", err)
+            setError(err instanceof Error ? err.message : t("recipes.failedToCreate"))
+          } finally {
+            setLoading(false)
+          }
   }
 
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Login Required</h1>
-          <p className="text-gray-600 mb-4">You must be logged in to create recipes.</p>
+          <h1 className="text-2xl font-bold mb-4">{t("recipes.loginRequired")}</h1>
+          <p className="text-gray-600 mb-4">{t("recipes.mustBeLoggedIn")}</p>
           <Link href="/login">
-            <Button>Login</Button>
+            <Button>{t("auth.signIn")}</Button>
           </Link>
         </div>
       </div>
@@ -121,13 +131,13 @@ export default function NewRecipePage() {
         <div className="mb-6">
           <Link href="/recipes" className="inline-flex items-center text-gray-600 hover:text-orange-600">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Recipes
+            {t("recipes.backToRecipes")}
           </Link>
         </div>
 
         <Card className="max-w-4xl mx-auto">
           <CardHeader>
-            <CardTitle className="text-2xl font-serif">Create New Recipe</CardTitle>
+            <CardTitle className="text-2xl font-serif">{t("recipes.createNewRecipe")}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -137,39 +147,30 @@ export default function NewRecipePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="name">Recipe Name *</Label>
+                    <Label htmlFor="name">{t("recipes.recipeName")} *</Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Enter recipe name"
+                      placeholder={t("recipes.enterRecipeName")}
                       required
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description">{t("recipes.description")}</Label>
                     <Textarea
                       id="description"
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Brief description of the recipe"
+                      placeholder={t("recipes.briefDescription")}
                       rows={3}
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="image_url">Image URL</Label>
-                    <Input
-                      id="image_url"
-                      value={formData.image_url}
-                      onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                      placeholder="https://example.com/image.jpg"
-                    />
-                  </div>
 
                   <div>
-                    <Label htmlFor="meal_type">Tipo de comida *</Label>
+                    <Label htmlFor="meal_type">{t("recipes.mealType")} *</Label>
                     <select
                       id="meal_type"
                       className="w-full border rounded px-3 py-2"
@@ -177,13 +178,13 @@ export default function NewRecipePage() {
                       onChange={e => setFormData({ ...formData, meal_type: e.target.value })}
                       required
                     >
-                      <option value="Breakfast">Desayuno</option>
-                      <option value="Lunch">Comida/Almuerzo</option>
-                      <option value="Dinner">Cena</option>
-                      <option value="Dessert">Postre</option>
-                      <option value="Snack">Snack/Colación</option>
-                      <option value="Sidedish">Guarnición</option>
-                      <option value="Soups">Sopa</option>
+                      <option value="Desayuno">Desayuno</option>
+                      <option value="Almuerzo">Almuerzo</option>
+                      <option value="Cena">Cena</option>
+                      <option value="Postre">Postre</option>
+                      <option value="Merienda">Merienda</option>
+                      <option value="Acompañamiento">Acompañamiento</option>
+                      <option value="Sopa">Sopa</option>
                     </select>
                   </div>
                 </div>
@@ -191,7 +192,7 @@ export default function NewRecipePage() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="prep_time">Prep Time (min)</Label>
+                      <Label htmlFor="prep_time">{t("recipes.prepTimeMinutes")}</Label>
                       <Input
                         id="prep_time"
                         type="number"
@@ -203,7 +204,7 @@ export default function NewRecipePage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="cook_time">Cook Time (min)</Label>
+                      <Label htmlFor="cook_time">{t("recipes.cookTimeMinutes")}</Label>
                       <Input
                         id="cook_time"
                         type="number"
@@ -217,7 +218,7 @@ export default function NewRecipePage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="servings">Servings</Label>
+                    <Label htmlFor="servings">{t("recipes.servings")}</Label>
                     <Input
                       id="servings"
                       type="number"
@@ -229,7 +230,7 @@ export default function NewRecipePage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="calories">Calories</Label>
+                      <Label htmlFor="calories">{t("recipes.calories")}</Label>
                       <Input
                         id="calories"
                         type="number"
@@ -239,7 +240,7 @@ export default function NewRecipePage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="protein">Protein (g)</Label>
+                      <Label htmlFor="protein">{t("recipes.protein")} (g)</Label>
                       <Input
                         id="protein"
                         type="number"
@@ -252,7 +253,7 @@ export default function NewRecipePage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="carbs">Carbs (g)</Label>
+                      <Label htmlFor="carbs">{t("recipes.carbs")} (g)</Label>
                       <Input
                         id="carbs"
                         type="number"
@@ -262,7 +263,7 @@ export default function NewRecipePage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="fat">Fat (g)</Label>
+                      <Label htmlFor="fat">{t("recipes.fat")} (g)</Label>
                       <Input
                         id="fat"
                         type="number"
@@ -278,10 +279,10 @@ export default function NewRecipePage() {
               {/* Ingredients */}
               <div>
                 <div className="flex justify-between items-center mb-4">
-                  <Label className="text-lg">Ingredients *</Label>
+                  <Label className="text-lg">{t("recipes.ingredients")} *</Label>
                   <Button type="button" onClick={addIngredient} variant="outline" size="sm">
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Ingredient
+                    {t("recipes.addIngredient")}
                   </Button>
                 </div>
 
@@ -289,24 +290,27 @@ export default function NewRecipePage() {
                   {ingredients.map((ingredient, index) => (
                     <div key={index} className="flex gap-3 items-end">
                       <div className="flex-1">
+                        <Label htmlFor={`ingredient-name-${index}`} className="text-sm font-medium text-gray-700">
+                          {t("recipes.ingredientName")}
+                        </Label>
                         <Input
-                          placeholder="Ingredient name"
+                          id={`ingredient-name-${index}`}
+                          placeholder={t("recipes.ingredientNamePlaceholder")}
                           value={ingredient.name}
                           onChange={(e) => updateIngredient(index, "name", e.target.value)}
+                          className="mt-1"
                         />
                       </div>
-                      <div className="w-24">
+                      <div className="flex-1">
+                        <Label htmlFor={`ingredient-amount-${index}`} className="text-sm font-medium text-gray-700">
+                          {t("recipes.amount")}
+                        </Label>
                         <Input
-                          placeholder="Qty"
-                          value={ingredient.quantity}
-                          onChange={(e) => updateIngredient(index, "quantity", e.target.value)}
-                        />
-                      </div>
-                      <div className="w-24">
-                        <Input
-                          placeholder="Unit"
-                          value={ingredient.unit}
-                          onChange={(e) => updateIngredient(index, "unit", e.target.value)}
+                          id={`ingredient-amount-${index}`}
+                          placeholder={t("recipes.amountPlaceholder")}
+                          value={ingredient.amount}
+                          onChange={(e) => updateIngredient(index, "amount", e.target.value)}
+                          className="mt-1"
                         />
                       </div>
                       <Button
@@ -315,22 +319,26 @@ export default function NewRecipePage() {
                         variant="outline"
                         size="sm"
                         disabled={ingredients.length === 1}
+                        className="self-end"
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
                     </div>
                   ))}
                 </div>
+                <p className="text-sm text-gray-500 mt-2">
+                  💡 {t("recipes.amountTip")}
+                </p>
               </div>
 
               {/* Instructions */}
               <div>
-                <Label htmlFor="instructions">Instructions *</Label>
+                <Label htmlFor="instructions">{t("recipes.instructions")} *</Label>
                 <Textarea
                   id="instructions"
                   value={formData.instructions}
                   onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-                  placeholder="Enter step-by-step instructions..."
+                  placeholder={t("recipes.enterInstructions")}
                   rows={8}
                   required
                 />
@@ -339,10 +347,10 @@ export default function NewRecipePage() {
               {/* Submit Button */}
               <div className="flex justify-end space-x-4">
                 <Button type="button" variant="outline" onClick={() => router.back()}>
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
                 <Button type="submit" disabled={loading} className="bg-orange-600 hover:bg-orange-700">
-                  {loading ? "Creating..." : "Create Recipe"}
+                  {loading ? t("recipes.creating") : t("recipes.createRecipe")}
                 </Button>
               </div>
             </form>

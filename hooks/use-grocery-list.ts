@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase/client"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 
 export interface GroceryListItem {
   id: string
@@ -26,20 +26,20 @@ export interface GroceryList {
   items: GroceryListItem[]
 }
 
-export function useGroceryList() {
+export function useGroceryList(shouldFetch = true) {
   const { user } = useAuthContext()
   const [groceryList, setGroceryList] = useState<GroceryList | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(shouldFetch)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (user) {
+    if (user && shouldFetch) {
       fetchGroceryList()
     } else {
       setGroceryList(null)
       setLoading(false)
     }
-  }, [user])
+  }, [user, shouldFetch])
 
   const fetchGroceryList = async () => {
     if (!user) return
@@ -56,18 +56,39 @@ export function useGroceryList() {
         .single()
 
       if (listError && listError.code === "PGRST116") {
-        // No list found, create one
-        const { data: newList, error: createError } = await supabase
+        // No list found, create one only if we don't have any lists for this user
+        const { data: existingLists, error: checkError } = await supabase
           .from("grocery_lists")
-          .insert({
-            user_id: user.id,
-            name: "My Grocery List",
-          })
-          .select()
-          .single()
+          .select("id")
+          .eq("user_id", user.id)
+          .limit(1)
 
-        if (createError) throw createError
-        list = newList
+        if (checkError) throw checkError
+
+        // Only create if no lists exist
+        if (!existingLists || existingLists.length === 0) {
+          const { data: newList, error: createError } = await supabase
+            .from("grocery_lists")
+            .insert({
+              user_id: user.id,
+              name: "My Grocery List",
+            })
+            .select()
+            .single()
+
+          if (createError) throw createError
+          list = newList
+        } else {
+          // Use the first existing list
+          const { data: firstList, error: fetchError } = await supabase
+            .from("grocery_lists")
+            .select("*")
+            .eq("user_id", user.id)
+            .single()
+
+          if (fetchError) throw fetchError
+          list = firstList
+        }
       } else if (listError) {
         throw listError
       }

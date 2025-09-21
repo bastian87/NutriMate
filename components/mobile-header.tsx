@@ -2,7 +2,7 @@
 import Link from "next/link"
 import { Search } from "lucide-react"
 import Image from "next/image"
-import { useAuthContext } from "@/components/auth/auth-provider"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { Button } from "@/components/ui/button"
 
 export default function MobileHeader() {
