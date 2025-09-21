@@ -106,7 +106,7 @@ class OnboardingService {
       console.log("🚀 Starting account creation and finalization...")
 
       // 1. Crear cuenta de Supabase Auth con email/password
-      const authResult = await supabase.auth.signUp({
+      let authResult = await supabase.auth.signUp({
         email: data.email!,
         password: data.password!,
         options: {
