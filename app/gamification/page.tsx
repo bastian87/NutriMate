@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/lib/i18n/context";
 import { Flame, Zap, Trophy, Target, Calendar } from "lucide-react";
 
 interface GamificationData {
@@ -29,6 +30,7 @@ interface GamificationData {
 export default function GamificationPage() {
   const { user } = useAuthContext();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [data, setData] = useState<GamificationData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -46,16 +48,16 @@ export default function GamificationPage() {
         setData(result);
       } else {
         toast({
-          title: "Error",
-          description: "No se pudo cargar los datos de gamificación",
+          title: t("common.error"),
+          description: t("gamification.errorLoading"),
           variant: "destructive"
         });
       }
     } catch (error) {
       console.error('Error fetching gamification data:', error);
       toast({
-        title: "Error",
-        description: "Error de conexión al cargar datos",
+        title: t("common.error"),
+        description: t("gamification.connectionError"),
         variant: "destructive"
       });
     } finally {
@@ -71,12 +73,12 @@ export default function GamificationPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">Acceso Requerido</h2>
+          <h2 className="text-2xl font-bold mb-4">{t("gamification.accessRequired")}</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Necesitas iniciar sesión para ver tu progreso gamificado
+            {t("gamification.signInRequired")}
           </p>
           <Button asChild>
-            <a href="/login">Iniciar Sesión</a>
+            <a href="/login">{t("gamification.signIn")}</a>
           </Button>
         </div>
       </div>
@@ -101,16 +103,16 @@ export default function GamificationPage() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Gamificación</h1>
+        <h1 className="text-3xl font-bold mb-2">{t("gamification.title")}</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Tu progreso y logros en el seguimiento nutricional
+          {t("gamification.subtitle")}
         </p>
       </div>
 
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando datos de gamificación...</p>
+          <p className="mt-4 text-gray-600">{t("gamification.loadingGamification")}</p>
         </div>
       ) : data ? (
         <>
@@ -119,36 +121,36 @@ export default function GamificationPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Trophy className="w-5 h-5" />
-                Nivel y Experiencia
+                {t("gamification.levelAndExperience")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="text-4xl font-bold text-orange-600 mb-2">
-                    Nivel {data.level}
+                    {t("gamification.currentLevel")} {data.level}
                   </div>
-                  <p className="text-gray-600">Tu nivel actual</p>
+                  <p className="text-gray-600">{t("gamification.currentLevel")}</p>
                 </div>
                 
                 <div className="text-center">
                   <div className="text-4xl font-bold text-blue-600 mb-2">
                     {data.totalXp.toLocaleString()}
                   </div>
-                  <p className="text-gray-600">XP Total</p>
+                  <p className="text-gray-600">{t("gamification.totalXp")}</p>
                 </div>
                 
                 <div className="text-center">
                   <div className="text-4xl font-bold text-green-600 mb-2">
                     {data.xpToNextLevel}
                   </div>
-                  <p className="text-gray-600">XP para siguiente nivel</p>
+                  <p className="text-gray-600">{t("gamification.xpToNextLevel")}</p>
                 </div>
               </div>
               
               <div className="mt-6">
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>Progreso al nivel {data.level + 1}</span>
+                  <span>{t("gamification.progressToLevel", { level: data.level + 1 })}</span>
                   <span>{Math.round(getLevelProgress())}%</span>
                 </div>
                 <Progress value={getLevelProgress()} className="h-3" />
@@ -161,7 +163,7 @@ export default function GamificationPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Flame className="w-5 h-5" />
-                Racha de Días Exitosos
+                {t("gamification.streak")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -170,9 +172,9 @@ export default function GamificationPage() {
                   <div className={`text-6xl font-bold mb-2 ${getStreakColor(data.currentStreak)}`}>
                     {data.currentStreak}
                   </div>
-                  <p className="text-gray-600">Racha Actual</p>
+                  <p className="text-gray-600">{t("gamification.currentStreak")}</p>
                   <Badge variant={data.currentStreak > 0 ? "default" : "secondary"} className="mt-2">
-                    {data.currentStreak > 0 ? "¡En racha!" : "Sin racha activa"}
+                    {data.currentStreak > 0 ? t("gamification.onStreak") : t("gamification.noActiveStreak")}
                   </Badge>
                 </div>
                 
@@ -180,9 +182,9 @@ export default function GamificationPage() {
                   <div className="text-6xl font-bold text-purple-600 mb-2">
                     {data.longestStreak}
                   </div>
-                  <p className="text-gray-600">Mejor Racha</p>
+                  <p className="text-gray-600">{t("gamification.bestStreak")}</p>
                   <Badge variant="outline" className="mt-2">
-                    Récord personal
+                    {t("gamification.personalRecord")}
                   </Badge>
                 </div>
               </div>
@@ -194,7 +196,7 @@ export default function GamificationPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Zap className="w-5 h-5" />
-                XP por Período
+                {t("gamification.xpByPeriod")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -203,14 +205,14 @@ export default function GamificationPage() {
                   <div className="text-4xl font-bold text-blue-600 mb-2">
                     {data.weeklyXp}
                   </div>
-                  <p className="text-gray-600">XP Esta Semana</p>
+                  <p className="text-gray-600">{t("gamification.weeklyXp")}</p>
                 </div>
                 
                 <div className="text-center">
                   <div className="text-4xl font-bold text-green-600 mb-2">
                     {data.monthlyXp}
                   </div>
-                  <p className="text-gray-600">XP Este Mes</p>
+                  <p className="text-gray-600">{t("gamification.monthlyXp")}</p>
                 </div>
               </div>
             </CardContent>
@@ -221,7 +223,7 @@ export default function GamificationPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="w-5 h-5" />
-                Logros
+                {t("gamification.achievements")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -229,7 +231,7 @@ export default function GamificationPage() {
                 <div className="text-center py-8">
                   <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600 dark:text-gray-400">
-                    No hay logros disponibles aún
+                    {t("gamification.noAchievementsAvailable")}
                   </p>
                 </div>
               ) : (
@@ -260,7 +262,7 @@ export default function GamificationPage() {
                           </p>
                           {achievement.unlocked && achievement.unlockedAt && (
                             <p className="text-xs text-green-500 mt-1">
-                              Desbloqueado: {new Date(achievement.unlockedAt).toLocaleDateString('es-ES')}
+                              {t("gamification.unlocked", { date: new Date(achievement.unlockedAt).toLocaleDateString('es-ES') })}
                             </p>
                           )}
                         </div>
@@ -276,7 +278,7 @@ export default function GamificationPage() {
         <div className="text-center py-12">
           <Flame className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">
-            No se pudieron cargar los datos de gamificación
+            {t("gamification.couldNotLoadData")}
           </p>
         </div>
       )}

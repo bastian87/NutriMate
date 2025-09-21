@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/lib/i18n/context";
 import { Calendar, Target, Zap, TrendingUp, CheckCircle, XCircle } from "lucide-react";
 
 interface WeeklySummary {
@@ -44,6 +45,7 @@ interface WeeklySummary {
 export default function WeeklySummaryPage() {
   const { user } = useAuthContext();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [summary, setSummary] = useState<WeeklySummary | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -75,16 +77,16 @@ export default function WeeklySummaryPage() {
         setSummary(result);
       } else {
         toast({
-          title: "Error",
-          description: "No se pudo cargar el resumen semanal",
+          title: t("common.error"),
+          description: t("weeklySummary.errorLoading"),
           variant: "destructive"
         });
       }
     } catch (error) {
       console.error('Error fetching weekly summary:', error);
       toast({
-        title: "Error",
-        description: "Error de conexión al cargar el resumen",
+        title: t("common.error"),
+        description: t("weeklySummary.connectionError"),
         variant: "destructive"
       });
     } finally {
@@ -106,12 +108,12 @@ export default function WeeklySummaryPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">Acceso Requerido</h2>
+          <h2 className="text-2xl font-bold mb-4">{t("weeklySummary.accessRequired")}</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Necesitas iniciar sesión para ver tus resúmenes semanales
+            {t("weeklySummary.signInRequired")}
           </p>
           <Button asChild>
-            <a href="/login">Iniciar Sesión</a>
+            <a href="/login">{t("weeklySummary.signIn")}</a>
           </Button>
         </div>
       </div>
@@ -141,9 +143,9 @@ export default function WeeklySummaryPage() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Resumen Semanal</h1>
+        <h1 className="text-3xl font-bold mb-2">{t("weeklySummary.title")}</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Revisa tu progreso y logros de la semana
+          {t("weeklySummary.subtitle")}
         </p>
       </div>
 
@@ -152,13 +154,13 @@ export default function WeeklySummaryPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
-            Seleccionar Semana
+            {t("weeklySummary.selectWeek")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
             <div className="space-y-2">
-              <Label htmlFor="weekStart">Inicio de Semana (Lunes)</Label>
+              <Label htmlFor="weekStart">{t("weeklySummary.weekStart")}</Label>
               <Input
                 id="weekStart"
                 type="date"
@@ -169,7 +171,10 @@ export default function WeeklySummaryPage() {
             <div className="text-sm text-gray-600">
               {summary && (
                 <span>
-                  {getWeekRange(selectedWeek).start} - {getWeekRange(selectedWeek).end}
+                  {t("weeklySummary.weekRange", { 
+                    start: getWeekRange(selectedWeek).start, 
+                    end: getWeekRange(selectedWeek).end 
+                  })}
                 </span>
               )}
             </div>
@@ -180,7 +185,7 @@ export default function WeeklySummaryPage() {
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando resumen semanal...</p>
+          <p className="mt-4 text-gray-600">{t("weeklySummary.loadingWeeklySummary")}</p>
         </div>
       ) : summary ? (
         <>
@@ -190,7 +195,7 @@ export default function WeeklySummaryPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Días Exitosos</p>
+                    <p className="text-sm font-medium text-gray-600">{t("weeklySummary.successfulDays")}</p>
                     <p className="text-2xl font-bold text-green-600">
                       {summary.successfulDays}/{summary.totalDays}
                     </p>
@@ -199,7 +204,7 @@ export default function WeeklySummaryPage() {
                 </div>
                 <div className="mt-4">
                   <Progress value={getSuccessRate()} className="h-2" />
-                  <p className="text-xs text-gray-500 mt-1">{getSuccessRate()}% de éxito</p>
+                  <p className="text-xs text-gray-500 mt-1">{t("weeklySummary.successRate", { rate: getSuccessRate() })}</p>
                 </div>
               </CardContent>
             </Card>
@@ -208,7 +213,7 @@ export default function WeeklySummaryPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Calorías Totales</p>
+                    <p className="text-sm font-medium text-gray-600">{t("weeklySummary.totalCalories")}</p>
                     <p className="text-2xl font-bold text-blue-600">
                       {summary.totalKcal.toLocaleString()}
                     </p>
@@ -218,7 +223,7 @@ export default function WeeklySummaryPage() {
                 <div className="mt-4">
                   <Progress value={getKcalProgress()} className="h-2" />
                   <p className="text-xs text-gray-500 mt-1">
-                    {Math.round(getKcalProgress())}% del objetivo
+                    {t("weeklySummary.objectiveProgress", { progress: Math.round(getKcalProgress()) })}
                   </p>
                 </div>
               </CardContent>
@@ -228,14 +233,14 @@ export default function WeeklySummaryPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Promedio Diario</p>
+                    <p className="text-sm font-medium text-gray-600">{t("weeklySummary.dailyAverage")}</p>
                     <p className="text-2xl font-bold text-purple-600">
                       {Math.round(summary.averageKcalPerDay)}
                     </p>
                   </div>
                   <TrendingUp className="w-8 h-8 text-purple-600" />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">kcal/día</p>
+                <p className="text-xs text-gray-500 mt-1">{t("weeklySummary.kcalPerDay")}</p>
               </CardContent>
             </Card>
 
@@ -243,14 +248,14 @@ export default function WeeklySummaryPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">XP Ganado</p>
+                    <p className="text-sm font-medium text-gray-600">{t("weeklySummary.xpEarned")}</p>
                     <p className="text-2xl font-bold text-orange-600">
                       {summary.xpEarned}
                     </p>
                   </div>
                   <Zap className="w-8 h-8 text-orange-600" />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Esta semana</p>
+                <p className="text-xs text-gray-500 mt-1">{t("weeklySummary.thisWeek")}</p>
               </CardContent>
             </Card>
           </div>
@@ -258,7 +263,7 @@ export default function WeeklySummaryPage() {
           {/* Goals Status */}
           <Card>
             <CardHeader>
-              <CardTitle>Estado de Objetivos</CardTitle>
+              <CardTitle>{t("weeklySummary.goalsStatus")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -269,9 +274,9 @@ export default function WeeklySummaryPage() {
                     <XCircle className="w-6 h-6 text-red-600" />
                   )}
                   <div>
-                    <p className="font-medium">Objetivo de Calorías</p>
+                    <p className="font-medium">{t("weeklySummary.calorieGoal")}</p>
                     <Badge variant={summary.goals.kcalGoal ? "default" : "destructive"}>
-                      {summary.goals.kcalGoal ? "Cumplido" : "No cumplido"}
+                      {summary.goals.kcalGoal ? t("weeklySummary.achieved") : t("weeklySummary.notAchieved")}
                     </Badge>
                   </div>
                 </div>
@@ -283,9 +288,9 @@ export default function WeeklySummaryPage() {
                     <XCircle className="w-6 h-6 text-red-600" />
                   )}
                   <div>
-                    <p className="font-medium">Objetivos de Macronutrientes</p>
+                    <p className="font-medium">{t("weeklySummary.macroGoals")}</p>
                     <Badge variant={summary.goals.macroGoals ? "default" : "destructive"}>
-                      {summary.goals.macroGoals ? "Cumplido" : "No cumplido"}
+                      {summary.goals.macroGoals ? t("weeklySummary.achieved") : t("weeklySummary.notAchieved")}
                     </Badge>
                   </div>
                 </div>
@@ -297,9 +302,9 @@ export default function WeeklySummaryPage() {
                     <XCircle className="w-6 h-6 text-red-600" />
                   )}
                   <div>
-                    <p className="font-medium">Consistencia</p>
+                    <p className="font-medium">{t("weeklySummary.consistencyGoal")}</p>
                     <Badge variant={summary.goals.consistencyGoal ? "default" : "destructive"}>
-                      {summary.goals.consistencyGoal ? "Cumplido" : "No cumplido"}
+                      {summary.goals.consistencyGoal ? t("weeklySummary.achieved") : t("weeklySummary.notAchieved")}
                     </Badge>
                   </div>
                 </div>
@@ -310,7 +315,7 @@ export default function WeeklySummaryPage() {
           {/* Daily Breakdown */}
           <Card>
             <CardHeader>
-              <CardTitle>Desglose Diario</CardTitle>
+              <CardTitle>{t("weeklySummary.dailyBreakdown")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -357,7 +362,7 @@ export default function WeeklySummaryPage() {
         <div className="text-center py-12">
           <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">
-            No se pudieron cargar los datos del resumen semanal
+            {t("weeklySummary.couldNotLoadData")}
           </p>
         </div>
       )}

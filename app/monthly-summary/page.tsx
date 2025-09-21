@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/lib/i18n/context";
 import { Calendar, Target, Zap, TrendingUp, CheckCircle, XCircle, BarChart3 } from "lucide-react";
 
 interface MonthlySummary {
@@ -44,6 +45,7 @@ interface MonthlySummary {
 export default function MonthlySummaryPage() {
   const { user } = useAuthContext();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [summary, setSummary] = useState<MonthlySummary | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -69,16 +71,16 @@ export default function MonthlySummaryPage() {
         setSummary(result);
       } else {
         toast({
-          title: "Error",
-          description: "No se pudo cargar el resumen mensual",
+          title: t("common.error"),
+          description: t("monthlySummary.errorLoading"),
           variant: "destructive"
         });
       }
     } catch (error) {
       console.error('Error fetching monthly summary:', error);
       toast({
-        title: "Error",
-        description: "Error de conexión al cargar el resumen",
+        title: t("common.error"),
+        description: t("monthlySummary.connectionError"),
         variant: "destructive"
       });
     } finally {
@@ -100,12 +102,12 @@ export default function MonthlySummaryPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">Acceso Requerido</h2>
+          <h2 className="text-2xl font-bold mb-4">{t("monthlySummary.accessRequired")}</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Necesitas iniciar sesión para ver tus resúmenes mensuales
+            {t("monthlySummary.signInRequired")}
           </p>
           <Button asChild>
-            <a href="/login">Iniciar Sesión</a>
+            <a href="/login">{t("monthlySummary.signIn")}</a>
           </Button>
         </div>
       </div>
@@ -134,9 +136,9 @@ export default function MonthlySummaryPage() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Resumen Mensual</h1>
+        <h1 className="text-3xl font-bold mb-2">{t("monthlySummary.title")}</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Revisa tu progreso y logros del mes
+          {t("monthlySummary.subtitle")}
         </p>
       </div>
 
@@ -145,13 +147,13 @@ export default function MonthlySummaryPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
-            Seleccionar Mes
+            {t("monthlySummary.selectMonth")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
             <div className="space-y-2">
-              <Label htmlFor="month">Mes y Año</Label>
+              <Label htmlFor="month">{t("monthlySummary.monthAndYear")}</Label>
               <Input
                 id="month"
                 type="month"
@@ -171,7 +173,7 @@ export default function MonthlySummaryPage() {
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando resumen mensual...</p>
+          <p className="mt-4 text-gray-600">{t("monthlySummary.loadingMonthlySummary")}</p>
         </div>
       ) : summary ? (
         <>
@@ -181,7 +183,7 @@ export default function MonthlySummaryPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Días Exitosos</p>
+                    <p className="text-sm font-medium text-gray-600">{t("monthlySummary.successfulDays")}</p>
                     <p className="text-2xl font-bold text-green-600">
                       {summary.successfulDays}/{summary.totalDays}
                     </p>
@@ -190,7 +192,7 @@ export default function MonthlySummaryPage() {
                 </div>
                 <div className="mt-4">
                   <Progress value={getSuccessRate()} className="h-2" />
-                  <p className="text-xs text-gray-500 mt-1">{getSuccessRate()}% de éxito</p>
+                  <p className="text-xs text-gray-500 mt-1">{t("monthlySummary.successRate", { rate: getSuccessRate() })}</p>
                 </div>
               </CardContent>
             </Card>
@@ -199,7 +201,7 @@ export default function MonthlySummaryPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Calorías Totales</p>
+                    <p className="text-sm font-medium text-gray-600">{t("monthlySummary.totalCalories")}</p>
                     <p className="text-2xl font-bold text-blue-600">
                       {summary.totalKcal.toLocaleString()}
                     </p>
@@ -209,7 +211,7 @@ export default function MonthlySummaryPage() {
                 <div className="mt-4">
                   <Progress value={getKcalProgress()} className="h-2" />
                   <p className="text-xs text-gray-500 mt-1">
-                    {Math.round(getKcalProgress())}% del objetivo
+                    {t("monthlySummary.objectiveProgress", { progress: Math.round(getKcalProgress()) })}
                   </p>
                 </div>
               </CardContent>
@@ -219,14 +221,14 @@ export default function MonthlySummaryPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Promedio Diario</p>
+                    <p className="text-sm font-medium text-gray-600">{t("monthlySummary.dailyAverage")}</p>
                     <p className="text-2xl font-bold text-purple-600">
                       {Math.round(summary.averageKcalPerDay)}
                     </p>
                   </div>
                   <TrendingUp className="w-8 h-8 text-purple-600" />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">kcal/día</p>
+                <p className="text-xs text-gray-500 mt-1">{t("monthlySummary.kcalPerDay")}</p>
               </CardContent>
             </Card>
 
@@ -234,14 +236,14 @@ export default function MonthlySummaryPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">XP Ganado</p>
+                    <p className="text-sm font-medium text-gray-600">{t("monthlySummary.xpEarned")}</p>
                     <p className="text-2xl font-bold text-orange-600">
                       {summary.xpEarned}
                     </p>
                   </div>
                   <Zap className="w-8 h-8 text-orange-600" />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Este mes</p>
+                <p className="text-xs text-gray-500 mt-1">{t("monthlySummary.thisMonth")}</p>
               </CardContent>
             </Card>
           </div>
@@ -249,7 +251,7 @@ export default function MonthlySummaryPage() {
           {/* Goals Status */}
           <Card>
             <CardHeader>
-              <CardTitle>Estado de Objetivos Mensuales</CardTitle>
+              <CardTitle>{t("monthlySummary.monthlyGoalsStatus")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -260,9 +262,9 @@ export default function MonthlySummaryPage() {
                     <XCircle className="w-6 h-6 text-red-600" />
                   )}
                   <div>
-                    <p className="font-medium">Objetivo de Calorías</p>
+                    <p className="font-medium">{t("monthlySummary.calorieGoal")}</p>
                     <Badge variant={summary.goals.kcalGoal ? "default" : "destructive"}>
-                      {summary.goals.kcalGoal ? "Cumplido" : "No cumplido"}
+                      {summary.goals.kcalGoal ? t("monthlySummary.achieved") : t("monthlySummary.notAchieved")}
                     </Badge>
                   </div>
                 </div>
@@ -274,9 +276,9 @@ export default function MonthlySummaryPage() {
                     <XCircle className="w-6 h-6 text-red-600" />
                   )}
                   <div>
-                    <p className="font-medium">Objetivos de Macronutrientes</p>
+                    <p className="font-medium">{t("monthlySummary.macroGoals")}</p>
                     <Badge variant={summary.goals.macroGoals ? "default" : "destructive"}>
-                      {summary.goals.macroGoals ? "Cumplido" : "No cumplido"}
+                      {summary.goals.macroGoals ? t("monthlySummary.achieved") : t("monthlySummary.notAchieved")}
                     </Badge>
                   </div>
                 </div>
@@ -288,9 +290,9 @@ export default function MonthlySummaryPage() {
                     <XCircle className="w-6 h-6 text-red-600" />
                   )}
                   <div>
-                    <p className="font-medium">Consistencia</p>
+                    <p className="font-medium">{t("monthlySummary.consistencyGoal")}</p>
                     <Badge variant={summary.goals.consistencyGoal ? "default" : "destructive"}>
-                      {summary.goals.consistencyGoal ? "Cumplido" : "No cumplido"}
+                      {summary.goals.consistencyGoal ? t("monthlySummary.achieved") : t("monthlySummary.notAchieved")}
                     </Badge>
                   </div>
                 </div>
@@ -303,7 +305,7 @@ export default function MonthlySummaryPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5" />
-                Desglose Semanal
+                {t("monthlySummary.weeklyBreakdown")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -312,7 +314,7 @@ export default function MonthlySummaryPage() {
                   <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <p className="font-medium">
-                        Semana {index + 1}
+                        {t("monthlySummary.week", { number: index + 1 })}
                       </p>
                       <p className="text-sm text-gray-600">
                         {new Date(week.weekStart).toLocaleDateString('es-ES')} - {new Date(week.weekEnd).toLocaleDateString('es-ES')}
@@ -321,21 +323,21 @@ export default function MonthlySummaryPage() {
                     
                     <div className="flex items-center gap-6">
                       <div className="text-center">
-                        <p className="text-sm text-gray-600">Días Exitosos</p>
+                        <p className="text-sm text-gray-600">{t("monthlySummary.successfulDaysLabel")}</p>
                         <p className="font-bold text-green-600">
                           {week.successfulDays}/{week.totalDays}
                         </p>
                       </div>
                       
                       <div className="text-center">
-                        <p className="text-sm text-gray-600">Calorías</p>
+                        <p className="text-sm text-gray-600">{t("monthlySummary.calories")}</p>
                         <p className="font-bold text-blue-600">
                           {week.totalKcal.toLocaleString()}
                         </p>
                       </div>
                       
                       <div className="text-center">
-                        <p className="text-sm text-gray-600">XP</p>
+                        <p className="text-sm text-gray-600">{t("monthlySummary.xp")}</p>
                         <p className="font-bold text-orange-600">
                           {week.xpEarned}
                         </p>
@@ -350,14 +352,14 @@ export default function MonthlySummaryPage() {
           {/* Top Performing Days */}
           <Card>
             <CardHeader>
-              <CardTitle>Mejores Días del Mes</CardTitle>
+              <CardTitle>{t("monthlySummary.topPerformingDays")}</CardTitle>
             </CardHeader>
             <CardContent>
               {summary.topPerformingDays.length === 0 ? (
                 <div className="text-center py-8">
                   <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600 dark:text-gray-400">
-                    No hay datos suficientes para mostrar los mejores días
+                    {t("monthlySummary.noDataForBestDays")}
                   </p>
                 </div>
               ) : (
@@ -386,12 +388,12 @@ export default function MonthlySummaryPage() {
                         {day.isSuccess ? (
                           <Badge variant="default" className="bg-green-600">
                             <CheckCircle className="w-3 h-3 mr-1" />
-                            Exitoso
+                            {t("monthlySummary.successful")}
                           </Badge>
                         ) : (
                           <Badge variant="secondary">
                             <XCircle className="w-3 h-3 mr-1" />
-                            Parcial
+                            {t("monthlySummary.partial")}
                           </Badge>
                         )}
                       </div>
@@ -406,7 +408,7 @@ export default function MonthlySummaryPage() {
         <div className="text-center py-12">
           <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">
-            No se pudieron cargar los datos del resumen mensual
+            {t("monthlySummary.couldNotLoadData")}
           </p>
         </div>
       )}
