@@ -29,10 +29,11 @@ export async function POST(request: NextRequest) {
     // 3. Obtener datos del request
     const body = await request.json()
     
-    // Si no hay datos en el body, usar datos por defecto (para OAuth)
+    // Usar datos del body si están disponibles, sino usar datos por defecto (para OAuth)
     const {
       full_name = user.user_metadata?.full_name || '',
       username = user.user_metadata?.username || '',
+      email = user.email || '',
       age = null,
       gender = null,
       height = null,

@@ -55,15 +55,51 @@ export function CreateAccountStep({ data, onChange, onCreateAccount, isLoading }
       return
     }
 
-    onChange({ password })
-    onCreateAccount()
+    // Actualizar los datos con la contraseña y todos los datos actuales
+    const updatedData = {
+      ...data,
+      password: password
+    }
+    
+    // Actualizar el estado del onboarding con todos los datos
+    onChange(updatedData)
+    
+    // Esperar un momento para que se actualice el estado
+    setTimeout(() => {
+      onCreateAccount()
+    }, 100)
   }
 
   const handleGoogleSignUp = async () => {
+    // Obtener los datos del onboarding actuales
+    const onboardingData = {
+      full_name: data.full_name,
+      username: data.username,
+      email: data.email,
+      age: data.age,
+      gender: data.gender,
+      height: data.height,
+      weight: data.weight,
+      activity_level: data.activity_level,
+      health_goal: data.health_goal,
+      calorie_target: data.calorie_target,
+      dietary_preferences: data.dietary_preferences,
+      excluded_ingredients: data.excluded_ingredients,
+      include_snacks: data.include_snacks,
+      max_prep_time: data.max_prep_time,
+      macro_priority: data.macro_priority,
+      allergies: data.allergies,
+      intolerances: data.intolerances
+    }
+
+    // Codificar los datos para pasarlos en la URL
+    const encodedData = encodeURIComponent(JSON.stringify(onboardingData))
+    const redirectUrl = `${window.location.origin}/auth/callback?onboarding=true&data=${encodedData}`
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`
+        redirectTo: redirectUrl
       }
     })
 

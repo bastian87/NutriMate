@@ -154,6 +154,7 @@ class OnboardingService {
         body: JSON.stringify({
           full_name: data.full_name,
           username: data.username,
+          email: data.email,
           age: data.age,
           gender: data.gender,
           height: data.height,

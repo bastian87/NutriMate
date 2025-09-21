@@ -26,9 +26,43 @@ export default function AuthCallbackPage() {
         // Verificar si viene del onboarding
         const urlParams = new URLSearchParams(window.location.search);
         const fromOnboarding = urlParams.get('onboarding') === 'true';
+        const encodedData = urlParams.get('data');
 
         if (fromOnboarding) {
           console.log("🔄 Coming from onboarding, finalizing profile...");
+          
+          let onboardingData = {};
+          
+          // Si hay datos codificados en la URL, usarlos
+          if (encodedData) {
+            try {
+              onboardingData = JSON.parse(decodeURIComponent(encodedData));
+              console.log("📋 Using onboarding data from URL:", onboardingData);
+            } catch (error) {
+              console.error("❌ Error parsing onboarding data from URL:", error);
+              // Fallback: intentar obtener datos del localStorage
+              const savedData = localStorage.getItem('nutrimate_onboarding_data');
+              if (savedData) {
+                try {
+                  onboardingData = JSON.parse(savedData);
+                  console.log("📋 Using onboarding data from localStorage:", onboardingData);
+                } catch (localError) {
+                  console.error("❌ Error parsing localStorage data:", localError);
+                }
+              }
+            }
+          } else {
+            // Fallback: obtener datos del localStorage
+            const savedData = localStorage.getItem('nutrimate_onboarding_data');
+            if (savedData) {
+              try {
+                onboardingData = JSON.parse(savedData);
+                console.log("📋 Using onboarding data from localStorage:", onboardingData);
+              } catch (error) {
+                console.error("❌ Error parsing localStorage data:", error);
+              }
+            }
+          }
           
           // Finalizar el perfil con los datos del onboarding
           const finalizeResponse = await fetch('/api/profile/finalize', {
@@ -37,9 +71,7 @@ export default function AuthCallbackPage() {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${session.access_token}`
             },
-            body: JSON.stringify({
-              // Los datos se obtienen del localStorage en el servidor
-            })
+            body: JSON.stringify(onboardingData)
           });
 
           if (finalizeResponse.ok) {
