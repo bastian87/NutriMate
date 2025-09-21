@@ -119,7 +119,28 @@ class OnboardingService {
 
       if (authResult.error) {
         console.error("❌ Auth error:", authResult.error)
-        return { success: false, error: authResult.error.message }
+        
+        // Si el usuario ya está registrado, intentar hacer sign in
+        if (authResult.error.message.includes('User already registered')) {
+          console.log("🔄 User already exists, attempting sign in...")
+          
+          const signInResult = await supabase.auth.signInWithPassword({
+            email: data.email!,
+            password: data.password!
+          })
+          
+          if (signInResult.error) {
+            return { 
+              success: false, 
+              error: "Este email ya está registrado. Por favor, inicia sesión o usa un email diferente." 
+            }
+          }
+          
+          // Si el sign in fue exitoso, continuar con la finalización
+          authResult = signInResult
+        } else {
+          return { success: false, error: authResult.error.message }
+        }
       }
 
       if (!authResult.data?.user) {
@@ -127,6 +148,18 @@ class OnboardingService {
       }
 
       // 2. Finalizar perfil con los datos recolectados
+      console.log("🔄 Finalizing profile with data:", {
+        full_name: data.full_name,
+        username: data.username,
+        email: data.email,
+        age: data.age,
+        gender: data.gender,
+        height: data.height,
+        weight: data.weight,
+        activity_level: data.activity_level,
+        health_goal: data.health_goal
+      })
+      
       const finalizeResponse = await fetch('/api/profile/finalize', {
         method: 'POST',
         headers: {
@@ -153,6 +186,8 @@ class OnboardingService {
           intolerances: data.intolerances || []
         })
       })
+      
+      console.log("📋 Finalize response status:", finalizeResponse.status)
 
       if (!finalizeResponse.ok) {
         const errorData = await finalizeResponse.json()
