@@ -123,21 +123,39 @@ class OnboardingService {
         // Si el usuario ya está registrado, intentar hacer sign in
         if (authResult.error.message.includes('User already registered')) {
           console.log("🔄 User already exists, attempting sign in...")
+          console.log("📧 Attempting sign in with email:", data.email)
           
           const signInResult = await supabase.auth.signInWithPassword({
             email: data.email!,
             password: data.password!
           })
           
-          if (signInResult.error) {
-            return { 
-              success: false, 
-              error: "Este email ya está registrado. Por favor, inicia sesión o usa un email diferente." 
-            }
-          }
+          console.log("🔐 Sign in result:", {
+            success: !signInResult.error,
+            error: signInResult.error?.message,
+            user: signInResult.data?.user?.id
+          })
           
-          // Si el sign in fue exitoso, continuar con la finalización
-          authResult = signInResult
+          if (signInResult.error) {
+            console.error("❌ Sign in failed:", signInResult.error)
+            
+            // Verificar si ya hay una sesión activa
+            const { data: sessionData } = await supabase.auth.getSession()
+            console.log("🔍 Current session:", sessionData.session?.user?.id)
+            
+            if (sessionData.session?.user?.email === data.email) {
+              console.log("✅ User already has active session, using existing session")
+              authResult = { data: { user: sessionData.session.user, session: sessionData.session }, error: null }
+            } else {
+              return { 
+                success: false, 
+                error: "Este email ya está registrado. Por favor, inicia sesión o usa un email diferente." 
+              }
+            }
+          } else {
+            // Si el sign in fue exitoso, continuar con la finalización
+            authResult = signInResult
+          }
         } else {
           return { success: false, error: authResult.error.message }
         }
