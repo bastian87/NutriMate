@@ -102,14 +102,14 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
           .from("users")
           .select("*")
           .eq("id", user.id)
-          .single(),
+          .maybeSingle(),
         
         // Preferencias del usuario
         supabase
           .from("user_preferences")
           .select("*")
           .eq("user_id", user.id)
-          .single(),
+          .maybeSingle(),
         
         // Suscripción del usuario
         getUserSubscription(user.id),

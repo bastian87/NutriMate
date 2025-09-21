@@ -11,6 +11,7 @@ interface AuthResponse {
   data: {
     user: User | null
     session: Session | null
+    needsOnboarding?: boolean
   } | null
   error: AuthError | Error | null
 }
@@ -42,6 +43,17 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
         
         if (error) {
           console.error("Error getting initial session:", error)
+          
+          // Si es un error de token de actualización, limpiar la sesión
+          if (error.message?.includes("Invalid Refresh Token") || error.message?.includes("Refresh Token Not Found")) {
+            console.log("🧹 Clearing invalid refresh token...")
+            await supabase.auth.signOut()
+            // Limpiar también el localStorage manualmente
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('sb-wlqsitedbkghsucxoyoc-auth-token')
+              localStorage.removeItem('supabase.auth.token')
+            }
+          }
         }
 
         if (mounted) {
@@ -55,7 +67,7 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
                 .from("users")
                 .select("id")
                 .eq("id", session.user.id)
-                .single()
+                .maybeSingle()
               
               if (profileError || !userProfile) {
                 console.log("❌ User not found in database, signing out")
@@ -109,6 +121,18 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
         if (!mounted) return
 
         console.log("🔄 Auth state change:", event, session?.user?.id || "No user")
+
+        // Manejar eventos específicos
+        if (event === 'SIGNED_OUT') {
+          console.log("👤 User signed out")
+          setUser(null)
+          return
+        }
+
+        if (event === 'TOKEN_REFRESHED') {
+          console.log("🔄 Token refreshed successfully")
+          return
+        }
 
         // Solo actualizar si el usuario realmente cambió
         const newUser = session?.user ?? null

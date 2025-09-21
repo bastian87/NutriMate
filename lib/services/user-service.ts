@@ -25,7 +25,7 @@ export class UserService {
 
   async updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile | null> {
     try {
-      const { data, error } = await this.supabase.from("users").update(updates).eq("id", userId).select().single()
+      const { data, error } = await this.supabase.from("users").update(updates).eq("id", userId).select().maybeSingle()
 
       if (error) throw error
       return data

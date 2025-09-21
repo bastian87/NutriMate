@@ -1,36 +1,68 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import OnboardingForm from "@/components/onboarding-form"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { Loader2 } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/context"
+import { supabase } from "@/lib/supabase/client"
 
 export default function OnboardingPage() {
   const { user, loading } = useAuthContext()
   const router = useRouter()
   const { t } = useLanguage()
+  const [checkingProfile, setCheckingProfile] = useState(false)
 
   useEffect(() => {
-    if (!loading) {
-      if (user) {
-        // Si hay un usuario autenticado, redirigir al dashboard
-        console.log("👤 User already authenticated, redirecting to dashboard")
-        router.push("/dashboard")
-      } else {
+    const checkUserProfile = async () => {
+      if (!loading && user) {
+        setCheckingProfile(true)
+        try {
+          // Verificar si el usuario tiene perfil completo
+          const { data: userProfile } = await supabase
+            .from("users")
+            .select("id, username, full_name")
+            .eq("id", user.id)
+            .maybeSingle();
+
+          // Verificar si tiene preferencias
+          const { data: preferences } = await supabase
+            .from("user_preferences")
+            .select("id")
+            .eq("user_id", user.id)
+            .maybeSingle();
+
+          if (userProfile && userProfile.username && preferences) {
+            // Usuario tiene perfil completo, redirigir al dashboard
+            console.log("✅ User has complete profile, redirecting to dashboard")
+            router.push("/dashboard")
+          } else {
+            // Usuario necesita onboarding
+            console.log("📝 User needs onboarding")
+            setCheckingProfile(false)
+          }
+        } catch (error) {
+          console.error("Error checking user profile:", error)
+          setCheckingProfile(false)
+        }
+      } else if (!loading && !user) {
         // Si no hay usuario autenticado, redirigir al signup
         console.log("🚫 No user authenticated, redirecting to signup")
         router.push("/signup")
       }
     }
+
+    checkUserProfile()
   }, [user, loading, router])
 
-  if (loading) {
+  if (loading || checkingProfile) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-white p-4">
         <Loader2 className="h-12 w-12 animate-spin text-orange-600" />
-        <p className="mt-4 text-lg text-gray-700">{t("onboarding.loadingUserSession")}</p>
+        <p className="mt-4 text-lg text-gray-700">
+          {checkingProfile ? "Verificando perfil..." : t("onboarding.loadingUserSession")}
+        </p>
       </div>
     )
   }

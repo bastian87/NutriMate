@@ -103,7 +103,7 @@ export default function SignupForm() {
       const result = await signUp(email, password, fullName, username)
       
       if (result.error) {
-        setError(result.error)
+        setError(result.error.message || 'An error occurred')
         return
       }
 
@@ -124,8 +124,23 @@ export default function SignupForm() {
     }
   }
 
-  const handleGoogleSignup = () => {
-    setError('Google signup not available during onboarding process');
+  const handleGoogleSignup = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const redirectTo = typeof window !== 'undefined' && window.location.origin
+        ? `${window.location.origin}/auth/callback`
+        : undefined;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo }
+      });
+      if (error) throw error;
+    } catch (err) {
+      setError('Error al registrarse con Google');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

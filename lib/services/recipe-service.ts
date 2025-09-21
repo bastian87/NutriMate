@@ -191,7 +191,7 @@ export const getRecipeById = async (id: string, userId?: string): Promise<Recipe
           .select(`tag_id, recipe_tags!inner(id, name)`)
           .eq("recipe_id", recipe.id),
         recipe.created_by
-          ? supabase.from("users").select("id, username, full_name").eq("id", recipe.created_by).single()
+          ? supabase.from("users").select("id, username, full_name").eq("id", recipe.created_by).maybeSingle()
           : Promise.resolve({ data: null }),
       ])
 

@@ -329,23 +329,31 @@ export default function OnboardingForm() {
           return
         }
 
-        // 1. Completar el registro del usuario
-        console.log("🔐 Completing user signup...")
-        const { data: authData, error: authError } = await authService.completeSignUp()
+        // 1. Completar el registro del usuario (solo para usuarios no-OAuth)
+        let authData: any = null
+        if (!tempUserData.isOAuth) {
+          console.log("🔐 Completing user signup...")
+          const { data: authDataResult, error: authError } = await authService.completeSignUp()
 
-        if (authError) {
-          console.error("❌ Error completing signup:", authError)
-          setErrors({ general: "Error completing signup. Please try again." })
-          return
+          if (authError) {
+            console.error("❌ Error completing signup:", authError)
+            setErrors({ general: "Error completing signup. Please try again." })
+            return
+          }
+
+          if (!authDataResult?.user) {
+            console.error("❌ No user returned from completeSignUp")
+            setErrors({ general: "Error creating user account. Please try again." })
+            return
+          }
+
+          authData = authDataResult
+          console.log("✅ User signup completed successfully")
+        } else {
+          // Para usuarios OAuth, usar los datos existentes
+          console.log("🔐 Using OAuth user data...")
+          authData = { user: { id: tempUserData.id } }
         }
-
-        if (!authData?.user) {
-          console.error("❌ No user returned from completeSignUp")
-          setErrors({ general: "Error creating user account. Please try again." })
-          return
-        }
-
-        console.log("✅ User signup completed successfully")
 
         // 3. Limpiar datos temporales
         localStorage.removeItem('temp_user_data')

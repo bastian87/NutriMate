@@ -79,7 +79,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
 
   // Manejar redirecciones después del login/signup
   useEffect(() => {
-    if (!loading && user && !isRedirecting) {
+    if (!loading && user && !isRedirecting && !isCheckingOnboarding) {
       const handleAuthRedirect = async () => {
         // Solo redirigir si estamos en una ruta de autenticación
         if (pathname === "/login" || pathname === "/signup" || pathname === "/auth/callback") {
@@ -97,25 +97,33 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
             if (profileError) {
               console.error("❌ Error checking existing profile:", profileError)
               router.push("/onboarding")
+              setTimeout(() => setIsRedirecting(false), 100)
             } else if (existingProfile) {
               // Usuario existente con perfil - ir directamente al dashboard
               console.log("🏠 User has profile, redirecting to dashboard")
               router.push("/dashboard")
+              // Resetear el estado de redirección después de un breve delay
+              setTimeout(() => {
+                setIsRedirecting(false)
+                console.log("🔄 Reset redirecting state")
+              }, 100)
             } else {
               // Usuario nuevo sin perfil - siempre ir al onboarding
               console.log("📝 New user without profile, redirecting to onboarding")
               router.push("/onboarding")
+              setTimeout(() => setIsRedirecting(false), 100)
             }
           } catch (error) {
             console.error("❌ Error in auth redirect:", error)
             router.push("/onboarding")
+            setTimeout(() => setIsRedirecting(false), 100)
           }
         }
       }
 
       handleAuthRedirect()
     }
-  }, [user, loading, pathname, router, isRedirecting])
+  }, [user, loading, pathname, router, isRedirecting, isCheckingOnboarding])
 
   // Redirigir a landing si no hay usuario y está en ruta protegida
   useEffect(() => {
@@ -137,8 +145,17 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
 
   // Determinar si debe mostrar el sidebar
   const shouldShowSidebar = useMemo(() => {
-    return user && !isPublicRoute && !isRedirecting && !isCheckingOnboarding && onboardingChecked
-  }, [user, isPublicRoute, isRedirecting, isCheckingOnboarding, onboardingChecked])
+    const result = user && !isPublicRoute && !isRedirecting && !isCheckingOnboarding
+    console.log("🔍 Sidebar check:", {
+      user: !!user,
+      isPublicRoute,
+      isRedirecting,
+      isCheckingOnboarding,
+      shouldShow: result,
+      pathname
+    })
+    return result
+  }, [user, isPublicRoute, isRedirecting, isCheckingOnboarding, pathname])
 
   // Si está cargando o verificando onboarding, mostrar solo el contenido sin sidebar
   if (loading || isCheckingOnboarding) {

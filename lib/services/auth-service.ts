@@ -303,7 +303,7 @@ class AuthService {
   }
 
   async getUserProfile(userId: string): Promise<UserProfile | null> {
-    const { data, error } = await supabase.from("users").select("*").eq("id", userId).single()
+    const { data, error } = await supabase.from("users").select("*").eq("id", userId).maybeSingle()
     if (error) {
       console.error("Error getting user profile:", error)
       return null
