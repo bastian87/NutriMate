@@ -314,26 +314,9 @@ export default function IngredientsPage() {
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Calorías por 100g:</span>
                       <span className="font-medium">{ingredient.kcalPer100g} kcal</span>
-                    </div>
-                    
-                    {ingredient.locale && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Idioma:</span>
-                        <span className="font-medium">{ingredient.locale}</span>
-                      </div>
-                    )}
+                    </div>                    
                   </div>
 
-                  <div className="flex gap-2 mt-4">
-                    <Button size="sm" variant="outline" className="flex-1">
-                      <Edit className="w-3 h-3 mr-1" />
-                      Editar
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex-1">
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      Eliminar
-                    </Button>
-                  </div>
                 </div>
               ))}
             </div>

@@ -242,7 +242,7 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
         const response = await fetch('/api/ingredients');
         if (response.ok) {
           const data = await response.json();
-          setIngredients(data);
+          setIngredients(data.ingredients || []);
         } else {
           console.error('Failed to load ingredients');
           // Fallback to mock data

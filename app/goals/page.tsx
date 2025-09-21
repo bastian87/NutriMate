@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/i18n/context";
-import { Target, Calendar, Zap } from "lucide-react";
+import { Target, Calendar, Zap, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface Goal {
   id: string;
@@ -29,6 +30,9 @@ export default function GoalsPage() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [goalToDelete, setGoalToDelete] = useState<string | null>(null);
 
   // Form state
   const [targetKcalDay, setTargetKcalDay] = useState(2000);
@@ -110,6 +114,59 @@ export default function GoalsPage() {
       });
     } finally {
       setCreating(false);
+    }
+  };
+
+  // Open delete confirmation dialog
+  const openDeleteDialog = (goalId: string) => {
+    setGoalToDelete(goalId);
+    setDeleteDialogOpen(true);
+  };
+
+  // Delete goal
+  const deleteGoal = async () => {
+    if (!user?.id || !goalToDelete) {
+      toast({
+        title: t("common.error"),
+        description: t("goals.mustBeLoggedIn"),
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setDeleting(goalToDelete);
+    try {
+      const response = await fetch(`/api/goals?id=${goalToDelete}`, {
+        method: 'DELETE',
+        headers: {
+          'x-user-id': user.id
+        }
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toast({
+          title: t("goals.goalDeleted"),
+          description: t("goals.goalDeletedSuccessfully")
+        });
+        fetchGoals(); // Refresh goals list
+        setDeleteDialogOpen(false);
+        setGoalToDelete(null);
+      } else {
+        toast({
+          title: t("common.error"),
+          description: data.error || t("goals.failedToDelete"),
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: t("common.error"),
+        description: t("goals.connectionError"),
+        variant: "destructive"
+      });
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -251,7 +308,7 @@ export default function GoalsPage() {
               {goals.map((goal) => (
                 <div key={goal.id} className="border rounded-lg p-4">
                   <div className="flex items-center justify-between">
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-semibold text-lg">
                         {goal.target_kcal_day} kcal/día
                       </h3>
@@ -263,11 +320,24 @@ export default function GoalsPage() {
                         {goal.end_date ? new Date(goal.end_date).toLocaleDateString('es-ES') : t("goals.noEndDate")}
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1 text-sm text-gray-600">
                         <Zap className="w-4 h-4" />
                         <span>{t("goals.activeGoal")}</span>
                       </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openDeleteDialog(goal.id)}
+                        disabled={deleting === goal.id}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        {deleting === goal.id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -276,6 +346,19 @@ export default function GoalsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title={t("goals.deleteGoalTitle")}
+        description={t("goals.confirmDelete")}
+        confirmText={t("goals.deleteConfirm")}
+        cancelText={t("goals.cancel")}
+        onConfirm={deleteGoal}
+        loading={deleting === goalToDelete}
+        variant="destructive"
+      />
     </div>
   );
 }

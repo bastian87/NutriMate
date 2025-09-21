@@ -91,37 +91,7 @@ export default function CalendarPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* Quick Actions */}
-      {activeGoal && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("calendar.quickActions")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="drawerDate" className="text-sm font-medium">
-                  {t("calendar.openSpecificDay")}
-                </Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="drawerDate"
-                    type="date"
-                    value={drawerDate}
-                    onChange={(e) => setDrawerDate(e.target.value)}
-                  />
-                  <DayDrawer 
-                    date={drawerDate} 
-                    goalId={activeGoal?.id || ""} 
-                    onSave={() => window.location.reload()}
-                  />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      
 
       {/* Calendar View */}
       {activeGoal && (

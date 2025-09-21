@@ -208,7 +208,14 @@ export const translations = {
       mustSignIn: "You need to sign in to manage your nutritional goals",
       signIn: "Sign In",
       createNewGoal: "Create New Goal",
-      manageGoals: "Manage your calorie and macronutrient goals"
+      manageGoals: "Manage your calorie and macronutrient goals",
+      goalDeleted: "Goal Deleted",
+      goalDeletedSuccessfully: "Goal has been deleted successfully",
+      failedToDelete: "Failed to delete goal",
+      confirmDelete: "Are you sure you want to delete this goal? This action cannot be undone.",
+      deleteGoalTitle: "Delete Goal",
+      deleteConfirm: "Delete",
+      cancel: "Cancel"
     },
     calendar: {
       title: "Nutrition Tracking",
@@ -1417,7 +1424,14 @@ export const translations = {
       mustSignIn: "Necesitas iniciar sesión para gestionar tus objetivos nutricionales",
       signIn: "Iniciar Sesión",
       createNewGoal: "Crear Nuevo Objetivo",
-      manageGoals: "Gestiona tus objetivos de calorías y macronutrientes"
+      manageGoals: "Gestiona tus objetivos de calorías y macronutrientes",
+      goalDeleted: "Objetivo Eliminado",
+      goalDeletedSuccessfully: "El objetivo ha sido eliminado correctamente",
+      failedToDelete: "No se pudo eliminar el objetivo",
+      confirmDelete: "¿Estás seguro de que quieres eliminar este objetivo? Esta acción no se puede deshacer.",
+      deleteGoalTitle: "Eliminar Objetivo",
+      deleteConfirm: "Eliminar",
+      cancel: "Cancelar"
     },
     calendar: {
       title: "Seguimiento Nutricional",
@@ -2486,7 +2500,14 @@ export const translations = {
       mustSignIn: "Vous devez vous connecter pour gérer vos objectifs nutritionnels",
       signIn: "Se Connecter",
       createNewGoal: "Créer un Nouvel Objectif",
-      manageGoals: "Gérez vos objectifs de calories et de macronutriments"
+      manageGoals: "Gérez vos objectifs de calories et de macronutriments",
+      goalDeleted: "Objectif Supprimé",
+      goalDeletedSuccessfully: "L'objectif a été supprimé avec succès",
+      failedToDelete: "Échec de la suppression de l'objectif",
+      confirmDelete: "Êtes-vous sûr de vouloir supprimer cet objectif ? Cette action ne peut pas être annulée.",
+      deleteGoalTitle: "Supprimer l'Objectif",
+      deleteConfirm: "Supprimer",
+      cancel: "Annuler"
     },
     calendar: {
       title: "Suivi Nutritionnel",
