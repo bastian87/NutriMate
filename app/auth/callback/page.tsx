@@ -37,19 +37,36 @@ export default function AuthCallbackPage() {
         // Verificar si el usuario tiene preferencias (indicador de perfil completo)
         let hasPreferences = false;
         if (userProfile) {
-          const { data: preferences } = await supabase
+          const { data: preferences, error: prefsError } = await supabase
             .from("user_preferences")
             .select("id")
             .eq("user_id", session.user.id)
             .maybeSingle();
+          
+          if (prefsError) {
+            console.log("⚠️ Error checking preferences:", prefsError);
+          }
           hasPreferences = !!preferences;
         }
+
+        console.log("🔍 Profile check results:", { 
+          userProfile: !!userProfile, 
+          hasUsername: !!userProfile?.username, 
+          hasPreferences 
+        });
 
         if (userProfile && userProfile.username && hasPreferences) {
           // Usuario ya tiene perfil completo, ir al dashboard
           console.log("✅ User has complete profile, redirecting to dashboard");
           router.push("/dashboard");
+        } else if (userProfile && userProfile.username && !hasPreferences) {
+          // Usuario existe pero no tiene preferencias, ir a onboarding
+          console.log("🔄 User exists but needs preferences, redirecting to onboarding");
+          router.push("/onboarding");
         } else {
+          // Usuario no existe, crear perfil básico y ir a onboarding
+          console.log("🔄 Creating basic OAuth user profile...");
+          
           // Generar username único para usuarios de OAuth
           const baseUsername = session.user.user_metadata?.preferred_username ?? 
                               session.user.email?.split('@')[0] ?? 
@@ -70,7 +87,7 @@ export default function AuthCallbackPage() {
             counter++;
           }
 
-          // Crear perfil completo para usuarios de OAuth
+          // Crear solo el perfil básico (sin preferencias)
           const { error: insertError } = await supabase.from("users").insert([
             {
               id: session.user.id,
@@ -86,33 +103,8 @@ export default function AuthCallbackPage() {
             return;
           }
 
-          // Crear preferencias por defecto para usuarios de OAuth
-          const { error: preferencesError } = await supabase.from("user_preferences").insert([
-            {
-              user_id: session.user.id,
-              age: 30,
-              gender: 'male',
-              height: 175,
-              weight: 70,
-              activity_level: 'moderate',
-              health_goal: 'maintenance',
-              calorie_target: 2000,
-              dietary_preferences: [],
-              excluded_ingredients: [],
-              include_snacks: false,
-              allergies: [],
-              intolerances: [],
-              max_prep_time: 60,
-              macro_priority: 'balanced',
-            }
-          ]);
-
-          if (preferencesError) {
-            console.error('Error al crear preferencias:', preferencesError);
-          }
-
-          console.log("✅ OAuth user profile created, redirecting to dashboard");
-          router.push("/dashboard");
+          console.log("✅ Basic OAuth user profile created, redirecting to onboarding");
+          router.push("/onboarding");
         }
       } catch (error) {
         console.error("Error in auth callback:", error);

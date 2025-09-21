@@ -70,9 +70,18 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
                 .maybeSingle()
               
               if (profileError || !userProfile) {
-                console.log("❌ User not found in database, signing out")
-                await supabase.auth.signOut()
-                setUser(null)
+                // Verificar si estamos en una ruta de callback de OAuth o onboarding
+                const isOAuthCallback = window.location.pathname === '/auth/callback'
+                const isOnboarding = window.location.pathname === '/onboarding'
+                
+                if (isOAuthCallback || isOnboarding) {
+                  console.log("🔄 OAuth callback or onboarding detected, allowing user session...")
+                  setUser(session.user)
+                } else {
+                  console.log("❌ User not found in database, signing out")
+                  await supabase.auth.signOut()
+                  setUser(null)
+                }
               } else {
                 console.log("✅ User validated in database")
                 setUser(session.user)
