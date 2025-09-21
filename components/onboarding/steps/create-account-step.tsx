@@ -64,10 +64,10 @@ export function CreateAccountStep({ data, onChange, onCreateAccount, isLoading }
     // Actualizar el estado del onboarding con todos los datos
     onChange(updatedData)
     
-    // Esperar un momento para que se actualice el estado
-    setTimeout(() => {
+    // Usar requestAnimationFrame para asegurar que el estado se actualice
+    requestAnimationFrame(() => {
       onCreateAccount()
-    }, 100)
+    })
   }
 
   const handleGoogleSignUp = async () => {

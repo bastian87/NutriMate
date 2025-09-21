@@ -65,9 +65,16 @@ export function OnboardingWizard() {
   }, [])
 
 
-  // Guardar datos cuando cambien
+  // Guardar datos cuando cambien (evitar guardar en el primer render)
   useEffect(() => {
-    if (Object.keys(onboardingData).length > 0) {
+    // Solo guardar si no es el estado inicial vacío
+    const hasValidData = Object.keys(onboardingData).some(key => {
+      const value = onboardingData[key as keyof typeof onboardingData]
+      return value !== undefined && value !== '' && value !== null && 
+             (Array.isArray(value) ? value.length > 0 : true)
+    })
+    
+    if (hasValidData) {
       onboardingService.saveOnboardingData(onboardingData)
     }
   }, [onboardingData])

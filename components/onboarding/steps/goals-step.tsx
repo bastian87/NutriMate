@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
@@ -17,6 +17,7 @@ interface GoalsStepProps {
 export function GoalsStep({ data, onChange }: GoalsStepProps) {
   const [calorieError, setCalorieError] = useState('')
   const [calculatedCalories, setCalculatedCalories] = useState<number | null>(null)
+  const hasInitialized = useRef(false)
 
   const activityLevels = [
     {
@@ -152,7 +153,9 @@ export function GoalsStep({ data, onChange }: GoalsStepProps) {
     const calories = calculateCalories()
     setCalculatedCalories(calories)
     
-    if (calories && !data.calorie_target) {
+    // Solo actualizar una vez al inicializar, no en cada re-render
+    if (calories && !hasInitialized.current && !data.calorie_target) {
+      hasInitialized.current = true
       onChange({ calorie_target: calories })
     }
   }, [data.age, data.gender, data.height, data.weight, data.activity_level, data.health_goal])
