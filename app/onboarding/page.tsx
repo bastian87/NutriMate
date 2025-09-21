@@ -13,18 +13,15 @@ export default function OnboardingPage() {
   const { t } = useLanguage()
 
   useEffect(() => {
-    // Verificar si hay datos temporales de usuario
-    const tempUserData = localStorage.getItem('temp_user_data')
-    
     if (!loading) {
-      if (!tempUserData) {
-        // Si no hay datos temporales, redirigir al signup
-        console.log("🚫 No temp user data found, redirecting to signup")
-        router.push("/signup")
-      } else if (user) {
+      if (user) {
         // Si hay un usuario autenticado, redirigir al dashboard
         console.log("👤 User already authenticated, redirecting to dashboard")
         router.push("/dashboard")
+      } else {
+        // Si no hay usuario autenticado, redirigir al signup
+        console.log("🚫 No user authenticated, redirecting to signup")
+        router.push("/signup")
       }
     }
   }, [user, loading, router])
@@ -38,9 +35,8 @@ export default function OnboardingPage() {
     )
   }
 
-  // Verificar si hay datos temporales
-  const tempUserData = localStorage.getItem('temp_user_data')
-  if (!tempUserData) {
+  // Si no hay usuario, no mostrar el formulario
+  if (!user) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-white p-4">
         <p className="text-lg text-gray-700">{t("onboarding.redirectingToSignup")}</p>

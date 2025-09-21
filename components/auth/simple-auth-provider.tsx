@@ -47,19 +47,7 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
         if (mounted) {
           console.log("📊 Initial session:", session?.user?.id || "No user")
           
-          // Verificar si el usuario está en proceso de onboarding
-          const tempUserData = localStorage.getItem('temp_user_data')
-          const isOnboardingInProgress = tempUserData !== null
-          
-          if (isOnboardingInProgress) {
-            console.log("🚫 User is in onboarding process, not setting user")
-            setUser(null)
-            // Cerrar la sesión si existe
-            if (session) {
-              console.log("🔐 Signing out user during initial auth check")
-              await supabase.auth.signOut()
-            }
-          } else if (session?.user) {
+          if (session?.user) {
             // Validar que el usuario realmente existe en la base de datos
             try {
               console.log("🔍 Validating user exists in database...")
@@ -122,26 +110,11 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
 
         console.log("🔄 Auth state change:", event, session?.user?.id || "No user")
 
-        // Verificar si el usuario está en proceso de onboarding
-        const tempUserData = localStorage.getItem('temp_user_data')
-        const isOnboardingInProgress = tempUserData !== null
-        const isCompletingSignup = event === 'SIGNED_IN' && tempUserData !== null
-        
-        if (isOnboardingInProgress && !isCompletingSignup) {
-          console.log("🚫 User is in onboarding process, not setting user")
-          setUser(null)
-          // Cerrar la sesión para evitar acceso no autorizado
-          if (session) {
-            console.log("🔐 Signing out user during onboarding")
-            await supabase.auth.signOut()
-          }
-        } else {
-          // Solo actualizar si el usuario realmente cambió
-          const newUser = session?.user ?? null
-          if (user?.id !== newUser?.id) {
-            console.log("👤 Setting user:", newUser?.id || "No user")
-            setUser(newUser)
-          }
+        // Solo actualizar si el usuario realmente cambió
+        const newUser = session?.user ?? null
+        if (user?.id !== newUser?.id) {
+          console.log("👤 Setting user:", newUser?.id || "No user")
+          setUser(newUser)
         }
       }
     )

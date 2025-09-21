@@ -48,11 +48,17 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
 
     try {
       // Verificar si el usuario tiene perfil en la base de datos
-      const { data: userProfile } = await supabase
+      const { data: userProfile, error: profileError } = await supabase
         .from("users")
         .select("id")
         .eq("id", user.id)
-        .single()
+        .maybeSingle()
+      
+      if (profileError) {
+        console.error("❌ Error checking user profile:", profileError)
+        router.push("/onboarding")
+        return
+      }
       
       if (!userProfile) {
         console.log("🚫 User has no profile, redirecting to onboarding")
@@ -60,20 +66,9 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
         return
       }
 
-      // Verificar si tiene preferencias completas
-      const { data: preferences } = await supabase
-        .from("user_preferences")
-        .select("id")
-        .eq("user_id", user.id)
-        .single()
-      
-      if (!preferences) {
-        console.log("🚫 User has no preferences, redirecting to onboarding")
-        router.push("/onboarding")
-        return
-      }
-
-      console.log("✅ User is fully configured, allowing access")
+      // Para usuarios existentes con perfil, NO verificar preferencias
+      // Solo permitir acceso directo al dashboard
+      console.log("✅ User has profile, allowing access to dashboard")
     } catch (error) {
       console.error("❌ Error checking onboarding status:", error)
       router.push("/onboarding")
@@ -93,27 +88,19 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
           
           try {
             // Verificar si el usuario ya tiene perfil (solo para usuarios existentes)
-            const { data: existingProfile } = await supabase
+            const { data: existingProfile, error: profileError } = await supabase
               .from("users")
               .select("id")
               .eq("id", user.id)
-              .single()
+              .maybeSingle()
             
-            if (existingProfile) {
-              // Usuario existente con perfil - verificar si tiene preferencias
-              const { data: preferences } = await supabase
-                .from("user_preferences")
-                .select("id")
-                .eq("user_id", user.id)
-                .single()
-              
-              if (preferences) {
-                console.log("🏠 User has complete profile and preferences, redirecting to dashboard")
-                router.push("/dashboard")
-              } else {
-                console.log("📝 User has profile but no preferences, redirecting to onboarding")
-                router.push("/onboarding")
-              }
+            if (profileError) {
+              console.error("❌ Error checking existing profile:", profileError)
+              router.push("/onboarding")
+            } else if (existingProfile) {
+              // Usuario existente con perfil - ir directamente al dashboard
+              console.log("🏠 User has profile, redirecting to dashboard")
+              router.push("/dashboard")
             } else {
               // Usuario nuevo sin perfil - siempre ir al onboarding
               console.log("📝 New user without profile, redirecting to onboarding")
