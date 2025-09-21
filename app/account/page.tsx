@@ -54,19 +54,26 @@ export default function AccountPage() {
 
 
   useEffect(() => {
-    if (preferences) setFormPrefs(preferences);
+    console.log("🔍 AccountPage: Preferences changed:", preferences);
+    if (preferences) {
+      console.log("🔍 AccountPage: Setting formPrefs with:", preferences);
+      setFormPrefs(preferences);
+    }
   }, [preferences]);
 
   // Asegurarse de que todos los campos estén presentes al inicializar o actualizar formPrefs
   useEffect(() => {
+    console.log("🔍 AccountPage: Normalizing preferences:", preferences);
     if (preferences) {
-      setFormPrefs({
+      const normalizedPrefs = {
         ...preferences,
         dietary_preferences: preferences.dietary_preferences ?? [],
         excluded_ingredients: preferences.excluded_ingredients ?? [],
         allergies: preferences.allergies ?? [],
         intolerances: preferences.intolerances ?? [],
-      });
+      };
+      console.log("🔍 AccountPage: Normalized prefs:", normalizedPrefs);
+      setFormPrefs(normalizedPrefs);
     }
   }, [preferences]);
 
@@ -155,6 +162,9 @@ export default function AccountPage() {
       </div>
     )
   }
+
+  // Log final del estado de formPrefs
+  console.log("🔍 AccountPage: Final formPrefs state:", formPrefs);
 
   // Si no hay preferencias, crear un objeto vacío con valores por defecto
   if (!formPrefs) {

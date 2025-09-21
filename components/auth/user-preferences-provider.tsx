@@ -44,28 +44,24 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
     try {
       const data = await userService.getUserPreferences(user.id);
       console.log("🔍 UserPreferences: Fetched data:", data);
-      setPreferences(
-        data
-          ? {
-              ...data,
-              dietary_preferences: data.dietary_preferences ?? [],
-              excluded_ingredients: data.excluded_ingredients ?? [],
-              allergies: data.allergies ?? [],
-              intolerances: data.intolerances ?? [],
-            }
-          : null
-      );
+      
+      const normalizedData = data
+        ? {
+            ...data,
+            dietary_preferences: data.dietary_preferences ?? [],
+            excluded_ingredients: data.excluded_ingredients ?? [],
+            allergies: data.allergies ?? [],
+            intolerances: data.intolerances ?? [],
+          }
+        : null;
+      
+      console.log("🔍 UserPreferences: Normalized data:", normalizedData);
+      setPreferences(normalizedData);
       
       // Guardar en localStorage
-      if (data) {
-        localStorage.setItem("userPreferences", JSON.stringify({
-          ...data,
-          dietary_preferences: data.dietary_preferences ?? [],
-          excluded_ingredients: data.excluded_ingredients ?? [],
-          allergies: data.allergies ?? [],
-          intolerances: data.intolerances ?? [],
-        }));
-        console.log("🔍 UserPreferences: Saved to localStorage");
+      if (normalizedData) {
+        localStorage.setItem("userPreferences", JSON.stringify(normalizedData));
+        console.log("🔍 UserPreferences: Saved to localStorage:", normalizedData);
       } else {
         localStorage.removeItem("userPreferences");
         console.log("🔍 UserPreferences: No data, cleared localStorage");
