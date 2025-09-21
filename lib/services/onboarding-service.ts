@@ -84,6 +84,7 @@ class OnboardingService {
       data.full_name &&
       data.username &&
       data.email &&
+      data.password &&
       data.age &&
       data.gender &&
       data.height &&
@@ -104,36 +105,17 @@ class OnboardingService {
 
       console.log("🚀 Starting account creation and finalization...")
 
-      // 1. Crear cuenta de Supabase Auth
-      let authResult
-      if (data.password) {
-        // Registro con email/password
-        authResult = await supabase.auth.signUp({
-          email: data.email!,
-          password: data.password,
-          options: {
-            data: {
-              full_name: data.full_name,
-              username: data.username
-            }
+      // 1. Crear cuenta de Supabase Auth con email/password
+      const authResult = await supabase.auth.signUp({
+        email: data.email!,
+        password: data.password!,
+        options: {
+          data: {
+            full_name: data.full_name,
+            username: data.username
           }
-        })
-      } else {
-        // OAuth (Google) - iniciar el flujo de OAuth
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback?onboarding=true`
-          }
-        })
-        
-        if (error) {
-          return { success: false, error: error.message }
         }
-        
-        // El usuario será redirigido, no continuamos aquí
-        return { success: true, redirect: true }
-      }
+      })
 
       if (authResult.error) {
         console.error("❌ Auth error:", authResult.error)

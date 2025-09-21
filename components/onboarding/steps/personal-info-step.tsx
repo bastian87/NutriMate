@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Check, User, Mail, AtSign, AlertCircle } from "lucide-react"
+import { Check, User, Mail, AtSign, AlertCircle, Lock } from "lucide-react"
 import type { OnboardingData } from "@/lib/services/onboarding-service"
 
 interface PersonalInfoStepProps {
@@ -17,7 +17,11 @@ interface PersonalInfoStepProps {
 export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
   const [usernameError, setUsernameError] = useState('')
   const [emailError, setEmailError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [confirmPasswordError, setConfirmPasswordError] = useState('')
   const [isCheckingUsername, setIsCheckingUsername] = useState(false)
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -27,6 +31,10 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
   const validateUsername = (username: string) => {
     const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
     return usernameRegex.test(username)
+  }
+
+  const validatePassword = (password: string) => {
+    return password.length >= 6
   }
 
   const handleFullNameChange = (value: string) => {
@@ -52,6 +60,27 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
     
     if (value && !validateEmail(value)) {
       setEmailError('Por favor ingresa un email válido')
+    }
+  }
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value)
+    setPasswordError('')
+    
+    // Siempre actualizar el estado, incluso si hay errores de validación
+    onChange({ password: value })
+    
+    if (value && !validatePassword(value)) {
+      setPasswordError('La contraseña debe tener al menos 6 caracteres')
+    }
+  }
+
+  const handleConfirmPasswordChange = (value: string) => {
+    setConfirmPassword(value)
+    setConfirmPasswordError('')
+    
+    if (password && value && password !== value) {
+      setConfirmPasswordError('Las contraseñas no coinciden')
     }
   }
 
@@ -85,7 +114,13 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
       !usernameError &&
       data.email && 
       validateEmail(data.email) &&
-      !emailError
+      !emailError &&
+      data.password &&
+      validatePassword(data.password) &&
+      !passwordError &&
+      confirmPassword &&
+      password === confirmPassword &&
+      !confirmPasswordError
     )
   }
 
@@ -195,6 +230,70 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
             )}
             <p className="text-xs text-gray-500">
               Usaremos este email para crear tu cuenta y enviarte actualizaciones.
+            </p>
+          </div>
+
+          {/* Contraseña */}
+          <div className="space-y-2">
+            <Label htmlFor="password">Contraseña *</Label>
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <Lock className="w-4 h-4" />
+              </div>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => handlePasswordChange(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                className="h-12 pl-10"
+              />
+              {password && !passwordError && validatePassword(password) && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <Check className="w-4 h-4 text-green-600" />
+                </div>
+              )}
+            </div>
+            {passwordError && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="w-4 h-4" />
+                {passwordError}
+              </p>
+            )}
+            <p className="text-xs text-gray-500">
+              Usa una contraseña segura con al menos 6 caracteres.
+            </p>
+          </div>
+
+          {/* Confirmar contraseña */}
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirmar contraseña *</Label>
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <Lock className="w-4 h-4" />
+              </div>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+                placeholder="Repite tu contraseña"
+                className="h-12 pl-10"
+              />
+              {confirmPassword && !confirmPasswordError && password === confirmPassword && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <Check className="w-4 h-4 text-green-600" />
+                </div>
+              )}
+            </div>
+            {confirmPasswordError && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="w-4 h-4" />
+                {confirmPasswordError}
+              </p>
+            )}
+            <p className="text-xs text-gray-500">
+              Asegúrate de que ambas contraseñas coincidan.
             </p>
           </div>
         </CardContent>

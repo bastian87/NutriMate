@@ -1,13 +1,10 @@
 "use client"
 
-import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { Check, Mail, Lock, User, Target, Activity, Heart } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { Check, Target, Activity, Heart, User, Mail } from "lucide-react"
 import { supabase } from "@/lib/supabase/client"
 import type { OnboardingData } from "@/lib/services/onboarding-service"
 
@@ -16,99 +13,11 @@ interface CreateAccountStepProps {
   onChange: (data: Partial<OnboardingData>) => void
   onCreateAccount: () => void
   isLoading: boolean
+  authError?: string
 }
 
-export function CreateAccountStep({ data, onChange, onCreateAccount, isLoading }: CreateAccountStepProps) {
-  const [authMethod, setAuthMethod] = useState<'email' | 'google'>('email')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [passwordError, setPasswordError] = useState('')
+export function CreateAccountStep({ data, onCreateAccount, isLoading, authError }: CreateAccountStepProps) {
 
-  const handlePasswordChange = (value: string) => {
-    setPassword(value)
-    setPasswordError('')
-    
-    if (value && confirmPassword && value !== confirmPassword) {
-      setPasswordError('Las contraseñas no coinciden')
-    } else if (value && value.length < 6) {
-      setPasswordError('La contraseña debe tener al menos 6 caracteres')
-    }
-  }
-
-  const handleConfirmPasswordChange = (value: string) => {
-    setConfirmPassword(value)
-    setPasswordError('')
-    
-    if (password && value && password !== value) {
-      setPasswordError('Las contraseñas no coinciden')
-    }
-  }
-
-  const handleEmailPasswordSignUp = async () => {
-    if (password !== confirmPassword) {
-      setPasswordError('Las contraseñas no coinciden')
-      return
-    }
-    
-    if (password.length < 6) {
-      setPasswordError('La contraseña debe tener al menos 6 caracteres')
-      return
-    }
-
-    // Actualizar los datos con la contraseña y todos los datos actuales
-    const updatedData = {
-      ...data,
-      password: password
-    }
-    
-    // Actualizar el estado del onboarding con todos los datos
-    onChange(updatedData)
-    
-    // Usar requestAnimationFrame para asegurar que el estado se actualice
-    requestAnimationFrame(() => {
-      onCreateAccount()
-    })
-  }
-
-  const handleGoogleSignUp = async () => {
-    // Obtener los datos del onboarding actuales
-    const onboardingData = {
-      full_name: data.full_name,
-      username: data.username,
-      email: data.email,
-      age: data.age,
-      gender: data.gender,
-      height: data.height,
-      weight: data.weight,
-      activity_level: data.activity_level,
-      health_goal: data.health_goal,
-      calorie_target: data.calorie_target,
-      dietary_preferences: data.dietary_preferences,
-      excluded_ingredients: data.excluded_ingredients,
-      include_snacks: data.include_snacks,
-      max_prep_time: data.max_prep_time,
-      macro_priority: data.macro_priority,
-      allergies: data.allergies,
-      intolerances: data.intolerances
-    }
-
-    // Codificar los datos para pasarlos en la URL
-    const encodedData = encodeURIComponent(JSON.stringify(onboardingData))
-    const redirectUrl = `${window.location.origin}/auth/callback?onboarding=true&data=${encodedData}`
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: redirectUrl
-      }
-    })
-
-    if (error) {
-      console.error('Error signing in with Google:', error)
-    }
-  }
-
-  const isEmailPasswordValid = password && confirmPassword && password === confirmPassword && password.length >= 6
 
   return (
     <div className="space-y-6">
@@ -177,116 +86,52 @@ export function CreateAccountStep({ data, onChange, onCreateAccount, isLoading }
         </CardContent>
       </Card>
 
-      {/* Método de autenticación */}
+      {/* Crear cuenta */}
       <Card>
         <CardHeader>
           <CardTitle>Crear tu cuenta</CardTitle>
           <CardDescription>
-            Elige cómo quieres acceder a tu cuenta
+            Tu cuenta será creada con los datos que proporcionaste. Podrás acceder tanto con email/contraseña como con Google.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Opciones de autenticación */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Button
-              variant={authMethod === 'email' ? 'default' : 'outline'}
-              onClick={() => setAuthMethod('email')}
-              className="h-auto p-4 flex flex-col items-center gap-2"
-            >
-              <Mail className="w-6 h-6" />
-              <span className="font-medium">Email y contraseña</span>
-              <span className="text-sm text-gray-500">Registro tradicional</span>
-            </Button>
+          {authError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-sm text-red-600">{authError}</p>
+            </div>
+          )}
 
-            <Button
-              variant={authMethod === 'google' ? 'default' : 'outline'}
-              onClick={() => setAuthMethod('google')}
-              className="h-auto p-4 flex flex-col items-center gap-2"
-            >
-              <User className="w-6 h-6" />
-              <span className="font-medium">Google</span>
-              <span className="text-sm text-gray-500">Inicio rápido</span>
-            </Button>
+          {/* Botón único para crear cuenta */}
+          <Button
+            onClick={onCreateAccount}
+            disabled={isLoading}
+            className="w-full bg-orange-600 hover:bg-orange-700 h-12"
+          >
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                Creando cuenta...
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4 mr-2" />
+                Crear mi cuenta
+              </>
+            )}
+          </Button>
+
+          {/* Información sobre métodos de acceso */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-medium text-blue-900 mb-2">🔐 Métodos de acceso</h4>
+            <p className="text-sm text-blue-800">
+              Después de crear tu cuenta, podrás acceder usando:
+            </p>
+            <ul className="text-sm text-blue-800 mt-2 space-y-1">
+              <li>• <strong>Email y contraseña:</strong> {data.email}</li>
+              <li>• <strong>Google:</strong> Con la misma cuenta de Google</li>
+              <li>• <strong>Usuario:</strong> @{data.username}</li>
+            </ul>
           </div>
-
-          {/* Formulario de email/contraseña */}
-          {authMethod === 'email' && (
-            <div className="space-y-4">
-              <Separator />
-              
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="password">Contraseña</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => handlePasswordChange(e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                    placeholder="Repite tu contraseña"
-                    className="mt-1"
-                  />
-                  {passwordError && (
-                    <p className="text-sm text-red-600 mt-1">{passwordError}</p>
-                  )}
-                </div>
-              </div>
-
-              <Button
-                onClick={handleEmailPasswordSignUp}
-                disabled={!isEmailPasswordValid || isLoading}
-                className="w-full bg-orange-600 hover:bg-orange-700"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Creando cuenta...
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4 mr-2" />
-                    Crear cuenta con email
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
-
-          {/* Botón de Google */}
-          {authMethod === 'google' && (
-            <div className="space-y-4">
-              <Separator />
-              
-              <Button
-                onClick={handleGoogleSignUp}
-                disabled={isLoading}
-                className="w-full bg-orange-600 hover:bg-orange-700"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Creando cuenta...
-                  </>
-                ) : (
-                  <>
-                    <User className="w-4 h-4 mr-2" />
-                    Crear cuenta con Google
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
         </CardContent>
       </Card>
 

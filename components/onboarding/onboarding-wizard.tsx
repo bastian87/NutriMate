@@ -166,7 +166,7 @@ export function OnboardingWizard() {
       case 'welcome':
         return true
       case 'personal-info':
-        return !!(onboardingData.full_name && onboardingData.username && onboardingData.email)
+        return !!(onboardingData.full_name && onboardingData.username && onboardingData.email && onboardingData.password)
       case 'health-metrics':
         return !!(onboardingData.age && onboardingData.gender && onboardingData.height && onboardingData.weight)
       case 'goals':
