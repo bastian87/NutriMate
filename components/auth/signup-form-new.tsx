@@ -128,6 +128,18 @@ export default function SignupFormNew() {
     }
 
     try {
+      // Guardar datos en localStorage antes de crear la cuenta
+      const signupData = {
+        username,
+        email,
+        password,
+        full_name: username, // Usar username como full_name inicial
+        fromSignup: true
+      }
+      
+      console.log("💾 Saving signup data to localStorage:", signupData)
+      localStorage.setItem('nutrimate_signup_data', JSON.stringify(signupData))
+
       const result = await signUp(email, password, username, username)
       
       if (result.error) {

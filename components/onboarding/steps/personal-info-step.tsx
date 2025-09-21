@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,6 +22,36 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
   const [isCheckingUsername, setIsCheckingUsername] = useState(false)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+
+  // Cargar datos del signup si existen
+  useEffect(() => {
+    const loadSignupData = () => {
+      try {
+        const signupData = localStorage.getItem('nutrimate_signup_data')
+        if (signupData) {
+          const parsed = JSON.parse(signupData)
+          console.log("📥 Loading signup data:", parsed)
+          
+          if (parsed.username && !data.username) {
+            onChange({ username: parsed.username })
+          }
+          if (parsed.email && !data.email) {
+            onChange({ email: parsed.email })
+          }
+          if (parsed.password && !data.password) {
+            onChange({ password: parsed.password })
+          }
+          if (parsed.full_name && !data.full_name) {
+            onChange({ full_name: parsed.full_name })
+          }
+        }
+      } catch (error) {
+        console.error("Error loading signup data:", error)
+      }
+    }
+
+    loadSignupData()
+  }, []) // Solo ejecutar una vez al montar el componente
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

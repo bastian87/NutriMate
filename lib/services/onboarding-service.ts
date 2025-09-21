@@ -66,6 +66,12 @@ class OnboardingService {
     console.log("🗑️ Onboarding data cleared")
   }
 
+  // Limpiar datos de signup
+  clearSignupData(): void {
+    localStorage.removeItem('nutrimate_signup_data')
+    console.log("🗑️ Signup data cleared")
+  }
+
   // Guardar paso actual
   saveCurrentStep(step: string): void {
     localStorage.setItem(this.STEPS_KEY, step)
@@ -219,8 +225,9 @@ class OnboardingService {
         return { success: false, error: errorData.message || "Failed to finalize profile" }
       }
 
-      // 3. Limpiar datos de onboarding
+      // 3. Limpiar datos de onboarding y signup
       this.clearOnboardingData()
+      this.clearSignupData()
 
       console.log("✅ Account created and profile finalized successfully")
       return { success: true }
