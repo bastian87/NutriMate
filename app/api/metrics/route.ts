@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,10 +16,15 @@ export async function GET(request: NextRequest) {
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
 
-    // First, check if the analytics_events table exists
-    const { data: tableExists, error: tableCheckError } = await supabase.from("analytics_events").select("id").limit(1)
+    // First, check if the analytics_events table exists using direct API call
+    const tableCheckResponse = await fetch(`${supabaseUrl}/rest/v1/analytics_events?select=id&limit=1`, {
+      headers: {
+        'apikey': supabaseServiceKey,
+        'Authorization': `Bearer ${supabaseServiceKey}`
+      }
+    })
 
-    if (tableCheckError) {
+    if (!tableCheckResponse.ok) {
       console.log("Analytics table doesn't exist yet, returning mock data")
 
       // Return mock data if table doesn't exist
@@ -44,42 +49,52 @@ export async function GET(request: NextRequest) {
     }
 
     if (metric === "overview") {
-      // Get overview metrics
-      const [eventsResult, usersResult, recipesResult] = await Promise.all([
+      // Get overview metrics using direct API calls
+      const [eventsResponse, usersResponse, recentActivityResponse] = await Promise.all([
         // Get event counts
-        supabase
-          .from("analytics_events")
-          .select("event_name")
-          .gte("created_at", startDate.toISOString()),
+        fetch(`${supabaseUrl}/rest/v1/analytics_events?select=event_name&created_at=gte.${startDate.toISOString()}`, {
+          headers: {
+            'apikey': supabaseServiceKey,
+            'Authorization': `Bearer ${supabaseServiceKey}`
+          }
+        }),
 
         // Get user count (from users table if it exists)
-        supabase
-          .from("users")
-          .select("id", { count: "exact" })
-          .limit(0),
+        fetch(`${supabaseUrl}/rest/v1/users?select=id&limit=0`, {
+          headers: {
+            'apikey': supabaseServiceKey,
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+            'Prefer': 'count=exact'
+          }
+        }),
 
         // Get recent activity
-        supabase
-          .from("analytics_events")
-          .select("event_name, created_at, properties")
-          .order("created_at", { ascending: false })
-          .limit(10),
+        fetch(`${supabaseUrl}/rest/v1/analytics_events?select=event_name,created_at,properties&order=created_at.desc&limit=10`, {
+          headers: {
+            'apikey': supabaseServiceKey,
+            'Authorization': `Bearer ${supabaseServiceKey}`
+          }
+        }),
       ])
 
       // Process events
       const events: Record<string, number> = {}
-      if (eventsResult.data) {
-        eventsResult.data.forEach((event) => {
+      if (eventsResponse.ok) {
+        const eventsData = await eventsResponse.json()
+        eventsData.forEach((event: any) => {
           events[event.event_name] = (events[event.event_name] || 0) + 1
         })
       }
 
-      // Calculate metrics
-      const totalUsers = usersResult.count || 0
+      // Get user count from response headers
+      const totalUsers = usersResponse.ok ? parseInt(usersResponse.headers.get('content-range')?.split('/')[1] || '0') : 0
       const activeUsers = events.user_signin || events.session_start || 0
       const totalRecipes = events.recipe_view || 0
       const totalGroceryLists = events.grocery_list_create || 0
       const premiumUsers = events.subscription_start || 0
+
+      // Get recent activity data
+      const recentActivity = recentActivityResponse.ok ? await recentActivityResponse.json() : []
 
       return NextResponse.json({
         overview: {
@@ -91,7 +106,7 @@ export async function GET(request: NextRequest) {
           period,
         },
         events,
-        recentActivity: recipesResult.data || [],
+        recentActivity,
       })
     }
 

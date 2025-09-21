@@ -1,8 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
-
-// Create Supabase client for API routes
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 // Helper function to validate UUID format
 function isValidUUID(str: string): boolean {
@@ -27,23 +23,36 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Store analytics event in database
-    const { data, error } = await supabase.from("analytics_events").insert({
-      event_name: event,
-      properties: {
-        ...(properties || {}),
-        // Store non-UUID user IDs in properties
-        ...(userId && !validUserId ? { user_identifier: userId } : {}),
+    // Store analytics event in database using direct fetch to Supabase REST API
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    
+    const response = await fetch(`${supabaseUrl}/rest/v1/analytics_events`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': serviceRoleKey,
+        'Authorization': `Bearer ${serviceRoleKey}`,
+        'Prefer': 'return=representation'
       },
-      user_id: validUserId,
-      created_at: new Date().toISOString(),
+      body: JSON.stringify({
+        event_name: event,
+        properties: {
+          ...(properties || {}),
+          // Store non-UUID user IDs in properties
+          ...(userId && !validUserId ? { user_identifier: userId } : {}),
+        },
+        user_id: validUserId,
+        created_at: new Date().toISOString(),
+      })
     })
 
-    if (error) {
-      console.error("Analytics storage error:", error)
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("Analytics storage error:", errorText)
 
       // If table doesn't exist, provide helpful error message
-      if (error.message.includes("does not exist")) {
+      if (errorText.includes("does not exist") || response.status === 404) {
         return NextResponse.json(
           {
             error: "Analytics table not found",
@@ -57,14 +66,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: "Failed to store analytics",
-          details: error.message,
+          details: errorText,
         },
         { status: 500 },
       )
     }
 
+    const data = await response.json()
     console.log("Analytics event stored successfully:", data)
-    return NextResponse.json({ success: true, data })
+    return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("Analytics API error:", error)
     return NextResponse.json(

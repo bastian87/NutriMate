@@ -5,35 +5,24 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createServerClient()
     
-    // 1. Autenticar via JWT/session
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
+    // 1. Obtener token de autorización
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
-        { error: "Unauthorized", message: "Invalid or missing authentication" },
+        { error: "Unauthorized", message: "Missing or invalid authorization header" },
         { status: 401 }
       )
     }
 
-    // 2. Verificar que no existe una fila en public.users
-    const { data: existingUser, error: checkError } = await supabase
-      .from("users")
-      .select("id")
-      .eq("id", user.id)
-      .maybeSingle()
+    const token = authHeader.substring(7) // Remove 'Bearer ' prefix
 
-    if (checkError) {
-      console.error("Error checking existing user:", checkError)
+    // 2. Validar token con Supabase
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    
+    if (authError || !user) {
       return NextResponse.json(
-        { error: "Database error", message: "Failed to check existing user" },
-        { status: 500 }
-      )
-    }
-
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "Conflict", message: "User profile already exists" },
-        { status: 409 }
+        { error: "Unauthorized", message: "Invalid or expired token" },
+        { status: 401 }
       )
     }
 
@@ -75,6 +64,7 @@ export async function POST(request: NextRequest) {
         .from("users")
         .select("id")
         .eq("username", finalUsername)
+        .neq("id", user.id) // Excluir el usuario actual
         .maybeSingle()
 
       if (usernameError) {
@@ -93,10 +83,10 @@ export async function POST(request: NextRequest) {
       counter++
     }
 
-    // 5. Ejecutar transacción para insertar users y user_preferences
+    // 5. Upsert en la tabla users
     const { data: userData, error: userError } = await supabase
       .from("users")
-      .insert({
+      .upsert({
         id: user.id,
         email: user.email!,
         full_name: full_name || null,
@@ -106,16 +96,17 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (userError) {
-      console.error("Error creating user profile:", userError)
+      console.error("Error upserting user profile:", userError)
       return NextResponse.json(
-        { error: "Database error", message: "Failed to create user profile" },
+        { error: "Database error", message: "Failed to upsert user profile" },
         { status: 500 }
       )
     }
 
+    // 6. Upsert en la tabla user_preferences
     const { data: preferencesData, error: preferencesError } = await supabase
       .from("user_preferences")
-      .insert({
+      .upsert({
         user_id: user.id,
         age,
         gender,
@@ -136,21 +127,14 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (preferencesError) {
-      console.error("Error creating user preferences:", preferencesError)
-      
-      // Intentar limpiar el usuario creado si falla la creación de preferencias
-      await supabase
-        .from("users")
-        .delete()
-        .eq("id", user.id)
-      
+      console.error("Error upserting user preferences:", preferencesError)
       return NextResponse.json(
-        { error: "Database error", message: "Failed to create user preferences" },
+        { error: "Database error", message: "Failed to upsert user preferences" },
         { status: 500 }
       )
     }
 
-    // 6. Actualizar metadata del usuario para marcar onboarding como completo
+    // 7. Actualizar metadata del usuario para marcar onboarding como completo
     const { error: metadataError } = await supabase.auth.updateUser({
       data: {
         onboarding_complete: true,
@@ -164,14 +148,15 @@ export async function POST(request: NextRequest) {
       // No fallar aquí, el perfil ya está creado
     }
 
-    // 7. Retornar éxito
+    // 8. Retornar éxito
     return NextResponse.json(
       {
-        message: "Profile created successfully",
+        ok: true,
+        message: "Profile finalized successfully",
         user: userData,
         preferences: preferencesData
       },
-      { status: 201 }
+      { status: 200 }
     )
 
   } catch (error) {

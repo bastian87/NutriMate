@@ -70,7 +70,25 @@ async function cleanupAbandonedAccounts() {
     // 3. Procesar cada usuario abandonado
     for (const user of abandonedUsers) {
       try {
-        await processAbandonedUser(user, stats)
+        // Guard: skip users without email
+        if (!user.email) {
+          console.log(`⏭️  Skipping user ${user.id} - no email address`)
+          stats.skipped++
+          continue
+        }
+
+        // Map to AbandonedAccount shape with guaranteed email
+        const abandonedAccount: AbandonedAccount = {
+          id: user.id,
+          email: user.email,
+          created_at: user.created_at,
+          email_confirmed_at: user.email_confirmed_at ?? null,
+          app_metadata: user.app_metadata,
+          user_metadata: user.user_metadata,
+          last_sign_in_at: user.last_sign_in_at ?? null
+        }
+
+        await processAbandonedUser(abandonedAccount, stats)
       } catch (error) {
         console.error(`❌ Error processing user ${user.id}:`, error)
         stats.errors++

@@ -96,6 +96,11 @@ async function testProfileFinalize() {
 
     // 4. Clean up - delete the test user
     console.log('🧹 Cleaning up test user...')
+    if (!authData.user) {
+      console.error('❌ No user data available for cleanup')
+      return
+    }
+    
     const { error: deleteError } = await supabase.auth.admin.deleteUser(authData.user.id)
     
     if (deleteError) {

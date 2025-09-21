@@ -14,7 +14,6 @@ import { useLanguage } from "@/lib/i18n/context"
 import { SuccessDialog } from "@/components/ui/success-dialog"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { userService } from "@/lib/services/user-service"
-import { authService } from "@/lib/services/auth-service"
 import { supabase } from "@/lib/supabase/client"
 
 type HealthGoal = "weight_loss" | "muscle_gain" | "maintenance" | "health_improvement" | "energy_boost"
@@ -55,6 +54,7 @@ export default function OnboardingForm() {
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [formData, setFormData] = useState({
     // Basic info
+    full_name: "",
     username: "",
     age: 30,
     gender: "male",
@@ -329,39 +329,22 @@ export default function OnboardingForm() {
           return
         }
 
-        // 1. Completar el registro del usuario (solo para usuarios no-OAuth)
-        let authData: any = null
-        if (!tempUserData.isOAuth) {
-          console.log("🔐 Completing user signup...")
-          const { data: authDataResult, error: authError } = await authService.completeSignUp()
-
-          if (authError) {
-            console.error("❌ Error completing signup:", authError)
-            setErrors({ general: "Error completing signup. Please try again." })
-            return
-          }
-
-          if (!authDataResult?.user) {
-            console.error("❌ No user returned from completeSignUp")
-            setErrors({ general: "Error creating user account. Please try again." })
-            return
-          }
-
-          authData = authDataResult
-          console.log("✅ User signup completed successfully")
-        } else {
-          // Para usuarios OAuth, usar los datos existentes
-          console.log("🔐 Using OAuth user data...")
-          authData = { user: { id: tempUserData.id } }
+        // 1. Obtener sesión actual de Supabase
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError || !session) {
+          console.error("❌ Error getting session:", sessionError)
+          setErrors({ general: "Error getting user session. Please try again." })
+          return
         }
 
-        // 3. Limpiar datos temporales
-        localStorage.removeItem('temp_user_data')
-        localStorage.removeItem('temp_users')
+        console.log("🔐 Using current session for profile finalization...")
 
-        // 4. Luego guardar las preferencias del usuario
-        console.log("💾 Saving user preferences...")
-        const dataToSubmit = {
+        // 2. Llamar a la API de finalización de perfil
+        console.log("💾 Finalizing user profile...")
+        const profileData = {
+          full_name: formData.full_name || tempUserData.full_name || "",
+          username: formData.username,
           age: formData.age,
           gender: formData.gender,
           height: heightUnit === "cm" ? formData.height : formData.height * 30.48,
@@ -378,11 +361,31 @@ export default function OnboardingForm() {
           macro_priority: formData.macro_priority,
         }
 
-        // Usar el ID del usuario real de Supabase Auth
-        await userService.saveUserPreferences(authData.user.id, { user_id: authData.user.id, ...dataToSubmit })
-        console.log("✅ User preferences saved successfully")
+        // Llamar a la API de finalización de perfil
+        const response = await fetch('/api/profile/finalize', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify(profileData)
+        })
 
-        // 3. Mostrar confirmación
+        const result = await response.json()
+
+        if (!response.ok) {
+          console.error("❌ Error finalizing profile:", result)
+          setErrors({ general: result.message || "Error finalizing profile. Please try again." })
+          return
+        }
+
+        console.log("✅ User profile finalized successfully")
+
+        // 3. Limpiar datos temporales
+        localStorage.removeItem('temp_user_data')
+        localStorage.removeItem('temp_users')
+
+        // 4. Mostrar confirmación
         console.log("🎉 Onboarding completed successfully!")
         setShowConfirmation(true)
       } catch (error) {

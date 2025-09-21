@@ -92,7 +92,7 @@ async function testProfileRestart() {
       }
     })
 
-    if (completedAuthError || !completedAuthData.session) {
+    if (completedAuthError || !completedAuthData.session || !completedAuthData.user) {
       console.log('📧 Completed user needs email confirmation, skipping test')
     } else {
       // Create profile in database
