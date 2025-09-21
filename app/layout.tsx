@@ -10,6 +10,7 @@ import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import { UserPreferencesProvider } from "@/components/auth/user-preferences-provider"
 import { ConditionalLayout } from "@/components/conditional-layout"
+import { OnboardingGuard } from "@/components/onboarding-guard"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -47,7 +48,9 @@ export default function RootLayout({
               <UserProfileProvider>
                 <UserPreferencesProvider>
                   <ConditionalLayout>
-                    {children}
+                    <OnboardingGuard>
+                      {children}
+                    </OnboardingGuard>
                   </ConditionalLayout>
                   <Toaster />
                 </UserPreferencesProvider>

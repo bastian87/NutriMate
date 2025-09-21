@@ -1,0 +1,13 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/cleanup-accounts",
+      "schedule": "0 */6 * * *"
+    }
+  ],
+  "functions": {
+    "app/api/cron/cleanup-accounts/route.ts": {
+      "maxDuration": 300
+    }
+  }
+}

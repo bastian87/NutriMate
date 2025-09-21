@@ -52,58 +52,19 @@ export default function AuthCallbackPage() {
         console.log("🔍 Profile check results:", { 
           userProfile: !!userProfile, 
           hasUsername: !!userProfile?.username, 
-          hasPreferences 
+          hasPreferences,
+          userProfileData: userProfile
         });
 
+        // Lógica simple: si el perfil está incompleto, ir al onboarding
+        // Si el perfil está completo, ir al dashboard
         if (userProfile && userProfile.username && hasPreferences) {
-          // Usuario ya tiene perfil completo, ir al dashboard
+          // Usuario tiene perfil completo, ir al dashboard
           console.log("✅ User has complete profile, redirecting to dashboard");
           router.push("/dashboard");
-        } else if (userProfile && userProfile.username && !hasPreferences) {
-          // Usuario existe pero no tiene preferencias, ir a onboarding
-          console.log("🔄 User exists but needs preferences, redirecting to onboarding");
-          router.push("/onboarding");
         } else {
-          // Usuario no existe, crear perfil básico y ir a onboarding
-          console.log("🔄 Creating basic OAuth user profile...");
-          
-          // Generar username único para usuarios de OAuth
-          const baseUsername = session.user.user_metadata?.preferred_username ?? 
-                              session.user.email?.split('@')[0] ?? 
-                              'user';
-          
-          // Verificar si el username está disponible, si no, agregar números
-          let username = baseUsername;
-          let counter = 1;
-          while (true) {
-            const { data: existingUser } = await supabase
-              .from("users")
-              .select("id")
-              .eq("username", username)
-              .maybeSingle();
-            
-            if (!existingUser) break;
-            username = `${baseUsername}${counter}`;
-            counter++;
-          }
-
-          // Crear solo el perfil básico (sin preferencias)
-          const { error: insertError } = await supabase.from("users").insert([
-            {
-              id: session.user.id,
-              email: session.user.email,
-              full_name: session.user.user_metadata?.full_name ?? null,
-              username: username,
-            }
-          ]);
-          
-          if (insertError) {
-            console.error('Error al crear perfil:', insertError);
-            router.push("/login");
-            return;
-          }
-
-          console.log("✅ Basic OAuth user profile created, redirecting to onboarding");
+          // Usuario necesita completar su perfil, ir al onboarding
+          console.log("🔄 User needs to complete profile, redirecting to onboarding");
           router.push("/onboarding");
         }
       } catch (error) {
