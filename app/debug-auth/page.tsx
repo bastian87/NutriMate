@@ -41,7 +41,7 @@ export default function DebugAuthPage() {
           
           <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
             <h2 className="font-semibold mb-2">Contexto:</h2>
-            <p className="text-lg">✅ useAuthContext funcionando correctamente</p>
+            <p className="text-lg">✅ useAuthContext funcionando correctamente!</p>
           </div>
         </div>
         
