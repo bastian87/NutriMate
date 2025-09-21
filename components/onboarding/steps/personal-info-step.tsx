@@ -32,17 +32,38 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
           const parsed = JSON.parse(signupData)
           console.log("📥 Loading signup data:", parsed)
           
-          if (parsed.username && !data.username) {
-            onChange({ username: parsed.username })
-          }
-          if (parsed.email && !data.email) {
-            onChange({ email: parsed.email })
-          }
-          if (parsed.password && !data.password) {
-            onChange({ password: parsed.password })
-          }
-          if (parsed.full_name && !data.full_name) {
-            onChange({ full_name: parsed.full_name })
+          // Si viene del signup, siempre sobrescribir los datos existentes
+          if (parsed.fromSignup) {
+            console.log("🔄 Overriding onboarding data with signup data")
+            
+            const updates: Partial<OnboardingData> = {}
+            
+            // Siempre sobrescribir estos campos si existen en signupData
+            if (parsed.full_name) {
+              updates.full_name = parsed.full_name
+            }
+            if (parsed.username) {
+              updates.username = parsed.username
+            }
+            if (parsed.email) {
+              updates.email = parsed.email
+            }
+            if (parsed.password) {
+              updates.password = parsed.password
+              // También actualizar los estados locales de contraseña
+              setPassword(parsed.password)
+              setConfirmPassword(parsed.password)
+            }
+
+            // Aplicar todas las actualizaciones de una vez
+            if (Object.keys(updates).length > 0) {
+              onChange(updates)
+              console.log("✅ Signup data applied:", updates)
+            }
+            
+            // Limpiar los datos del signup después de cargarlos
+            localStorage.removeItem('nutrimate_signup_data')
+            console.log("🗑️ Signup data cleared after loading")
           }
         }
       } catch (error) {
