@@ -187,7 +187,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
         .select("status, plan_name")
         .eq("user_id", user.id)
         .eq("status", "active")
-        .single()
+        .maybeSingle()
 
       // Comparar con el estado actual en el contexto
       const currentIsPremium = userData?.isPremium || false

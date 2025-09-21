@@ -42,6 +42,31 @@ export function OnboardingWizard() {
     }
   }, [])
 
+  // Si no hay datos iniciales, empezar con datos vacíos
+  useEffect(() => {
+    if (Object.keys(onboardingData).length === 0) {
+      setOnboardingData({
+        full_name: '',
+        username: '',
+        email: '',
+        age: undefined,
+        gender: '',
+        height: undefined,
+        weight: undefined,
+        activity_level: '',
+        health_goal: '',
+        calorie_target: undefined,
+        dietary_preferences: [],
+        excluded_ingredients: [],
+        include_snacks: false,
+        max_prep_time: 60,
+        macro_priority: 'balanced',
+        allergies: [],
+        intolerances: []
+      })
+    }
+  }, [])
+
   // Guardar datos cuando cambien
   useEffect(() => {
     if (Object.keys(onboardingData).length > 0) {

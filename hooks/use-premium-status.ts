@@ -11,7 +11,11 @@ export function usePremiumStatus() {
 
   // Verificar estado premium en la base de datos
   const checkPremiumStatus = async () => {
-    if (!user) return
+    if (!user) {
+      setDbIsPremium(false)
+      setIsChecking(false)
+      return false
+    }
 
     setIsChecking(true)
     try {
@@ -20,7 +24,16 @@ export function usePremiumStatus() {
         .select("status")
         .eq("user_id", user.id)
         .eq("status", "active")
-        .single()
+        .maybeSingle()
+
+      if (error) {
+        // Solo logear errores que no sean "no encontrado"
+        if (error.code !== "PGRST116") {
+          console.error("Error checking premium status:", error)
+        }
+        setDbIsPremium(false)
+        return false
+      }
 
       const hasActiveSubscription = !!data
       setDbIsPremium(hasActiveSubscription)

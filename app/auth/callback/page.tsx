@@ -23,6 +23,35 @@ export default function AuthCallbackPage() {
           return;
         }
 
+        // Verificar si viene del onboarding
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromOnboarding = urlParams.get('onboarding') === 'true';
+
+        if (fromOnboarding) {
+          console.log("🔄 Coming from onboarding, finalizing profile...");
+          
+          // Finalizar el perfil con los datos del onboarding
+          const finalizeResponse = await fetch('/api/profile/finalize', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({
+              // Los datos se obtienen del localStorage en el servidor
+            })
+          });
+
+          if (finalizeResponse.ok) {
+            console.log("✅ Profile finalized successfully");
+            router.push("/dashboard");
+          } else {
+            console.error("❌ Error finalizing profile");
+            router.push("/onboarding");
+          }
+          return;
+        }
+
         // Verificar si el onboarding está completo en los metadatos del usuario
         const onboardingComplete = session.user.user_metadata?.onboarding_complete === true;
 

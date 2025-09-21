@@ -119,12 +119,20 @@ class OnboardingService {
           }
         })
       } else {
-        // OAuth (Google) - el usuario ya está autenticado
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session?.user) {
-          return { success: false, error: "No active session found" }
+        // OAuth (Google) - iniciar el flujo de OAuth
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?onboarding=true`
+          }
+        })
+        
+        if (error) {
+          return { success: false, error: error.message }
         }
-        authResult = { data: { user: session.user, session } }
+        
+        // El usuario será redirigido, no continuamos aquí
+        return { success: true, redirect: true }
       }
 
       if (authResult.error) {

@@ -131,7 +131,7 @@ export function useUserSubscriptionsQuery(userId: string | null) {
       
       const { data, error } = await supabase
         .from('user_subscriptions')
-        .select('*, subscription_plans(plan_name)')
+        .select('*')
         .eq('user_id', userId)
         .eq('status', 'active')
       

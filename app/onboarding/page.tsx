@@ -48,9 +48,9 @@ export default function OnboardingPage() {
           setCheckingProfile(false)
         }
       } else if (!loading && !user) {
-        // Si no hay usuario autenticado, redirigir al login (no signup para evitar bucle)
-        console.log("🚫 No user authenticated, redirecting to login")
-        router.push("/login")
+        // En el nuevo flujo, permitir onboarding sin sesión
+        console.log("🔄 No user session, allowing onboarding")
+        setCheckingProfile(false)
       }
     }
 
@@ -68,19 +68,8 @@ export default function OnboardingPage() {
     )
   }
 
-  // Si no hay usuario, no mostrar el formulario
-  if (!user) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-white p-4">
-        <p className="text-lg text-gray-700">{t("onboarding.redirectingToSignup")}</p>
-      </div>
-    )
-  }
-
-  // User is authenticated, show the onboarding wizard
+  // Mostrar el wizard de onboarding (con o sin usuario autenticado)
   return (
-    <OnboardingGuard>
-      <OnboardingWizard />
-    </OnboardingGuard>
+    <OnboardingWizard />
   )
 }

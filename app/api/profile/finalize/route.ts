@@ -28,16 +28,18 @@ export async function POST(request: NextRequest) {
 
     // 3. Obtener datos del request
     const body = await request.json()
+    
+    // Si no hay datos en el body, usar datos por defecto (para OAuth)
     const {
-      full_name,
-      username,
-      age,
-      gender,
-      height,
-      weight,
-      activity_level,
-      health_goal,
-      calorie_target,
+      full_name = user.user_metadata?.full_name || '',
+      username = user.user_metadata?.username || '',
+      age = null,
+      gender = null,
+      height = null,
+      weight = null,
+      activity_level = null,
+      health_goal = null,
+      calorie_target = 2000,
       dietary_preferences = [],
       excluded_ingredients = [],
       include_snacks = false,
@@ -47,10 +49,10 @@ export async function POST(request: NextRequest) {
       macro_priority = 'balanced'
     } = body
 
-    // Validar datos requeridos
-    if (!username || !age || !gender || !height || !weight || !activity_level || !health_goal) {
+    // Validar datos requeridos (solo username es obligatorio para OAuth)
+    if (!username) {
       return NextResponse.json(
-        { error: "Bad Request", message: "Missing required fields" },
+        { error: "Bad Request", message: "Username is required" },
         { status: 400 }
       )
     }

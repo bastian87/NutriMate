@@ -30,7 +30,11 @@ export function useSubscription() {
   }, [user])
 
   const fetchSubscription = async () => {
-    if (!user) return
+    if (!user) {
+      setSubscription(null)
+      setLoading(false)
+      return
+    }
 
     try {
       const { data, error } = await supabase
@@ -38,15 +42,20 @@ export function useSubscription() {
         .select("*")
         .eq("user_id", user.id)
         .eq("status", "active")
-        .single()
+        .maybeSingle()
 
-      if (error && error.code !== "PGRST116") {
-        console.error("Error fetching subscription:", error)
+      if (error) {
+        // Solo logear errores que no sean "no encontrado"
+        if (error.code !== "PGRST116") {
+          console.error("Error fetching subscription:", error)
+        }
+        setSubscription(null)
       } else {
         setSubscription(data)
       }
     } catch (error) {
-      console.error("Error fetching subscription:", error)
+      console.error("Exception fetching subscription:", error)
+      setSubscription(null)
     } finally {
       setLoading(false)
     }
