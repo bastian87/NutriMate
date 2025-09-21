@@ -101,12 +101,18 @@ export function OnboardingWizard() {
   }
 
   const handleCreateAccount = async () => {
+    console.log("🚀 handleCreateAccount called")
+    console.log("📊 Current onboarding data:", onboardingData)
+    
     setIsCreatingAccount(true)
     
     try {
+      console.log("🔄 Calling onboardingService.createAccountAndFinalize()")
       const result = await onboardingService.createAccountAndFinalize()
+      console.log("📋 Result from createAccountAndFinalize:", result)
       
       if (result.success) {
+        console.log("✅ Account created successfully")
         toast({
           title: "¡Cuenta creada exitosamente!",
           description: "Tu plan personalizado ha sido guardado.",
@@ -115,6 +121,7 @@ export function OnboardingWizard() {
         // Redirigir al dashboard
         router.push("/dashboard")
       } else {
+        console.log("❌ Account creation failed:", result.error)
         toast({
           title: "Error al crear la cuenta",
           description: result.error || "Ocurrió un error inesperado",
@@ -122,7 +129,7 @@ export function OnboardingWizard() {
         })
       }
     } catch (error) {
-      console.error("Error creating account:", error)
+      console.error("❌ Error creating account:", error)
       toast({
         title: "Error al crear la cuenta",
         description: "Ocurrió un error inesperado. Inténtalo de nuevo.",
@@ -221,37 +228,19 @@ export function OnboardingWizard() {
           </CardContent>
         </Card>
 
-        {/* Navigation */}
-        <div className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 0}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Anterior
-          </Button>
-
-          {currentStep === steps.length - 1 ? (
+        {/* Navigation - Solo mostrar si no es el paso final */}
+        {currentStep !== steps.length - 1 && (
+          <div className="flex justify-between">
             <Button
-              onClick={handleCreateAccount}
-              disabled={!isStepValid() || isCreatingAccount}
-              className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700"
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 0}
+              className="flex items-center gap-2"
             >
-              {isCreatingAccount ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                  Creando cuenta...
-                </>
-              ) : (
-                <>
-                  <Check className="w-4 h-4" />
-                  Crear cuenta
-                </>
-              )}
+              <ArrowLeft className="w-4 h-4" />
+              Anterior
             </Button>
-          ) : (
+
             <Button
               onClick={handleNext}
               disabled={!isStepValid()}
@@ -260,8 +249,8 @@ export function OnboardingWizard() {
               Siguiente
               <ArrowRight className="w-4 h-4" />
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )

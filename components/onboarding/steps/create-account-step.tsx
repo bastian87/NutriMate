@@ -40,7 +40,7 @@ export function CreateAccountStep({ data, onCreateAccount, isLoading, authError 
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-500">Usuario</Label>
-              <p className="text-lg font-semibold">@{data.username}</p>
+              <p className="text-lg font-semibold">{data.username}</p>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-500">Email</Label>
@@ -129,7 +129,7 @@ export function CreateAccountStep({ data, onCreateAccount, isLoading, authError 
             <ul className="text-sm text-blue-800 mt-2 space-y-1">
               <li>• <strong>Email y contraseña:</strong> {data.email}</li>
               <li>• <strong>Google:</strong> Con la misma cuenta de Google</li>
-              <li>• <strong>Usuario:</strong> @{data.username}</li>
+              <li>• <strong>Usuario:</strong> {data.username}</li>
             </ul>
           </div>
         </CardContent>
