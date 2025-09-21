@@ -219,7 +219,7 @@ export default function DebugSubscriptionPage() {
             <h3 className="font-semibold text-yellow-800 mb-2">Solución</h3>
             <p className="text-sm text-yellow-700">
               Si tienes una suscripción activa pero no puedes acceder a las funciones premium, 
-              haz clic en "Forzar Actualización" para refrescar los datos del contexto.
+              haz clic en &quot;Forzar Actualización&quot; para refrescar los datos del contexto.
             </p>
           </div>
         </CardContent>

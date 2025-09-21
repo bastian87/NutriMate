@@ -16,7 +16,7 @@ import { useLanguage } from "@/lib/i18n/context"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
 
 // Limpia los enlaces <a>...</a> de la descripción
-function cleanDescription(html: string = ""): string {
+function cleanDescription(html = ""): string {
   return html.replace(/<a [^>]+>(.*?)<\/a>/gi, "$1");
 }
 

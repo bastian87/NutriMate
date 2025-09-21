@@ -32,7 +32,7 @@ export default function CalorieCalculatorPage() {
 
   const calcularCalorias = () => {
     // Fórmula de Harris-Benedict
-    let tmb =
+    const tmb =
       genero === "male"
         ? 88.36 + 13.4 * peso + 4.8 * altura - 5.7 * edad
         : 447.6 + 9.2 * peso + 3.1 * altura - 4.3 * edad;

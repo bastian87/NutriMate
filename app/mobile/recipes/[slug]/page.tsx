@@ -330,7 +330,7 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
       )}
 
       {/* Mobile Navigation */}
-      <MobileNavigation isOpen={true} onClose={() => {}} />
+      <MobileNavigation isOpen={true} onClose={() => undefined} />
     </div>
   )
 }

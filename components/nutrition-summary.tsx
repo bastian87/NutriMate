@@ -210,7 +210,7 @@ export function NutritionSummary({
               <li>• You might benefit from adding healthy fats like avocado or nuts.</li>
             )}
             {totalCaloriesPercentage >= 90 && totalCaloriesPercentage <= 110 && (
-              <li>• Perfect! You're right on track with your calorie target.</li>
+              <li>• Perfect! You&apos;re right on track with your calorie target.</li>
             )}
           </ul>
         </motion.div>

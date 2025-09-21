@@ -47,7 +47,7 @@ class Analytics {
   track(event: string, properties?: Record<string, any>, userId?: string) {
     // Google Analytics
     if (typeof window !== "undefined" && (window as any).gtag) {
-      ;(window as any).gtag("event", event, {
+      (window as any).gtag("event", event, {
         ...properties,
         user_id: userId,
       })

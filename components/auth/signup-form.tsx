@@ -341,7 +341,7 @@ export default function SignupForm() {
                     <div className="space-y-4">
                       <div className="text-center">
                         <p className="text-sm text-gray-600 mb-4">
-                          Choose how you'd like to sign in:
+                          Choose how you&apos;d like to sign in:
                         </p>
                       </div>
                       
@@ -400,7 +400,7 @@ export default function SignupForm() {
                     <form onSubmit={handleOTPVerification} className="space-y-4">
                       <div className="text-center">
                         <p className="text-sm text-gray-600 mb-4">
-                          We've sent a verification code to {email}
+                          We&apos;ve sent a verification code to {email}
                         </p>
                       </div>
 

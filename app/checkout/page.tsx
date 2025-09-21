@@ -88,7 +88,7 @@ export default function CheckoutPage() {
 
                 {/* Features */}
                 <div>
-                  <h3 className="font-medium mb-3">What's included:</h3>
+                  <h3 className="font-medium mb-3">What&apos;s included:</h3>
                   <ul className="space-y-2 text-sm">
                     {[
                       "Unlimited AI recipe suggestions",

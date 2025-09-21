@@ -81,7 +81,7 @@ export default function CheckoutSuccessPage() {
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
             <h3 className="text-xl font-semibold mb-4 flex items-center justify-center gap-2">
               <Crown className="h-5 w-5 text-orange-600" />
-              What's Next?
+              What&apos;s Next?
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
               <div className="space-y-3">

@@ -140,7 +140,7 @@ export default function DebugGroceryListPage() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-4">🔍 Debug: Lista de Compras</h1>
         <p className="text-gray-600 mb-6">
-          Esta página ayuda a diagnosticar problemas con la funcionalidad "Add all to Grocery List".
+          Esta página ayuda a diagnosticar problemas con la funcionalidad &quot;Add all to Grocery List&quot;.
         </p>
       </div>
 

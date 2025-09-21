@@ -178,7 +178,7 @@ export default function ConfigureUrlPage() {
             <h3 className="font-semibold text-green-800 mb-2">Después de Configurar</h3>
             <p className="text-sm text-green-700">
               Una vez que hayas configurado la URL correcta en tu archivo .env.local, reinicia tu aplicación 
-              y prueba el botón "Gestionar Facturación" en tu página de cuenta.
+              y prueba el botón &quot;Gestionar Facturación&quot; en tu página de cuenta.
             </p>
           </div>
         </CardContent>

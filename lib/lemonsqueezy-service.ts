@@ -240,7 +240,7 @@ export async function getCustomerPortalUrl(subscriptionId: string): Promise<stri
     try {
       const subscription = await getSubscription(subscriptionId)
       if (subscription) {
-        let returnUrl = process.env.NEXT_PUBLIC_APP_URL 
+        const returnUrl = process.env.NEXT_PUBLIC_APP_URL 
           ? `${process.env.NEXT_PUBLIC_APP_URL}/account/subscription`
           : "https://nutrimate.app/account/subscription"
         
@@ -282,6 +282,7 @@ function generateAlternativePortalUrl(customerId: string, returnUrl: string): st
 }
 
 export async function validateWebhookSignature(payload: string, signature: string): Promise<boolean> {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const crypto = require("crypto")
   const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET!
 

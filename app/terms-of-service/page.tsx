@@ -7,7 +7,7 @@ export default function TermsOfServicePage() {
       <ol className="list-decimal pl-4 space-y-4">
         <li>
           <strong>Acceptance of Terms</strong><br />
-          By creating an account or using NutriMate ("the Service"), you agree to these Terms of Service ("Agreement").<br />
+          By creating an account or using NutriMate (&quot;the Service&quot;), you agree to these Terms of Service (&quot;Agreement&quot;).<br />
           If you do not agree to these terms, you may not use the Service.
         </li>
         <li>
@@ -90,7 +90,7 @@ export default function TermsOfServicePage() {
         </li>
         <li>
           <strong>Limitation of Liability</strong><br />
-          NutriMate is provided "as is" and "as available" without warranties of any kind.<br />
+          NutriMate is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind.<br />
           We are not responsible for:
           <ul className="list-disc pl-6 mt-2">
             <li>Any inaccuracies, interruptions, or errors in the Service.</li>

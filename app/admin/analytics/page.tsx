@@ -77,7 +77,7 @@ export default function AnalyticsPage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-400">Track your app's performance and user engagement</p>
+          <p className="text-gray-600 dark:text-gray-400">Track your app&apos;s performance and user engagement</p>
         </div>
 
         <div className="flex gap-2">

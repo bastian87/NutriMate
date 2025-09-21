@@ -143,7 +143,7 @@ export default function TestAnalyticsPage() {
     }
 
     try {
-      ;(window as any).gtag("event", "test_event", {
+      (window as any).gtag("event", "test_event", {
         event_category: "test",
         event_label: "analytics_test",
       })
@@ -365,7 +365,7 @@ export default function TestAnalyticsPage() {
             Database Setup
           </CardTitle>
           <CardDescription>
-            If you're getting database errors, click this button to create the analytics table
+            If you&apos;re getting database errors, click this button to create the analytics table
           </CardDescription>
         </CardHeader>
         <CardContent>
