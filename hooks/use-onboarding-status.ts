@@ -34,7 +34,14 @@ export function useOnboardingStatus(user: User | null) {
         // Verificar metadata del usuario primero
         const onboardingComplete = user.user_metadata?.onboarding_complete === true
         
+        console.log("🔍 OnboardingStatus check - metadata:", {
+          userId: user.id,
+          userMetadata: user.user_metadata,
+          onboardingComplete
+        })
+        
         if (onboardingComplete) {
+          console.log("✅ Onboarding complete via metadata")
           setStatus({
             isLoading: false,
             needsOnboarding: false,
@@ -50,6 +57,13 @@ export function useOnboardingStatus(user: User | null) {
           .eq('id', user.id)
           .maybeSingle()
 
+        console.log("🔍 OnboardingStatus check - profile:", {
+          profile,
+          profileError: profileError?.message,
+          hasProfile: !!profile,
+          hasUsername: !!profile?.username
+        })
+
         if (profileError) {
           console.error('Error checking user profile:', profileError)
           setStatus({
@@ -62,6 +76,7 @@ export function useOnboardingStatus(user: User | null) {
 
         // Si no existe perfil o no tiene username, necesita onboarding
         if (!profile || !profile.username) {
+          console.log("❌ Profile incomplete - needs onboarding")
           setStatus({
             isLoading: false,
             needsOnboarding: true,
@@ -77,6 +92,12 @@ export function useOnboardingStatus(user: User | null) {
           .eq('user_id', user.id)
           .maybeSingle()
 
+        console.log("🔍 OnboardingStatus check - preferences:", {
+          preferences,
+          prefsError: prefsError?.message,
+          hasPreferences: !!preferences
+        })
+
         if (prefsError) {
           console.error('Error checking user preferences:', prefsError)
           setStatus({
@@ -89,6 +110,7 @@ export function useOnboardingStatus(user: User | null) {
 
         // Si no tiene preferencias, necesita onboarding
         if (!preferences) {
+          console.log("❌ No preferences - needs onboarding")
           setStatus({
             isLoading: false,
             needsOnboarding: true,
@@ -98,6 +120,7 @@ export function useOnboardingStatus(user: User | null) {
         }
 
         // Si llegamos aquí, el perfil está completo
+        console.log("✅ Profile complete - no onboarding needed")
         setStatus({
           isLoading: false,
           needsOnboarding: false,

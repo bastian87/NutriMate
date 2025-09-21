@@ -28,17 +28,14 @@ import {
   Calendar,
   Heart,
   LogOut,
-  LogIn,
   Menu,
   X,
   User,
   Calculator,
-  Crown,
   Target,
   Flame,
   BarChart3,
   Apple,
-  MoreHorizontal,
   Settings,
 } from "lucide-react"
 
@@ -46,7 +43,6 @@ export function HorizontalNavigation() {
   const { user, signOut } = useAuthContext()
   const { t } = useLanguage()
   const pathname = usePathname()
-  const router = useRouter()
   const { userData } = useUserProfile()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -105,7 +101,7 @@ export function HorizontalNavigation() {
     setIsMobileOpen(!isMobileOpen)
   }
 
-  const NavItem = ({ item, isMobile = false }: { item: any; isMobile?: boolean }) => (
+  const NavItem = ({ item, isMobile = false }: { item: { href: string; name: string; icon: React.ComponentType<{ className?: string }> }; isMobile?: boolean }) => (
     <Link
       href={item.href}
       className={cn(
@@ -116,7 +112,7 @@ export function HorizontalNavigation() {
         isMobile ? "w-full" : "whitespace-nowrap"
       )}
     >
-      <item.icon size={18} />
+      <item.icon className="w-4 h-4" />
       <span>{item.name}</span>
     </Link>
   )
@@ -150,7 +146,7 @@ export function HorizontalNavigation() {
               className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               aria-label={t("navigation.openMenu")}
             >
-              <Menu size={20} />
+              <Menu className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -185,7 +181,7 @@ export function HorizontalNavigation() {
                 <DropdownMenu key={category.name}>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="flex items-center gap-2 px-3 py-2">
-                      <category.icon size={18} />
+                      <category.icon className="w-4 h-4" />
                       <span>{category.name}</span>
                     </Button>
                   </DropdownMenuTrigger>
@@ -193,7 +189,7 @@ export function HorizontalNavigation() {
                     {category.items.map((item) => (
                       <DropdownMenuItem key={item.href} asChild>
                         <Link href={item.href} className="flex items-center gap-2">
-                          <item.icon size={16} />
+                          <item.icon className="w-4 h-4" />
                           <span>{item.name}</span>
                         </Link>
                       </DropdownMenuItem>
@@ -214,14 +210,14 @@ export function HorizontalNavigation() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                        <User size={18} />
+                        <User className="w-4 h-4" />
                         <span className="hidden xl:inline">{t("navigation.myAccount")}</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuItem asChild>
                         <Link href="/account" className="flex items-center gap-2">
-                          <Settings size={16} />
+                          <Settings className="w-4 h-4" />
                           <span>{t("navigation.settings")}</span>
                         </Link>
                       </DropdownMenuItem>
@@ -232,7 +228,7 @@ export function HorizontalNavigation() {
                         }}
                         className="flex items-center gap-2 text-red-600 dark:text-red-400"
                       >
-                        <LogOut size={16} />
+                        <LogOut className="w-4 h-4" />
                         <span>{t("auth.signOut")}</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -259,7 +255,7 @@ export function HorizontalNavigation() {
                 className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
                 aria-label={isMobileOpen ? t("navigation.closeMenu") : t("navigation.openMenu")}
               >
-                {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
+                {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
@@ -290,7 +286,7 @@ export function HorizontalNavigation() {
                 {categoryButtons.map((category) => (
                   <div key={category.name} className="space-y-2">
                     <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 flex items-center gap-2">
-                      <category.icon size={14} />
+                      <category.icon className="w-3 h-3" />
                       {category.name}
                     </div>
                     {category.items.map((item) => (
@@ -312,7 +308,7 @@ export function HorizontalNavigation() {
                   {user ? (
                     <div className="space-y-2">
                       <Link href="/account" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                        <Settings size={18} />
+                        <Settings className="w-4 h-4" />
                         <span>{t("navigation.settings")}</span>
                       </Link>
                       <button
@@ -321,7 +317,7 @@ export function HorizontalNavigation() {
                         }}
                         className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 w-full text-left"
                       >
-                        <LogOut size={18} />
+                        <LogOut className="w-4 h-4" />
                         <span>{t("auth.signOut")}</span>
                       </button>
                     </div>

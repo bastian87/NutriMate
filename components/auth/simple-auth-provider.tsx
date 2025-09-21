@@ -73,9 +73,23 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
                 // Verificar si estamos en una ruta de callback de OAuth o onboarding
                 const isOAuthCallback = window.location.pathname === '/auth/callback'
                 const isOnboarding = window.location.pathname === '/onboarding'
+                const isDashboard = window.location.pathname === '/dashboard'
+                
+                console.log("🔍 User validation check:", {
+                  profileError: profileError?.message,
+                  userProfile: !!userProfile,
+                  isOAuthCallback,
+                  isOnboarding,
+                  isDashboard,
+                  currentPath: window.location.pathname
+                })
                 
                 if (isOAuthCallback || isOnboarding) {
                   console.log("🔄 OAuth callback or onboarding detected, allowing user session...")
+                  setUser(session.user)
+                } else if (isDashboard) {
+                  // En dashboard, si no hay perfil, permitir pero registrar el problema
+                  console.log("⚠️ User in dashboard but no profile found, allowing session but may need onboarding")
                   setUser(session.user)
                 } else {
                   console.log("❌ User not found in database, signing out")

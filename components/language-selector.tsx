@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Check, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useLanguage } from "@/lib/i18n/context"
+import Image from "next/image"
 
 interface LanguageSelectorProps {
   isCompact?: boolean
@@ -14,9 +15,11 @@ interface LanguageSelectorProps {
 function Flag({ country }: { country: string }) {
   // flagcdn usa códigos en minúsculas
   return (
-    <img
+    <Image
       src={`https://flagcdn.com/24x18/${country}.png`}
       alt={`${country.toUpperCase()} flag`}
+      width={24}
+      height={18}
       className="w-5 h-5 rounded-sm shadow border"
       style={{ minWidth: 20, minHeight: 20, objectFit: 'cover' }}
     />

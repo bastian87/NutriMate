@@ -64,6 +64,8 @@ export default function AccountPage() {
         ...preferences,
         dietary_preferences: preferences.dietary_preferences ?? [],
         excluded_ingredients: preferences.excluded_ingredients ?? [],
+        allergies: preferences.allergies ?? [],
+        intolerances: preferences.intolerances ?? [],
       });
     }
   }, [preferences]);
@@ -93,9 +95,9 @@ export default function AccountPage() {
   const toggleDietaryPreference = (preference: string) => {
     setFormPrefs((prev: UserPreferences | null) => prev ? {
       ...prev,
-      dietary_preferences: prev.dietary_preferences.includes(preference)
-        ? prev.dietary_preferences.filter((p: string) => p !== preference)
-        : [...prev.dietary_preferences, preference],
+      dietary_preferences: (prev.dietary_preferences || []).includes(preference)
+        ? (prev.dietary_preferences || []).filter((p: string) => p !== preference)
+        : [...(prev.dietary_preferences || []), preference],
     } : prev);
   }
 
@@ -143,12 +145,45 @@ export default function AccountPage() {
     )
   }
 
-  if (loading || !formPrefs) {
+  if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">{t("accountPage.loading")}</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Si no hay preferencias, crear un objeto vacío con valores por defecto
+  if (!formPrefs) {
+    const defaultPrefs: UserPreferences = {
+      id: '',
+      user_id: user.id,
+      age: null,
+      gender: null,
+      height: null,
+      weight: null,
+      activity_level: null,
+      health_goal: null,
+      calorie_target: null,
+      dietary_preferences: [],
+      excluded_ingredients: [],
+      include_snacks: false,
+      max_prep_time: 60,
+      macro_priority: 'balanced',
+      allergies: [],
+      intolerances: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+    setFormPrefs(defaultPrefs)
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Inicializando preferencias...</p>
         </div>
       </div>
     )

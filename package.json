@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:strict": "ESLINT_NO_DEV_ERRORS=true next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "check-env": "tsx scripts/check-env.ts",
     "check-subscriptions": "tsx scripts/check-subscriptions.ts",
     "clean-test-subscriptions": "tsx scripts/check-subscriptions.ts clean-test",

@@ -32,6 +32,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const [isRedirecting, setIsRedirecting] = useState(false)
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false)
   const [onboardingChecked, setOnboardingChecked] = useState(false)
+  const [hasRedirected, setHasRedirected] = useState(false)
 
   // Memoizar si es una ruta pública para evitar recálculos
   const isPublicRoute = useMemo(() => PUBLIC_ROUTES.includes(pathname), [pathname])
@@ -79,12 +80,13 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
 
   // Manejar redirecciones después del login/signup
   useEffect(() => {
-    if (!loading && user && !isRedirecting && !isCheckingOnboarding) {
+    if (!loading && user && !isRedirecting && !isCheckingOnboarding && !hasRedirected) {
       const handleAuthRedirect = async () => {
-        // Solo redirigir si estamos en una ruta de autenticación
-        if (pathname === "/login" || pathname === "/signup" || pathname === "/auth/callback") {
+        // Solo redirigir si estamos en una ruta de autenticación Y no hemos redirigido ya
+        if ((pathname === "/login" || pathname === "/signup") && !isRedirecting) {
           console.log("🔄 Starting auth redirect for user:", user.id, "from path:", pathname)
           setIsRedirecting(true)
+          setHasRedirected(true)
           
           try {
             // Verificar si el usuario ya tiene perfil (solo para usuarios existentes)
@@ -123,7 +125,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
 
       handleAuthRedirect()
     }
-  }, [user, loading, pathname, router, isRedirecting, isCheckingOnboarding])
+  }, [user, loading, pathname, router, isRedirecting, isCheckingOnboarding, hasRedirected])
 
   // Redirigir a landing si no hay usuario y está en ruta protegida
   useEffect(() => {
@@ -133,6 +135,23 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
     }
   }, [user, loading, isPublicRoute, router, isRedirecting])
 
+  // Evitar redirecciones innecesarias cuando ya estamos en la página correcta
+  useEffect(() => {
+    if (!loading && user && !isRedirecting && !isCheckingOnboarding) {
+      // Si estamos en dashboard y el usuario tiene perfil, no hacer nada
+      if (pathname === "/dashboard") {
+        console.log("✅ Already on dashboard, no redirect needed")
+        return
+      }
+      
+      // Si estamos en onboarding y el usuario no tiene perfil completo, no hacer nada
+      if (pathname === "/onboarding") {
+        console.log("✅ Already on onboarding, no redirect needed")
+        return
+      }
+    }
+  }, [user, loading, pathname, isRedirecting, isCheckingOnboarding])
+
   // Verificar onboarding una sola vez cuando el usuario esté disponible
   useEffect(() => {
     handleUserVerification()
@@ -141,6 +160,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   // Reset onboarding check cuando el usuario cambia
   useEffect(() => {
     setOnboardingChecked(false)
+    setHasRedirected(false) // Reset redirect state when user changes
   }, [user?.id])
 
   // Determinar si debe mostrar el sidebar

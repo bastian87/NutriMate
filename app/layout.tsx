@@ -48,9 +48,7 @@ export default function RootLayout({
               <UserProfileProvider>
                 <UserPreferencesProvider>
                   <ConditionalLayout>
-                    <OnboardingGuard>
-                      {children}
-                    </OnboardingGuard>
+                    {children}
                   </ConditionalLayout>
                   <Toaster />
                 </UserPreferencesProvider>

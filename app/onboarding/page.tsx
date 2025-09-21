@@ -7,6 +7,7 @@ import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { Loader2 } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/context"
 import { supabase } from "@/lib/supabase/client"
+import { OnboardingGuard } from "@/components/onboarding-guard"
 
 export default function OnboardingPage() {
   const { user, loading } = useAuthContext()
@@ -47,9 +48,9 @@ export default function OnboardingPage() {
           setCheckingProfile(false)
         }
       } else if (!loading && !user) {
-        // Si no hay usuario autenticado, redirigir al signup
-        console.log("🚫 No user authenticated, redirecting to signup")
-        router.push("/signup")
+        // Si no hay usuario autenticado, redirigir al login (no signup para evitar bucle)
+        console.log("🚫 No user authenticated, redirecting to login")
+        router.push("/login")
       }
     }
 
@@ -78,10 +79,12 @@ export default function OnboardingPage() {
 
   // User is authenticated, show the onboarding form
   return (
-    <div className="min-h-screen bg-white py-8 lg:py-12">
-      <div className="container mx-auto max-w-2xl px-4">
-        <OnboardingForm />
+    <OnboardingGuard>
+      <div className="min-h-screen bg-white py-8 lg:py-12">
+        <div className="container mx-auto max-w-2xl px-4">
+          <OnboardingForm />
+        </div>
       </div>
-    </div>
+    </OnboardingGuard>
   )
 }

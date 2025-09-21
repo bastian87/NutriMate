@@ -172,17 +172,29 @@ export function useOnboardingGuard() {
   useEffect(() => {
     if (onboardingStatus.isLoading || !user) return
 
+    console.log("🔍 OnboardingGuard redirect check:", {
+      needsOnboarding: onboardingStatus.needsOnboarding,
+      isComplete: onboardingStatus.isComplete,
+      isOnboardingRoute,
+      isPublicRoute,
+      isProtectedRoute,
+      currentPath: pathname,
+      userId: user?.id
+    })
+
     // Si necesita onboarding y no está en la página de onboarding, redirigir
     if (onboardingStatus.needsOnboarding && !isOnboardingRoute && !isPublicRoute) {
+      console.log("🔄 Redirecting to onboarding from:", pathname)
       setState(prev => ({ ...prev, isRedirecting: true }))
       router.push('/onboarding')
     }
     // Si no necesita onboarding y está en la página de onboarding, redirigir al dashboard
     else if (onboardingStatus.isComplete && isOnboardingRoute) {
+      console.log("🔄 Redirecting to dashboard from onboarding")
       setState(prev => ({ ...prev, isRedirecting: true }))
       router.push('/dashboard')
     }
-  }, [onboardingStatus, user, isOnboardingRoute, isPublicRoute, router])
+  }, [onboardingStatus, user, isOnboardingRoute, isPublicRoute, router, pathname])
 
   return {
     ...state,

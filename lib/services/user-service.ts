@@ -59,43 +59,62 @@ export class UserService {
     preferences: Omit<UserPreferences, "id" | "created_at" | "updated_at">,
   ): Promise<UserPreferences | null> {
     try {
+      console.log("🔍 UserService: Creating preferences with data:", preferences)
       const { data, error } = await this.supabase.from("user_preferences").insert(preferences).select().single()
 
-      if (error) throw error
+      if (error) {
+        console.error("❌ UserService: Error creating preferences:", error)
+        throw error
+      }
+      console.log("✅ UserService: Successfully created preferences:", data)
       return data
     } catch (error) {
-      console.error("Error creating user preferences:", error)
+      console.error("❌ UserService: Error creating user preferences:", error)
       return null
     }
   }
 
   async updateUserPreferences(userId: string, updates: Partial<UserPreferences>): Promise<UserPreferences | null> {
     try {
+      console.log("🔍 UserService: Updating preferences for user:", userId, "Updates:", updates)
+      // Remove id, created_at, and updated_at from updates as they should not be updated
+      const { id, created_at, updated_at, ...updatesToSave } = updates
       const { data, error } = await this.supabase
         .from("user_preferences")
-        .update(updates)
+        .update(updatesToSave)
         .eq("user_id", userId)
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error("❌ UserService: Error updating preferences:", error)
+        throw error
+      }
+      console.log("✅ UserService: Successfully updated preferences:", data)
       return data
     } catch (error) {
-      console.error("Error updating user preferences:", error)
+      console.error("❌ UserService: Error updating user preferences:", error)
       return null
     }
   }
 
   async saveUserPreferences(userId: string, preferences: Partial<UserPreferences>): Promise<UserPreferences | null> {
+    console.log("🔍 UserService: Saving preferences for user:", userId, "Data:", preferences)
+    
     // Check if preferences exist
     const existing = await this.getUserPreferences(userId)
+    console.log("🔍 UserService: Existing preferences:", existing)
 
     if (existing) {
+      console.log("🔍 UserService: Updating existing preferences")
       return this.updateUserPreferences(userId, preferences)
     } else {
+      console.log("🔍 UserService: Creating new preferences")
+      // Remove id, created_at, and updated_at from preferences as they are auto-generated
+      const { id, created_at, updated_at, ...preferencesToSave } = preferences
       return this.createUserPreferences({
         user_id: userId,
-        ...preferences,
+        ...preferencesToSave,
       } as any)
     }
   }

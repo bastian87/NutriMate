@@ -32,12 +32,12 @@ interface LandingClientProps {
   featuredRecipes: Recipe[]
 }
 
-export default function LandingClient({ featuredRecipes }: LandingClientProps) {
+export default function LandingClient({ }: LandingClientProps) {
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const { t } = useLanguage()
-  const { user, loading: authLoading } = useAuthContext()
+  const { user } = useAuthContext()
   
   // Determinar si el usuario está logueado basado en el contexto de autenticación
   const isLoggedIn = !!user
@@ -151,7 +151,7 @@ export default function LandingClient({ featuredRecipes }: LandingClientProps) {
       buttonText: t("pricing.getStarted"),
       buttonVariant: "outline" as const,
       popular: false,
-      action: (variantId?: string) => (window.location.href = isLoggedIn ? "/recipes" : "/signup"),
+      action: () => (window.location.href = isLoggedIn ? "/recipes" : "/signup"),
     },
     {
       name: t("pricing.premium"),

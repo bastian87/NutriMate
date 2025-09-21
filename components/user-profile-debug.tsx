@@ -200,11 +200,11 @@ export function UserProfileDebug() {
               <span className="font-medium">Activity Level:</span>
               <span>{userData.preferences.activity_level || "Not set"}</span>
             </div>
-            {userData.preferences.dietary_preferences.length > 0 && (
+            {(userData.preferences.dietary_preferences || []).length > 0 && (
               <div>
                 <span className="font-medium">Dietary Preferences:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {userData.preferences.dietary_preferences.map((pref, index) => (
+                  {(userData.preferences.dietary_preferences || []).map((pref, index) => (
                     <Badge key={index} variant="outline" className="text-xs">
                       {pref}
                     </Badge>

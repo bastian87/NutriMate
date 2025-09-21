@@ -249,6 +249,8 @@ export interface Database {
           include_snacks: boolean | null
           max_prep_time: number | null
           macro_priority: string | null
+          allergies: string[] | null
+          intolerances: string[] | null
           created_at: string
           updated_at: string
         }
@@ -267,6 +269,8 @@ export interface Database {
           include_snacks?: boolean | null
           max_prep_time?: number | null
           macro_priority?: string | null
+          allergies?: string[] | null
+          intolerances?: string[] | null
           created_at?: string
           updated_at?: string
         }
@@ -285,6 +289,8 @@ export interface Database {
           include_snacks?: boolean | null
           max_prep_time?: number | null
           macro_priority?: string | null
+          allergies?: string[] | null
+          intolerances?: string[] | null
           created_at?: string
           updated_at?: string
         }
@@ -370,11 +376,13 @@ export type UserPreferences = {
   activity_level: string | null;
   health_goal: string | null;
   calorie_target: number | null;
-  dietary_preferences: string[];
-  excluded_ingredients: string[];
+  dietary_preferences: string[] | null;
+  excluded_ingredients: string[] | null;
   include_snacks: boolean | null;
   max_prep_time: number | null;
   macro_priority: string | null;
+  allergies: string[] | null;
+  intolerances: string[] | null;
   created_at: string;
   updated_at: string;
 };
