@@ -94,7 +94,7 @@ class OnboardingService {
   }
 
   // Crear cuenta y finalizar onboarding
-  async createAccountAndFinalize(): Promise<{ success: boolean; error?: string }> {
+  async createAccountAndFinalize(): Promise<{ success: boolean; error?: string; redirect?: boolean }> {
     try {
       const data = this.getOnboardingData()
       
