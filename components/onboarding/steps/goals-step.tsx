@@ -139,12 +139,12 @@ export function GoalsStep({ data, onChange }: GoalsStepProps) {
     const calories = parseInt(value)
     setCalorieError('')
     
+    // Siempre actualizar el estado, incluso si hay errores de validación
+    onChange({ calorie_target: value ? calories : undefined })
+    
     if (value && (isNaN(calories) || calories < 800 || calories > 5000)) {
       setCalorieError('Las calorías deben estar entre 800 y 5000')
-      return
     }
-    
-    onChange({ calorie_target: value ? calories : undefined })
   }
 
   // Calcular calorías cuando cambien los datos

@@ -35,36 +35,36 @@ export function HealthMetricsStep({ data, onChange }: HealthMetricsStepProps) {
     const age = parseInt(value)
     setAgeError('')
     
+    // Siempre actualizar el estado, incluso si hay errores de validación
+    onChange({ age: value ? age : undefined })
+    
     if (value && (isNaN(age) || !validateAge(age))) {
       setAgeError('La edad debe estar entre 13 y 120 años')
-      return
     }
-    
-    onChange({ age: value ? age : undefined })
   }
 
   const handleHeightChange = (value: string) => {
     const height = parseInt(value)
     setHeightError('')
     
+    // Siempre actualizar el estado, incluso si hay errores de validación
+    onChange({ height: value ? height : undefined })
+    
     if (value && (isNaN(height) || !validateHeight(height))) {
       setHeightError('La altura debe estar entre 100 y 250 cm')
-      return
     }
-    
-    onChange({ height: value ? height : undefined })
   }
 
   const handleWeightChange = (value: string) => {
     const weight = parseInt(value)
     setWeightError('')
     
+    // Siempre actualizar el estado, incluso si hay errores de validación
+    onChange({ weight: value ? weight : undefined })
+    
     if (value && (isNaN(weight) || !validateWeight(weight))) {
       setWeightError('El peso debe estar entre 30 y 300 kg')
-      return
     }
-    
-    onChange({ weight: value ? weight : undefined })
   }
 
   const handleGenderChange = (value: string) => {
