@@ -23,6 +23,7 @@ export async function middleware(req: NextRequest) {
     '/privacy-policy',
     '/terms-of-service',
     '/pricing',
+    '/calorie-calculator', // Calculadora de calorías debe ser pública
     '/auth/callback',
     '/clear-auth',
     '/clear-session',
@@ -50,7 +51,7 @@ export async function middleware(req: NextRequest) {
     '/gamification',
     '/monthly-summary',
     '/weekly-summary',
-    '/calorie-calculator',
+    // '/calorie-calculator', // Removido - ahora es ruta pública
     '/account',
     '/checkout',
     '/admin'

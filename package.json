@@ -12,7 +12,9 @@
     "check-env": "tsx scripts/check-env.ts",
     "check-subscriptions": "tsx scripts/check-subscriptions.ts",
     "clean-test-subscriptions": "tsx scripts/check-subscriptions.ts clean-test",
-    "test-delete-account": "tsx scripts/test-delete-account.ts"
+    "test-delete-account": "tsx scripts/test-delete-account.ts",
+    "check-grocery-lists": "tsx scripts/check-grocery-lists.ts",
+    "cleanup-grocery-lists": "tsx scripts/cleanup-duplicate-grocery-lists.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

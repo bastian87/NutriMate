@@ -48,49 +48,32 @@ export function useGroceryList(shouldFetch = true) {
       setLoading(true)
       setError(null)
 
-      // Get or create the user's default grocery list
-      let { data: list, error: listError } = await supabase
+      // Get the user's grocery lists (there might be multiple)
+      const { data: lists, error: listsError } = await supabase
         .from("grocery_lists")
         .select("*")
         .eq("user_id", user.id)
-        .single()
+        .order("created_at", { ascending: false })
 
-      if (listError && listError.code === "PGRST116") {
-        // No list found, create one only if we don't have any lists for this user
-        const { data: existingLists, error: checkError } = await supabase
+      if (listsError) throw listsError
+
+      let list
+      if (!lists || lists.length === 0) {
+        // No lists found, create one
+        const { data: newList, error: createError } = await supabase
           .from("grocery_lists")
-          .select("id")
-          .eq("user_id", user.id)
-          .limit(1)
+          .insert({
+            user_id: user.id,
+            name: "My Grocery List",
+          })
+          .select()
+          .single()
 
-        if (checkError) throw checkError
-
-        // Only create if no lists exist
-        if (!existingLists || existingLists.length === 0) {
-          const { data: newList, error: createError } = await supabase
-            .from("grocery_lists")
-            .insert({
-              user_id: user.id,
-              name: "My Grocery List",
-            })
-            .select()
-            .single()
-
-          if (createError) throw createError
-          list = newList
-        } else {
-          // Use the first existing list
-          const { data: firstList, error: fetchError } = await supabase
-            .from("grocery_lists")
-            .select("*")
-            .eq("user_id", user.id)
-            .single()
-
-          if (fetchError) throw fetchError
-          list = firstList
-        }
-      } else if (listError) {
-        throw listError
+        if (createError) throw createError
+        list = newList
+      } else {
+        // Use the first (most recent) list
+        list = lists[0]
       }
 
       // Get the items for this list
