@@ -15,20 +15,20 @@ export const createSupabaseClient = () => {
     
     // Interceptar las consultas para agregar headers
     const originalSelect = query.select.bind(query)
-    query.select = (columns?: string) => {
+    query.select = ((columns?: string) => {
       const result = originalSelect(columns)
       
       // Agregar headers para evitar errores 406
-      if (result.headers) {
-        result.headers = {
-          ...result.headers,
+      if (result && typeof result === 'object' && 'headers' in result) {
+        (result as any).headers = {
+          ...(result as any).headers,
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         }
       }
       
       return result
-    }
+    }) as typeof query.select
     
     return query
   }

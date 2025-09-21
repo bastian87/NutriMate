@@ -223,7 +223,7 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
               <li key={ingredient.id} className="flex items-center">
                 <div className="h-5 w-5 rounded-full border border-gray-300 mr-3"></div>
                 <span>
-                  {ingredient.quantity} {ingredient.unit} {ingredient.name}
+                  {ingredient.amount} {ingredient.name}
                 </span>
               </li>
             ))}
