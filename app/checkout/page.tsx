@@ -91,11 +91,11 @@ export default function CheckoutPage() {
                   <h3 className="font-medium mb-3">What&apos;s included:</h3>
                   <ul className="space-y-2 text-sm">
                     {[
-                      "Unlimited AI recipe suggestions",
-                      "Advanced meal planning (4 weeks)",
+                      "Unlimited recipe access",
+                      // "Advanced meal planning (4 weeks)", // Oculto temporalmente
                       "Smart grocery lists",
-                      "Personalized nutrition insights",
-                      "Custom dietary restrictions",
+                      "Nutritional analysis",
+                      "Custom recipe creation",
                       "Priority customer support",
                     ].map((feature, index) => (
                       <li key={index} className="flex items-center gap-2">

@@ -13,7 +13,7 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
-  const [activeTab, setActiveTab] = useState<"recipe" | "reviews">("recipe")
+  const [activeTab, setActiveTab] = useState<"recipe">("recipe") // Removido "reviews" - solo calificaciones
   const { t } = useLanguage()
 
   useEffect(() => {
@@ -205,12 +205,7 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
           >
             {t("mobileRecipe.recipe")}
           </button>
-          <button
-            className={`pb-2 px-4 font-medium ${activeTab === "reviews" ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-500"}`}
-            onClick={() => setActiveTab("reviews")}
-          >
-            {t("mobileRecipe.reviews")}
-          </button>
+          {/* Tab de reviews removido - solo calificaciones */}
         </div>
       </div>
 
@@ -292,42 +287,7 @@ export default function MobileRecipePage({ params }: { params: { slug: string } 
         </div>
       )}
 
-      {/* Reviews Content */}
-      {activeTab === "reviews" && (
-        <div className="px-4 py-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-serif font-bold">Reviews</h2>
-            <button className="text-orange-600 font-medium">Write a Review</button>
-          </div>
-
-          <div className="space-y-6">
-            {[1, 2, 3].map((review) => (
-              <div key={review} className="pb-6 border-b border-gray-200">
-                <div className="flex items-center mb-2">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 mr-3"></div>
-                  <div>
-                    <p className="font-medium">User Name</p>
-                    <p className="text-sm text-gray-500">2 months ago</p>
-                  </div>
-                </div>
-
-                <div className="flex mb-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <svg key={star} className="h-4 w-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24">
-                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                    </svg>
-                  ))}
-                </div>
-
-                <p className="text-gray-700">
-                  This recipe was amazing! I made it for dinner last night and my family loved it. Will definitely make
-                  it again.
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Reviews Content removido - solo calificaciones */}
 
       {/* Mobile Navigation */}
       <MobileNavigation isOpen={true} onClose={() => undefined} />

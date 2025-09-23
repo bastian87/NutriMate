@@ -160,11 +160,11 @@ export default function LandingClient({ }: LandingClientProps) {
       description: t("pricing.premiumDesc"),
       features: [
         t("pricing.unlimitedRecipeAccess"),
-        t("pricing.advancedMealPlanning"),
+        // t("pricing.advancedMealPlanning"), // Oculto temporalmente
         t("pricing.smartGroceryLists"),
         t("pricing.nutritionalAnalysis"),
         t("pricing.customRecipeCreation"),
-        t("pricing.exportMealPlans"),
+        // t("pricing.exportMealPlans"), // Oculto temporalmente
         t("pricing.prioritySupport"),
       ],
       buttonText: t("pricing.startPremium"),
@@ -182,7 +182,7 @@ export default function LandingClient({ }: LandingClientProps) {
         t("pricing.everythingInPremium"),
         t("pricing.advancedAnalytics"),
         t("pricing.recipeRecommendations"),
-        t("pricing.mealPlanTemplates"),
+        // t("pricing.mealPlanTemplates"), // Oculto temporalmente
         t("pricing.premiumSupport"),
       ],
       buttonText: t("pricing.startAnnual"),

@@ -28,7 +28,7 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([])
   const [isAddingToList, setIsAddingToList] = useState(false)
   const [userRating, setUserRating] = useState<number>(recipe?.user_rating || 0)
-  const [userReview, setUserReview] = useState<string>("")
+  // const [userReview, setUserReview] = useState<string>("") // Removido - solo calificaciones
   const [savingRating, setSavingRating] = useState(false)
   const [showSavedMsg, setShowSavedMsg] = useState(false)
   const [showShareMenu, setShowShareMenu] = useState(false)
@@ -42,13 +42,9 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
   }, [recipe?.user_rating])
 
   useEffect(() => {
-    // Si el usuario ya tiene review, mostrarlo
+    // Si el usuario ya tiene calificación, mostrarla
     if (recipe && user && recipe.id && recipe.user_rating) {
-      // Buscar el review del usuario en la lista de ratings si está disponible
-      // (esto depende de cómo se obtienen los datos, aquí solo inicializamos vacío)
-      // Si quieres mostrar el review guardado, deberías modificar getRecipeById para incluirlo
-      // Por ahora, lo dejamos vacío para que el usuario pueda escribirlo
-      setUserReview("")
+      setUserRating(recipe.user_rating)
     }
   }, [recipe, user])
 
@@ -104,7 +100,7 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
     if (!user || !recipe) return
     setSavingRating(true)
     try {
-      await rateRecipe(userRating, userReview)
+      await rateRecipe(userRating, "") // Solo calificación, sin comentario
       setShowSavedMsg(true)
     } catch (e) {
       alert(t("recipes.errorSavingRating") + (e instanceof Error ? e.message : e))
@@ -438,14 +434,7 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
                     </div>
                   </div>
                   
-                  <textarea
-                    className="w-full border border-gray-300 rounded-lg p-3 mb-4 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                    rows={3}
-                    placeholder={t("recipes.leaveComment")}
-                    value={userReview}
-                    onChange={e => setUserReview(e.target.value)}
-                    disabled={savingRating}
-                  />
+                  {/* Comentarios removidos - solo calificaciones */}
                   
                   <div className="flex items-center gap-4">
                     <Button 

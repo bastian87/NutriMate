@@ -495,19 +495,19 @@ export const rateRecipe = async (recipeId: string, userId: string, rating: numbe
     if (checkError) throw checkError
 
     if (existing) {
-      // Actualizar el rating existente
+      // Actualizar el rating existente (solo calificación, sin comentario)
       const { error: updateError } = await supabase
         .from("recipe_ratings")
-        .update({ rating, review, created_at: new Date().toISOString() })
+        .update({ rating, review: "", created_at: new Date().toISOString() })
         .eq("recipe_id", recipeId)
         .eq("user_id", userId)
       if (updateError) throw updateError
       return { updated: true }
     } else {
-      // Crear un nuevo rating
+      // Crear un nuevo rating (solo calificación, sin comentario)
       const { error: insertError } = await supabase
         .from("recipe_ratings")
-        .insert({ recipe_id: recipeId, user_id: userId, rating, review, created_at: new Date().toISOString() })
+        .insert({ recipe_id: recipeId, user_id: userId, rating, review: "", created_at: new Date().toISOString() })
       if (insertError) throw insertError
       return { created: true }
     }

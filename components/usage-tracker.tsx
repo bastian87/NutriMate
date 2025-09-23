@@ -108,7 +108,8 @@ export default function UsageTracker({ userId }: UsageTrackerProps) {
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
             <h4 className="font-medium text-orange-900 mb-1">{t("usageTracker.unlockPremium")}</h4>
             <ul className="text-sm text-orange-800 space-y-1">
-              <li>{t("usageTracker.advancedMealPlansDesc")}</li>
+              {/* <li>{t("usageTracker.advancedMealPlansDesc")}</li> */} {/* Oculto temporalmente */}
+              <li>Unlimited recipe access and smart grocery lists</li>
             </ul>
             <Link href="/pricing">
               <Button className="w-full mt-3 bg-orange-600 hover:bg-orange-700" size="sm">

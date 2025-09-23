@@ -121,7 +121,8 @@ export function useRecipe(slugOrId: string, userId?: string) {
     if (!recipe || !userId) return
 
     try {
-      await recipeService.rateRecipe(recipe.id, userId, rating, review)
+      // Solo calificación, sin comentario
+      await recipeService.rateRecipe(recipe.id, userId, rating, "")
       // Refetch recipe to get updated average rating
       const updatedRecipe = await recipeService.getRecipeById(recipe.id, userId)
       setRecipe(updatedRecipe)
