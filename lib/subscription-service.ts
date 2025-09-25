@@ -93,7 +93,7 @@ export async function getUserUsage(userId: string): Promise<UsageLimit | null> {
     },
     customRecipes: {
       created: 0,
-      maxCreated: 0, // Free users can create up to 3 custom recipes
+      maxCreated: 999999, // Free users can create unlimited custom recipes
     },
     exports: {
       used: 0,
@@ -122,11 +122,15 @@ export async function checkFeatureAccess(userId: string, feature: string): Promi
     case "priority_support":
     case "advanced_nutrition_analysis":
     case "unlimited_meal_plans":
-    case "unlimited_custom_recipes":
-    case "unlimited_saved_recipes":
     case "advanced_meal_planning":
     case "smart_grocery_lists":
+    case "monthly_summary":
       return false
+
+    // UNLIMITED PREMIUM FEATURES - Premium users have unlimited access
+    case "unlimited_custom_recipes":
+    case "unlimited_saved_recipes":
+      return !!(subscription && subscription.plan === "premium" && (subscription.status === "active" || subscription.status === "trialing"))
 
     // LIMITED FREE FEATURES - Free users have usage limits
     case "save_recipes":
@@ -239,7 +243,7 @@ export async function createSubscription(
     cancelAtPeriodEnd: false,
     trialEnd: null,
     billingCycle,
-    amount: billingCycle === "monthly" ? 4.99 : 49.99,
+    amount: billingCycle === "monthly" ? 2.99 : 29.99,
     stripeCustomerId,
     stripeSubscriptionId,
   }

@@ -206,8 +206,8 @@ export default function GroceryListPage() {
           </div>
           <h2 className="text-2xl font-bold mb-4">Smart Grocery Lists</h2>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Upgrade to Premium to unlock smart grocery lists with automatic categorization, 
-            recipe integration, and advanced features.
+            Upgrade to Premium to unlock advanced grocery list features like 
+            export/share functionality and enhanced categorization.
           </p>
           <div className="space-y-4">
             <Button asChild className="bg-orange-600 hover:bg-orange-700">

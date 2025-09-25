@@ -13,8 +13,8 @@ export default function CheckoutPage() {
   const [userEmail] = useState("demo@example.com") // In real app, get from auth
   const [userId] = useState("user1") // In real app, get from auth
 
-  const monthlyPrice = 4.99
-  const annualPrice = 49.99
+  const monthlyPrice = 2.99
+  const annualPrice = 29.99
   const annualSavings = (monthlyPrice * 12 - annualPrice).toFixed(2)
 
   return (

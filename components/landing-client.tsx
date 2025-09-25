@@ -155,7 +155,7 @@ export default function LandingClient({ }: LandingClientProps) {
     },
     {
       name: t("pricing.premium"),
-      price: "$4.99",
+      price: "$2.99",
       period: t("pricing.month"),
       description: t("pricing.premiumDesc"),
       features: [
@@ -175,7 +175,7 @@ export default function LandingClient({ }: LandingClientProps) {
     },
     {
       name: t("pricing.premiumAnnual"),
-      price: "$49.99",
+      price: "$29.99",
       period: t("pricing.year"),
       description: t("pricing.premiumAnnualDesc"),
       features: [

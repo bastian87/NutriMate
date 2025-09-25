@@ -46,6 +46,7 @@ export function FeatureGate({
     "unlimited_saved_recipes",
     "advanced_meal_planning",
     "smart_grocery_lists",
+    "monthly_summary",
   ]
 
   const isPremiumOnly = premiumOnlyFeatures.includes(feature)

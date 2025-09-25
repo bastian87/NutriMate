@@ -11,6 +11,7 @@ import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/i18n/context";
 import { Calendar, Target, Zap, TrendingUp, CheckCircle, XCircle, BarChart3 } from "lucide-react";
+import { FeatureGate } from "@/components/feature-gate";
 
 interface MonthlySummary {
   month: string;
@@ -134,13 +135,14 @@ export default function MonthlySummaryPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{t("monthlySummary.title")}</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          {t("monthlySummary.subtitle")}
-        </p>
-      </div>
+    <FeatureGate feature="monthly_summary">
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">{t("monthlySummary.title")}</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            {t("monthlySummary.subtitle")}
+          </p>
+        </div>
 
       {/* Month Selector */}
       <Card>
@@ -412,6 +414,7 @@ export default function MonthlySummaryPage() {
           </p>
         </div>
       )}
-    </div>
+      </div>
+    </FeatureGate>
   );
 }

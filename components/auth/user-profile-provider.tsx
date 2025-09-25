@@ -398,6 +398,7 @@ export function useFeatureAccess(feature: string) {
     case "unlimited_saved_recipes":
     case "advanced_meal_planning":
     case "smart_grocery_lists":
+    case "monthly_summary":
       return {
         canAccess: false,
         reason: "This feature is available for Premium users only"
