@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerTrigger, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import PlateBuilder from "./plate-builder/PlateBuilder";
 import { useAuthContext } from "@/components/auth/simple-auth-provider";
@@ -12,12 +12,13 @@ import type { DayEntryItem } from "@/types/nutri";
 interface Props {
   date: string;
   goalId: string;
+  targetKcal?: number;
   onClose?: () => void;
   autoOpen?: boolean;
   onSave?: () => void;
 }
 
-export function DayDrawer({ date, goalId, onClose, autoOpen = false, onSave }: Props) {
+export function DayDrawer({ date, goalId, targetKcal, onClose, autoOpen = false, onSave }: Props) {
   const [open, setOpen] = useState(false);
   const { user } = useAuthContext();
   const { toast } = useToast();
@@ -119,6 +120,7 @@ export function DayDrawer({ date, goalId, onClose, autoOpen = false, onSave }: P
         <Button variant="outline">Abrir {date}</Button>
       </DrawerTrigger>
       <DrawerContent className="p-4 max-h-[90vh] overflow-y-auto">
+        <DrawerTitle className="sr-only">Día {date}</DrawerTitle>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-lg">Día {date}</h2>
           <Button
@@ -133,7 +135,7 @@ export function DayDrawer({ date, goalId, onClose, autoOpen = false, onSave }: P
         <PlateBuilder 
           date={date} 
           goalId={activeGoal?.id || goalId} 
-          targetKcal={activeGoal?.targetKcalDay || 2000}
+          targetKcal={activeGoal?.targetKcalDay || targetKcal || 2000}
           onSave={handleSave}
         />
       </DrawerContent>

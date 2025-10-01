@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { DayDrawer } from "@/components/day-drawer";
+import { useActiveGoal } from "@/hooks/useActiveGoal";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CalendarDay {
@@ -24,6 +25,7 @@ export function CalendarView({ range, from }: Props) {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [refreshKey, setRefreshKey] = useState(0);
   const { user } = useAuthContext();
+  const { activeGoal } = useActiveGoal();
 
   // Generate calendar days for the current month
   const calendarDays = useMemo(() => {
@@ -173,7 +175,8 @@ export function CalendarView({ range, from }: Props) {
       {selectedDate && (
         <DayDrawer 
           date={selectedDate} 
-          goalId="" 
+          goalId={activeGoal?.id || ""} 
+          targetKcal={activeGoal?.targetKcalDay}
           onClose={() => setSelectedDate("")}
           autoOpen={true}
           onSave={refreshCalendar}

@@ -10,9 +10,8 @@ export function evaluateDay(items: DayEntryItem[], targetKcal: number) {
 
   const groupsOk = hasCarb && hasProtein && hasFat && hasVegFruit;
   const kcalOk = totalsKcal <= targetKcal;
-  const noExtras = extrasCount === 0;
 
-  const isSuccess = groupsOk && kcalOk && noExtras;
+  const isSuccess = groupsOk && kcalOk;
 
   return {
     totalsKcal,

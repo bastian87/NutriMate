@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthContext } from '@/components/auth/simple-auth-provider';
 import { evaluateDay } from '@/lib/nutri/validation';
 import { PLATE_BUILDER } from '@/lib/i18n/en';
 import type { Ingredient, DayEntryItem, MacroGroup } from '@/types/nutri';
@@ -219,6 +220,7 @@ const mockIngredients: Ingredient[] = [
  */
 export default function PlateBuilder({ date, goalId, targetKcal, onSave }: PlateBuilderProps) {
   const { toast } = useToast();
+  const { user } = useAuthContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<MacroGroup>('carb');
   const [saving, setSaving] = useState(false);
@@ -234,22 +236,29 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
   ]);
 
   const [extrasBasket, setExtrasBasket] = useState<DayEntryItemWithId[]>([]);
+  const [loadingDayData, setLoadingDayData] = useState(true);
 
   // Load real ingredients from API
   useEffect(() => {
     const loadIngredients = async () => {
       try {
+        console.log('PlateBuilder - Loading ingredients...');
         const response = await fetch('/api/ingredients');
+        console.log('PlateBuilder - Ingredients response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
+          console.log('PlateBuilder - Ingredients data received:', data);
           setIngredients(data.ingredients || []);
         } else {
-          console.error('Failed to load ingredients');
+          console.error('PlateBuilder - Failed to load ingredients, status:', response.status);
+          const errorText = await response.text();
+          console.error('PlateBuilder - Error response:', errorText);
           // Fallback to mock data
           setIngredients(mockIngredients);
         }
       } catch (error) {
-        console.error('Error loading ingredients:', error);
+        console.error('PlateBuilder - Error loading ingredients:', error);
         // Fallback to mock data
         setIngredients(mockIngredients);
       } finally {
@@ -260,24 +269,115 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
     loadIngredients();
   }, []);
 
+  // Load existing day data
+  useEffect(() => {
+    const loadDayData = async () => {
+      if (!date || !goalId) {
+        console.log('PlateBuilder - Missing date or goalId:', { date, goalId });
+        setLoadingDayData(false);
+        return;
+      }
+
+      // Clear existing data before loading new data
+      setPlateSlots(prev => prev.map(slot => ({ ...slot, items: [] })));
+      setExtrasBasket([]);
+
+      try {
+        console.log('PlateBuilder - Loading day data for:', { date, goalId });
+        const response = await fetch(`/api/day-entries?date=${date}&goalId=${goalId}`, {
+          headers: {
+            'x-user-id': user?.id || ''
+          }
+        });
+        console.log('PlateBuilder - Day data response status:', response.status);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('PlateBuilder - Day data loaded:', data);
+          
+          if (data.dayEntry && data.items && data.items.length > 0) {
+            console.log('PlateBuilder - Found existing day data with', data.items.length, 'items');
+            // Group items by their macro group
+            const groupedItems: { [key in MacroGroup]: DayEntryItemWithId[] } = {
+              carb: [],
+              protein: [],
+              fat: [],
+              vegfruit: [],
+              treat: []
+            };
+
+            data.items.forEach((item: any) => {
+              const dayEntryItem: DayEntryItemWithId = {
+                id: item.id,
+                ingredientId: item.ingredientId,
+                quantityGrams: item.quantityGrams,
+                kcal: item.kcal,
+                group: item.group
+              };
+
+              if (item.group === 'treat') {
+                groupedItems.treat.push(dayEntryItem);
+              } else {
+                groupedItems[item.group as MacroGroup].push(dayEntryItem);
+              }
+            });
+
+            // Set extras basket separately to avoid duplicates
+            setExtrasBasket(groupedItems.treat);
+
+            // Update plate slots with loaded data
+            setPlateSlots(prev => prev.map(slot => ({
+              ...slot,
+              items: groupedItems[slot.group] || []
+            })));
+
+            console.log('PlateBuilder - Plate slots updated with loaded data');
+          } else {
+            console.log('PlateBuilder - No existing day data found');
+          }
+        } else {
+          console.error('PlateBuilder - Failed to load day data, status:', response.status);
+          const errorText = await response.text();
+          console.error('PlateBuilder - Day data error response:', errorText);
+        }
+      } catch (error) {
+        console.error('PlateBuilder - Error loading day data:', error);
+      } finally {
+        setLoadingDayData(false);
+      }
+    };
+
+    loadDayData();
+  }, [date, goalId]);
+
   // Filter ingredients based on search and active tab
   const filteredIngredients = useMemo(() => {
     let filtered = ingredients;
     
+    console.log('PlateBuilder - Filtering ingredients:', {
+      totalIngredients: ingredients.length,
+      activeTab,
+      searchQuery,
+      firstIngredient: ingredients[0]
+    });
+    
     if (activeTab !== 'treat') {
       filtered = filtered.filter(ing => ing.group === activeTab);
+      console.log('PlateBuilder - After group filter:', filtered.length);
     } else {
       filtered = filtered.filter(ing => ing.group === 'treat');
+      console.log('PlateBuilder - After treat filter:', filtered.length);
     }
     
     if (searchQuery) {
       filtered = filtered.filter(ing => 
         ing.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
+      console.log('PlateBuilder - After search filter:', filtered.length);
     }
     
     return filtered;
-  }, [activeTab, searchQuery]);
+  }, [activeTab, searchQuery, ingredients]);
 
   // Calculate totals and evaluation
   const allItems = useMemo(() => {
@@ -451,16 +551,22 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
     }
   };
 
-  if (loadingIngredients) {
+  if (loadingIngredients || loadingDayData) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-2"></div>
-          <p className="text-sm text-gray-600">Cargando ingredientes...</p>
+          <p className="text-sm text-gray-600">
+            {loadingIngredients ? 'Cargando ingredientes...' : 'Cargando datos del día...'}
+          </p>
         </div>
       </div>
     );
   }
+
+  // Debug: Log ingredients count
+  console.log('PlateBuilder - Ingredients loaded:', ingredients.length);
+  console.log('PlateBuilder - Filtered ingredients:', filteredIngredients.length);
 
   return (
     <TooltipProvider>
@@ -508,7 +614,7 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold">{PLATE_BUILDER.LABELS.PLATE_BUILDER}</h2>
-                  <p className="text-gray-600">Date: {new Date(date).toLocaleDateString('en-US')}</p>
+                  <p className="text-gray-600">Date: {date}</p>
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold">{evaluation.totalsKcal} / {targetKcal} kcal</div>

@@ -32,8 +32,22 @@ export function useActiveGoal() {
         const data = await response.json();
         const goals = data.goals || [];
         
+        console.log('useActiveGoal - Raw goals from API:', goals);
+        
+        // Transform goals to match interface
+        const transformedGoals = goals.map((goal: any) => ({
+          id: goal.id,
+          targetKcalDay: goal.target_kcal_day,
+          objective: goal.objective,
+          startDate: goal.start_date,
+          endDate: goal.end_date,
+          isActive: !goal.end_date || new Date(goal.end_date) >= new Date()
+        }));
+        
+        console.log('useActiveGoal - Transformed goals:', transformedGoals);
+        
         // Find the most recent active goal
-        const active = goals.find((goal: Goal) => {
+        const active = transformedGoals.find((goal: Goal) => {
           const now = new Date();
           const startDate = new Date(goal.startDate);
           const endDate = goal.endDate ? new Date(goal.endDate) : null;
@@ -42,13 +56,15 @@ export function useActiveGoal() {
         });
 
         if (active) {
+          console.log('useActiveGoal - Active goal found:', active);
           setActiveGoal(active);
         } else {
           // If no active goal, try to find the most recent one
-          const mostRecent = goals.sort((a: Goal, b: Goal) => 
+          const mostRecent = transformedGoals.sort((a: Goal, b: Goal) => 
             new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
           )[0];
           
+          console.log('useActiveGoal - Most recent goal:', mostRecent);
           setActiveGoal(mostRecent || null);
         }
       } else {

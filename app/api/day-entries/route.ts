@@ -5,6 +5,84 @@ import { getUserId } from '@/lib/auth/getUserId';
 import { evaluateDay } from '@/lib/nutri/evaluateDay';
 import type { MacroGroup } from '@/types/nutri';
 
+export async function GET(req: NextRequest) {
+  const supa = createServerClient();
+  try {
+    const userId = await getUserId(req as unknown as Request);
+    const url = new URL(req.url);
+    const date = url.searchParams.get('date');
+    const goalId = url.searchParams.get('goalId');
+
+    if (!date) {
+      return NextResponse.json({ error: 'Date parameter is required' }, { status: 400 });
+    }
+
+    console.log('Day Entries GET - Fetching entries for:', { userId, date, goalId });
+
+    // Get day entry
+    const { data: dayEntry, error: dayError } = await supa
+      .from('day_entries')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('date', date)
+      .maybeSingle();
+
+    if (dayError) {
+      console.error('Day Entries GET - Error fetching day entry:', dayError);
+      throw dayError;
+    }
+
+    if (!dayEntry) {
+      return NextResponse.json({ dayEntry: null, items: [] });
+    }
+
+    // Get day entry items with ingredient details
+    const { data: items, error: itemsError } = await supa
+      .from('day_entry_items')
+      .select(`
+        id,
+        ingredient_id,
+        quantity_grams,
+        kcal,
+        group,
+        ingredients (
+          id,
+          name,
+          locale,
+          group,
+          kcal_per_100g
+        )
+      `)
+      .eq('day_entry_id', dayEntry.id);
+
+    if (itemsError) {
+      console.error('Day Entries GET - Error fetching items:', itemsError);
+      throw itemsError;
+    }
+
+    // Transform items to match expected format
+    const transformedItems = items?.map(item => ({
+      id: item.id,
+      ingredientId: item.ingredient_id,
+      quantityGrams: item.quantity_grams,
+      kcal: item.kcal,
+      group: item.group,
+      ingredient: item.ingredients
+    })) || [];
+
+    console.log('Day Entries GET - Success:', { dayEntry, itemsCount: transformedItems.length });
+
+    return NextResponse.json({
+      dayEntry,
+      items: transformedItems
+    });
+
+  } catch (err: any) {
+    console.error('Day Entries GET - Error:', err);
+    return NextResponse.json({ error: err?.message ?? 'Bad Request' }, { status: 400 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   const supa = createServerClient();
   try {
