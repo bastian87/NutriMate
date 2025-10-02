@@ -14,10 +14,16 @@ import { recipeService } from "@/lib/services/recipe-service"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useLanguage } from "@/lib/i18n/context"
 import Link from "next/link"
+import { IngredientSelector } from "@/components/ingredient-selector"
 
 interface Ingredient {
   name: string
   amount: string // Cantidad libre como "1 taza", "2 cucharadas", etc.
+}
+
+interface InstructionStep {
+  title: string
+  description: string
 }
 
 export default function NewRecipePage() {
@@ -38,24 +44,27 @@ export default function NewRecipePage() {
     protein: 0,
     carbs: 0,
     fat: 0,
+    sugar: 0,
+    sodium: 0,
+    fiber: 0,
     meal_type: "Desayuno"
   })
 
   const [ingredients, setIngredients] = useState<Ingredient[]>([{ name: "", amount: "" }])
+  const [instructionSteps, setInstructionSteps] = useState<InstructionStep[]>([{ title: "", description: "" }])
 
-  const addIngredient = () => {
-    setIngredients([...ingredients, { name: "", amount: "" }])
+
+  const addInstructionStep = () => {
+    setInstructionSteps([...instructionSteps, { title: "", description: "" }])
   }
 
-  const removeIngredient = (index: number) => {
-    if (ingredients.length > 1) {
-      setIngredients(ingredients.filter((_, i) => i !== index))
-    }
+  const removeInstructionStep = (index: number) => {
+    setInstructionSteps(instructionSteps.filter((_, i) => i !== index))
   }
 
-  const updateIngredient = (index: number, field: keyof Ingredient, value: string) => {
-    const updated = ingredients.map((ing, i) => (i === index ? { ...ing, [field]: value } : ing))
-    setIngredients(updated)
+  const updateInstructionStep = (index: number, field: keyof InstructionStep, value: string) => {
+    const updated = instructionSteps.map((step, i) => (i === index ? { ...step, [field]: value } : step))
+    setInstructionSteps(updated)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,8 +81,8 @@ export default function NewRecipePage() {
       return
     }
 
-    if (!formData.instructions.trim()) {
-      setError(t("recipes.instructionsRequired"))
+    if (instructionSteps.length === 0 || instructionSteps.some(step => !step.title.trim() || !step.description.trim())) {
+      setError("At least one instruction step is required")
       return
     }
 
@@ -88,8 +97,15 @@ export default function NewRecipePage() {
     setError(null)
 
     try {
+      // Convert instruction steps back to text format
+      const instructionsText = instructionSteps
+        .filter(step => step.title.trim() && step.description.trim())
+        .map((step, index) => `${index + 1}. ${step.title.trim()}\n${step.description.trim()}`)
+        .join('\n\n')
+
       const recipeData = {
         ...formData,
+        instructions: instructionsText,
         ingredients: validIngredients,
         created_by: user.id,
       }
@@ -128,22 +144,25 @@ export default function NewRecipePage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Link href="/recipes" className="inline-flex items-center text-gray-600 hover:text-orange-600">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("recipes.backToRecipes")}
-          </Link>
-        </div>
+      <div className="mb-6">
+        <Link href="/recipes" className="inline-flex items-center text-gray-600 hover:text-orange-600">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          {t("recipes.backToRecipes")}
+        </Link>
+      </div>
 
-        <Card className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
+        <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-serif">{t("recipes.createNewRecipe")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded col-span-2">{error}</div>}
 
-              {/* Basic Information */}
+              {/* Left Column */}
+              <div className="space-y-6">
+                {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
@@ -228,134 +247,201 @@ export default function NewRecipePage() {
                     />
                   </div>
 
+                </div>
+              </div>
+
+              {/* Nutrition Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Nutrition Information</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="calories">{t("recipes.calories")}</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="calories">Calories (kcal)</Label>
                       <Input
                         id="calories"
                         type="number"
                         value={formData.calories}
-                        onChange={(e) => setFormData({ ...formData, calories: Number.parseInt(e.target.value) || 0 })}
+                        onChange={(e) => setFormData({ ...formData, calories: Number(e.target.value) })}
+                        placeholder="0"
                         min="0"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="protein">{t("recipes.protein")} (g)</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="protein">Protein (g)</Label>
                       <Input
                         id="protein"
                         type="number"
                         value={formData.protein}
-                        onChange={(e) => setFormData({ ...formData, protein: Number.parseInt(e.target.value) || 0 })}
+                        onChange={(e) => setFormData({ ...formData, protein: Number(e.target.value) })}
+                        placeholder="0"
                         min="0"
+                        step="0.1"
                       />
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="carbs">{t("recipes.carbs")} (g)</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="carbs">Carbs (g)</Label>
                       <Input
                         id="carbs"
                         type="number"
                         value={formData.carbs}
-                        onChange={(e) => setFormData({ ...formData, carbs: Number.parseInt(e.target.value) || 0 })}
+                        onChange={(e) => setFormData({ ...formData, carbs: Number(e.target.value) })}
+                        placeholder="0"
                         min="0"
+                        step="0.1"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="fat">{t("recipes.fat")} (g)</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="fat">Fat (g)</Label>
                       <Input
                         id="fat"
                         type="number"
                         value={formData.fat}
-                        onChange={(e) => setFormData({ ...formData, fat: Number.parseInt(e.target.value) || 0 })}
+                        onChange={(e) => setFormData({ ...formData, fat: Number(e.target.value) })}
+                        placeholder="0"
                         min="0"
+                        step="0.1"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="sugar">Sugar (g)</Label>
+                      <Input
+                        id="sugar"
+                        type="number"
+                        value={formData.sugar}
+                        onChange={(e) => setFormData({ ...formData, sugar: Number(e.target.value) })}
+                        placeholder="0"
+                        min="0"
+                        step="0.1"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="sodium">Sodium (mg)</Label>
+                      <Input
+                        id="sodium"
+                        type="number"
+                        value={formData.sodium}
+                        onChange={(e) => setFormData({ ...formData, sodium: Number(e.target.value) })}
+                        placeholder="0"
+                        min="0"
+                        step="0.1"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="fiber">Fiber (g)</Label>
+                      <Input
+                        id="fiber"
+                        type="number"
+                        value={formData.fiber}
+                        onChange={(e) => setFormData({ ...formData, fiber: Number(e.target.value) })}
+                        placeholder="0"
+                        min="0"
+                        step="0.1"
                       />
                     </div>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
               </div>
 
-              {/* Ingredients */}
+              {/* Right Column */}
+              <div className="space-y-6">
+                {/* Ingredients */}
               <div>
-                <div className="flex justify-between items-center mb-4">
+                <div className="mb-4">
                   <Label className="text-lg">{t("recipes.ingredients")} *</Label>
-                  <Button type="button" onClick={addIngredient} variant="outline" size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t("recipes.addIngredient")}
-                  </Button>
                 </div>
 
-                <div className="space-y-3">
-                  {ingredients.map((ingredient, index) => (
-                    <div key={index} className="flex gap-3 items-end">
-                      <div className="flex-1">
-                        <Label htmlFor={`ingredient-name-${index}`} className="text-sm font-medium text-gray-700">
-                          {t("recipes.ingredientName")}
-                        </Label>
-                        <Input
-                          id={`ingredient-name-${index}`}
-                          placeholder={t("recipes.ingredientNamePlaceholder")}
-                          value={ingredient.name}
-                          onChange={(e) => updateIngredient(index, "name", e.target.value)}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <Label htmlFor={`ingredient-amount-${index}`} className="text-sm font-medium text-gray-700">
-                          {t("recipes.amount")}
-                        </Label>
-                        <Input
-                          id={`ingredient-amount-${index}`}
-                          placeholder={t("recipes.amountPlaceholder")}
-                          value={ingredient.amount}
-                          onChange={(e) => updateIngredient(index, "amount", e.target.value)}
-                          className="mt-1"
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        onClick={() => removeIngredient(index)}
-                        variant="outline"
-                        size="sm"
-                        disabled={ingredients.length === 1}
-                        className="self-end"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-sm text-gray-500 mt-2">
-                  💡 {t("recipes.amountTip")}
-                </p>
-              </div>
-
-              {/* Instructions */}
-              <div>
-                <Label htmlFor="instructions">{t("recipes.instructions")} *</Label>
-                <Textarea
-                  id="instructions"
-                  value={formData.instructions}
-                  onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-                  placeholder={t("recipes.enterInstructions")}
-                  rows={8}
-                  required
+                <IngredientSelector
+                  selectedIngredients={ingredients}
+                  onIngredientsChange={setIngredients}
                 />
               </div>
 
-              {/* Submit Button */}
-              <div className="flex justify-end space-x-4">
-                <Button type="button" variant="outline" onClick={() => router.back()}>
-                  {t("common.cancel")}
-                </Button>
-                <Button type="submit" disabled={loading} className="bg-orange-600 hover:bg-orange-700">
-                  {loading ? t("recipes.creating") : t("recipes.createRecipe")}
+              {/* Instructions */}
+              <div className="space-y-4">
+                <Label>Step-by-step instructions *</Label>
+                
+                <div className="space-y-4">
+                  {instructionSteps.map((step, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-orange-500 text-white font-bold text-sm">
+                            {index + 1}
+                          </div>
+                          <span className="font-medium text-gray-700">Step {index + 1}</span>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={() => removeInstructionStep(index)}
+                          variant="outline"
+                          size="sm"
+                          disabled={instructionSteps.length === 1}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div>
+                          <Label htmlFor={`step-title-${index}`} className="text-sm font-medium text-gray-600">
+                            Step Title
+                          </Label>
+                          <Input
+                            id={`step-title-${index}`}
+                            value={step.title}
+                            onChange={(e) => updateInstructionStep(index, 'title', e.target.value)}
+                            placeholder="e.g., Prepare the Turkey"
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`step-description-${index}`} className="text-sm font-medium text-gray-600">
+                            Step Description
+                          </Label>
+                          <Textarea
+                            id={`step-description-${index}`}
+                            value={step.description}
+                            onChange={(e) => updateInstructionStep(index, 'description', e.target.value)}
+                            placeholder="e.g., Season the turkey breast with olive oil, salt, and pepper. Set aside."
+                            rows={3}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addInstructionStep}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Step
                 </Button>
               </div>
+              </div>
             </form>
+
+            {/* Submit Button */}
+            <div className="flex justify-end space-x-4 mt-6">
+              <Button type="button" variant="outline" onClick={() => router.back()}>
+                {t("common.cancel")}
+              </Button>
+              <Button type="submit" disabled={loading} className="bg-orange-600 hover:bg-orange-700" onClick={handleSubmit}>
+                {loading ? t("recipes.creating") : t("recipes.createRecipe")}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
+    </div>
   )
 }

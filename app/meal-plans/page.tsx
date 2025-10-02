@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Plus, Trash2, Loader2, Download, ChefHat, Calendar, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,10 +16,16 @@ import type { ExportFormat } from "@/lib/services/meal-plan-service"
 import { useLanguage } from "@/lib/i18n/context"
 import { FeatureGate } from "@/components/feature-gate"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
-import { useRouter } from "next/navigation"
 import { useSubscription } from "@/hooks/use-subscription"
 
 export default function MealPlansPage() {
+  const router = useRouter();
+  
+  // Redireccionar automáticamente al dashboard
+  useEffect(() => {
+    router.replace('/dashboard');
+  }, [router]);
+
   const { user } = useAuthContext()
   const { mealPlans, loading, error, deleteMealPlan, generateMealPlan, exportMealPlan } = useMealPlans()
   const { isPremium } = useSubscription();
@@ -29,7 +36,6 @@ export default function MealPlansPage() {
   // Estado para el modal de confirmación
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean, id: string | null }>({ open: false, id: null })
   const [customError, setCustomError] = useState<string | null>(null);
-  const router = useRouter();
 
   // Filtrar meal plans personalizados para usuarios no premium
   const filteredMealPlans = isPremium

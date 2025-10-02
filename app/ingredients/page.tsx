@@ -7,10 +7,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/i18n/context";
-import { Search, Plus, Edit, Trash2, Apple, Fish, Wheat, Droplets } from "lucide-react";
+import { motion } from "framer-motion";
+import { 
+  SearchIcon, 
+  PlusIcon, 
+  MoreIcon, 
+  FruitsVegetablesIcon, 
+  ProteinsIcon, 
+  CarbsIcon, 
+  FatsIcon, 
+  OthersIcon 
+} from "@/components/icons-new";
+import { ImageWithFallback } from "@/components/image-with-fallback";
 
 interface Ingredient {
   id: string;
@@ -115,12 +127,12 @@ export default function IngredientsPage() {
 
   const getGroupIcon = (group: string) => {
     switch (group) {
-      case 'carb': return <Wheat className="w-4 h-4" />;
-      case 'protein': return <Fish className="w-4 h-4" />;
-      case 'fat': return <Droplets className="w-4 h-4" />;
-      case 'vegfruit': return <Apple className="w-4 h-4" />;
-      case 'treat': return <Plus className="w-4 h-4" />;
-      default: return <Plus className="w-4 h-4" />;
+      case 'carb': return <CarbsIcon className="w-4 h-4" />;
+      case 'protein': return <ProteinsIcon className="w-4 h-4" />;
+      case 'fat': return <FatsIcon className="w-4 h-4" />;
+      case 'vegfruit': return <FruitsVegetablesIcon className="w-4 h-4" />;
+      case 'treat': return <OthersIcon className="w-4 h-4" />;
+      default: return <OthersIcon className="w-4 h-4" />;
     }
   };
 
@@ -146,178 +158,349 @@ export default function IngredientsPage() {
     return matchesSearch && matchesGroup;
   });
 
+  // Calculate group statistics
+  const groupStats = [
+    { name: 'Fruits/Vegetables', color: '#22c55e', icon: '🥬', count: ingredients.filter(i => i.group === 'vegfruit').length },
+    { name: 'Proteins', color: '#ef4444', icon: '🥩', count: ingredients.filter(i => i.group === 'protein').length },
+    { name: 'Carbs', color: '#f59e0b', icon: '🌾', count: ingredients.filter(i => i.group === 'carb').length },
+    { name: 'Fats', color: '#8b5cf6', icon: '🥑', count: ingredients.filter(i => i.group === 'fat').length },
+    { name: 'Others', color: '#6b7280', icon: '🧂', count: ingredients.filter(i => i.group === 'treat').length }
+  ].map(group => ({
+    ...group,
+    percentage: ingredients.length > 0 ? Math.round((group.count / ingredients.length) * 100) : 0
+  }));
+
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{t("ingredients.title")}</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          {t("ingredients.subtitle")}
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl font-bold mb-2">{t("ingredients.title")}</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            {t("ingredients.subtitle")}
+          </p>
+        </motion.div>
 
-      {/* Search and Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("ingredients.searchAndFilter")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="search">{t("ingredients.searchIngredient")}</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="search"
-                  placeholder={t("ingredients.searchPlaceholder")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="group">{t("ingredients.nutritionalGroup")}</Label>
-              <Select value={selectedGroup} onValueChange={setSelectedGroup}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("ingredients.allGroups")}</SelectItem>
-                  <SelectItem value="carb">{t("ingredients.groups.carb")}</SelectItem>
-                  <SelectItem value="protein">{t("ingredients.groups.protein")}</SelectItem>
-                  <SelectItem value="fat">{t("ingredients.groups.fat")}</SelectItem>
-                  <SelectItem value="vegfruit">{t("ingredients.groups.vegfruit")}</SelectItem>
-                  <SelectItem value="treat">{t("ingredients.groups.treat")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t("ingredients.actions")}</Label>
-              <Button 
-                onClick={() => setShowAddForm(!showAddForm)}
-                className="w-full"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                {t("ingredients.addIngredient")}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Add New Ingredient Form */}
-      {showAddForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("ingredients.addNewIngredient")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ingredientName">{t("ingredients.name")}</Label>
-                <Input
-                  id="ingredientName"
-                  placeholder={t("ingredients.namePlaceholder")}
-                  value={newIngredient.name}
-                  onChange={(e) => setNewIngredient({...newIngredient, name: e.target.value})}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="ingredientGroup">{t("ingredients.group")}</Label>
-                <Select 
-                  value={newIngredient.group} 
-                  onValueChange={(value: any) => setNewIngredient({...newIngredient, group: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="carb">{t("ingredients.groups.carb")}</SelectItem>
-                    <SelectItem value="protein">{t("ingredients.groups.protein")}</SelectItem>
-                    <SelectItem value="fat">{t("ingredients.groups.fat")}</SelectItem>
-                    <SelectItem value="vegfruit">{t("ingredients.groups.vegfruit")}</SelectItem>
-                    <SelectItem value="treat">{t("ingredients.groups.treat")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="ingredientKcal">{t("ingredients.caloriesPer100g")}</Label>
-                <Input
-                  id="ingredientKcal"
-                  type="number"
-                  placeholder={t("ingredients.caloriesPlaceholder")}
-                  value={newIngredient.kcalPer100g}
-                  onChange={(e) => setNewIngredient({...newIngredient, kcalPer100g: Number(e.target.value)})}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2 mt-4">
-              <Button onClick={addIngredient}>
-                {t("ingredients.addIngredient")}
-              </Button>
-              <Button variant="outline" onClick={() => setShowAddForm(false)}>
-                {t("ingredients.cancel")}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Ingredients List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {t("ingredients.ingredientsDatabase")} ({t("ingredients.ingredientsCount", { count: filteredIngredients.length })})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600">{t("ingredients.loadingIngredients")}</p>
-            </div>
-          ) : filteredIngredients.length === 0 ? (
-            <div className="text-center py-8">
-              <Apple className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">
-                {searchQuery || selectedGroup !== 'all' 
-                  ? t("ingredients.noIngredientsFound")
-                  : t("ingredients.noIngredientsInDatabase")
-                }
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredIngredients.map((ingredient) => (
-                <div key={ingredient.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      {getGroupIcon(ingredient.group)}
-                      <h3 className="font-semibold text-lg">{ingredient.name}</h3>
-                    </div>
-                    <Badge className={getGroupColor(ingredient.group)}>
-                      {getGroupLabel(ingredient.group)}
+        {/* Stats Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-4 gap-6"
+        >
+          <Card className="bg-white shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Total Ingredients</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-semibold">{ingredients.length}</span>
+                    <Badge className="bg-blue-100 text-blue-700 text-xs px-2 py-1">
+                      Active
                     </Badge>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">{t("ingredients.caloriesPer100gLabel")}</span>
-                      <span className="font-medium">{ingredient.kcalPer100g} kcal</span>
-                    </div>                    
-                  </div>
-
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-xl">🥘</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Most Used Group</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">Fruits/Vegetables</span>
+                    <span className="text-xl">🥬</span>
+                  </div>
+                </div>
+                <Badge className="bg-green-100 text-green-700 text-xs px-2 py-1">
+                  {groupStats.find(g => g.name === 'Fruits/Vegetables')?.count || 0} items
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Recently Added</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold">5</span>
+                    <span className="text-sm text-gray-500">this week</span>
+                  </div>
+                </div>
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                  <span className="text-xl">📈</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Food Groups</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-semibold">{groupStats.length}</span>
+                    <span className="text-sm text-gray-500">categories</span>
+                  </div>
+                </div>
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <span className="text-xl">🏷️</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="bg-white shadow-sm">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <CardTitle className="text-lg">Ingredients Database</CardTitle>
+                    <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
+                      <DialogTrigger asChild>
+                        <Button className="bg-green-500 hover:bg-green-600 text-white">
+                          <PlusIcon className="w-4 h-4 mr-2" />
+                          Add Ingredient
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[500px]">
+                        <DialogHeader>
+                          <DialogTitle>Add New Ingredient</DialogTitle>
+                          <DialogDescription>
+                            Add a new ingredient to your database with nutritional information.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="name">Ingredient Name</Label>
+                              <Input
+                                id="name"
+                                value={newIngredient.name}
+                                onChange={(e) => setNewIngredient({...newIngredient, name: e.target.value})}
+                                placeholder="e.g., Broccoli"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="group">Food Group</Label>
+                              <Select 
+                                value={newIngredient.group} 
+                                onValueChange={(value: any) => setNewIngredient({...newIngredient, group: value})}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select group" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="carb">🌾 Carbs</SelectItem>
+                                  <SelectItem value="protein">🥩 Proteins</SelectItem>
+                                  <SelectItem value="fat">🥑 Fats</SelectItem>
+                                  <SelectItem value="vegfruit">🥬 Fruits/Vegetables</SelectItem>
+                                  <SelectItem value="treat">🧂 Others</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="calories">Calories (per 100g)</Label>
+                            <Input
+                              id="calories"
+                              type="number"
+                              value={newIngredient.kcalPer100g}
+                              onChange={(e) => setNewIngredient({...newIngredient, kcalPer100g: Number(e.target.value)})}
+                              placeholder="e.g., 25"
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setShowAddForm(false)}>
+                            Cancel
+                          </Button>
+                          <Button 
+                            onClick={addIngredient}
+                            className="bg-green-500 hover:bg-green-600"
+                          >
+                            Add Ingredient
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                  
+                  {/* Filters */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          placeholder="Search ingredients"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10 w-64"
+                        />
+                      </div>
+                      <Select value={selectedGroup} onValueChange={setSelectedGroup}>
+                        <SelectTrigger className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Groups</SelectItem>
+                          <SelectItem value="vegfruit">🥬 Fruits/Vegetables</SelectItem>
+                          <SelectItem value="protein">🥩 Proteins</SelectItem>
+                          <SelectItem value="carb">🌾 Carbs</SelectItem>
+                          <SelectItem value="fat">🥑 Fats</SelectItem>
+                          <SelectItem value="treat">🧂 Others</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardHeader>
+                
+                <CardContent>
+                  {/* Ingredients Grid */}
+                  {loading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+                      <p className="mt-2 text-gray-600">{t("ingredients.loadingIngredients")}</p>
+                    </div>
+                  ) : filteredIngredients.length === 0 ? (
+                    <div className="text-center py-8">
+                      <FruitsVegetablesIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600 dark:text-gray-400">
+                        {searchQuery || selectedGroup !== 'all' 
+                          ? t("ingredients.noIngredientsFound")
+                          : t("ingredients.noIngredientsInDatabase")
+                        }
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {filteredIngredients.map((ingredient) => (
+                        <Card key={ingredient.id} className="border border-gray-200 hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-4">
+                              <ImageWithFallback
+                                src={`https://via.placeholder.com/60x60?text=${ingredient.name.charAt(0)}`}
+                                alt={ingredient.name}
+                                className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between mb-2">
+                                  <div>
+                                    <h3 className="font-medium text-sm">{ingredient.name}</h3>
+                                    <p className="text-xs text-gray-500 mb-2">Fresh {ingredient.name.toLowerCase()}</p>
+                                  </div>
+                                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                    <MoreIcon className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                                <Badge 
+                                  className={`text-xs px-2 py-1 mb-3 ${getGroupColor(ingredient.group)}`}
+                                >
+                                  {getGroupLabel(ingredient.group)}
+                                </Badge>
+                                <div className="grid grid-cols-3 gap-2 text-xs">
+                                  <div>
+                                    <span className="text-gray-500">Cal:</span>
+                                    <div className="font-medium">{ingredient.kcalPer100g} kcal</div>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-500">Group:</span>
+                                    <div className="font-medium">{getGroupLabel(ingredient.group)}</div>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-500">Per 100g</span>
+                                    <div className="font-medium">Nutrition</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Pagination */}
+                  <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                    <div className="text-sm text-gray-500">
+                      Showing {filteredIngredients.length} of {ingredients.length} ingredients
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3].map((page) => (
+                        <Button
+                          key={page}
+                          variant={page === 1 ? "default" : "outline"}
+                          size="sm"
+                          className={`w-8 h-8 ${page === 1 ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+
+          {/* Food Groups Sidebar */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="bg-white shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Food Groups</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {groupStats.map((group, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{group.icon}</span>
+                        <span className="text-sm font-medium">{group.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{group.count}</span>
+                        <span className="text-xs text-gray-500">{group.percentage}%</span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="h-2 rounded-full"
+                        style={{ 
+                          backgroundColor: group.color,
+                          width: `${group.percentage}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </div>
     </div>
   );
 }

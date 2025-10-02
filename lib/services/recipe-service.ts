@@ -423,6 +423,13 @@ export const updateRecipe = async (
     meal_type: string
     instructions: string
     ingredients: Array<{ name: string; amount: string }>
+    calories?: number
+    protein?: number
+    carbs?: number
+    fat?: number
+    sugar?: number
+    sodium?: number
+    fiber?: number
   }
 ): Promise<RecipeWithDetails | null> => {
   try {
@@ -437,6 +444,13 @@ export const updateRecipe = async (
         servings: recipeData.servings,
         meal_type: recipeData.meal_type,
         instructions: recipeData.instructions,
+        calories: recipeData.calories || 0,
+        protein: recipeData.protein || 0,
+        carbs: recipeData.carbs || 0,
+        fat: recipeData.fat || 0,
+        sugar: recipeData.sugar || 0,
+        sodium: recipeData.sodium || 0,
+        fiber: recipeData.fiber || 0,
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)

@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
-import { HorizontalNavigation } from "@/components/horizontal-navigation"
+import { SidebarNew } from "@/components/sidebar-new"
 import { useEffect, useState, useMemo, useCallback } from "react"
 import { supabase } from "@/lib/supabase/client"
 
@@ -184,10 +184,12 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
 
   if (shouldShowSidebar) {
     return (
-      <div className="min-h-screen bg-background">
-        <HorizontalNavigation />
-        <main className="p-4 lg:p-6">
-          {children}
+      <div className="min-h-screen bg-background flex">
+        <SidebarNew />
+        <main className="flex-1 overflow-x-hidden">
+          <div className="p-4 lg:p-6">
+            {children}
+          </div>
         </main>
       </div>
     )

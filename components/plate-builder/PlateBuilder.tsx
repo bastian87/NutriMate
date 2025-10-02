@@ -124,12 +124,12 @@ function DraggableIngredient({ ingredient }: { ingredient: Ingredient }) {
 
   const getCategoryColor = (group: string) => {
     switch (group) {
-      case 'carb': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'protein': return 'bg-red-100 text-red-800 border-red-200';
-      case 'fat': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'vegfruit': return 'bg-green-100 text-green-800 border-green-200';
-      case 'treat': return 'bg-orange-100 text-orange-800 border-orange-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'carb': return 'bg-pastel-yellow-100 text-pastel-yellow-800 border-pastel-yellow-200';
+      case 'protein': return 'bg-pastel-pink-100 text-pastel-pink-800 border-pastel-pink-200';
+      case 'fat': return 'bg-pastel-purple-100 text-pastel-purple-800 border-pastel-purple-200';
+      case 'vegfruit': return 'bg-pastel-green-100 text-pastel-green-800 border-pastel-green-200';
+      case 'treat': return 'bg-pastel-orange-100 text-pastel-orange-800 border-pastel-orange-200';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -148,7 +148,7 @@ function DraggableIngredient({ ingredient }: { ingredient: Ingredient }) {
       draggable
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      className={`flex items-center justify-between p-2 bg-white border rounded cursor-grab hover:bg-gray-50 transition-all duration-200 ${
+      className={`flex items-center justify-between p-2 bg-card border rounded cursor-grab hover:bg-muted transition-all duration-200 ${
         isDragging ? 'opacity-30 scale-95' : 'hover:shadow-md'
       }`}
     >
@@ -159,7 +159,7 @@ function DraggableIngredient({ ingredient }: { ingredient: Ingredient }) {
             {ingredient.group}
           </span>
         </div>
-        <div className="text-xs text-gray-500">{ingredient.kcalPer100g} kcal/100g</div>
+        <div className="text-xs text-muted-foreground">{ingredient.kcalPer100g} kcal/100g</div>
       </div>
       <Button variant="ghost" size="sm">
         <Plus className="w-4 h-4" />

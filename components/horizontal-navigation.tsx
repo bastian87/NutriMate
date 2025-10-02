@@ -37,6 +37,7 @@ import {
   BarChart3,
   Apple,
   Settings,
+  BookOpen,
 } from "lucide-react"
 
 export function HorizontalNavigation() {
@@ -61,6 +62,7 @@ export function HorizontalNavigation() {
     ],
     nutrition: [
       { name: t("navigation.nutritionTracking"), href: "/calendar", icon: Calendar },
+      { name: "Food Diary", href: "/food-diary", icon: BookOpen },
       { name: t("navigation.goals"), href: "/goals", icon: Target },
       { name: t("navigation.ingredients"), href: "/ingredients", icon: Apple },
       { name: t("navigation.calorieCalculator"), href: "/calorie-calculator", icon: Calculator },

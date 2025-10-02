@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Plus, Calendar, Users, Trash2, ChefHat, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -13,6 +14,13 @@ import { format } from "date-fns"
 import { useLanguage } from "@/lib/i18n/context"
 
 export default function MobileMealPlansPage() {
+  const router = useRouter();
+  
+  // Redireccionar automáticamente al dashboard
+  useEffect(() => {
+    router.replace('/dashboard');
+  }, [router]);
+
   const { user } = useAuthContext()
   const { mealPlans, loading, error, deleteMealPlan, generateMealPlan } = useMealPlans()
   const [isGenerating, setIsGenerating] = useState(false)

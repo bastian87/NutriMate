@@ -32,6 +32,7 @@ import {
   Flame,
   BarChart3,
   Apple,
+  BookOpen,
 } from "lucide-react"
 
 export function Sidebar() {
@@ -70,6 +71,7 @@ export function Sidebar() {
     { name: t("navigation.groceryList"), href: "/grocery-list", icon: ShoppingCart },
     // { name: t("navigation.mealPlans"), href: "/meal-plans", icon: Calendar }, // Temporalmente oculto
     { name: t("navigation.nutritionTracking"), href: "/calendar", icon: Calendar },
+    { name: "Food Diary", href: "/food-diary", icon: BookOpen },
     { name: "Objetivos", href: "/goals", icon: Target },
     { name: "Gamificación", href: "/gamification", icon: Flame },
     { name: "Resumen Semanal", href: "/weekly-summary", icon: BarChart3 },

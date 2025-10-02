@@ -242,7 +242,7 @@ export default function LandingClient({ }: LandingClientProps) {
                 <ThemeToggle />
                 {isLoggedIn ? (
                   <Link href="/dashboard">
-                    <Button className="bg-orange-600 hover:bg-orange-700">Dashboard</Button>
+                    <Button className="bg-pastel-orange-600 hover:bg-pastel-orange-700">Dashboard</Button>
                   </Link>
                 ) : (
                   <>
@@ -250,7 +250,7 @@ export default function LandingClient({ }: LandingClientProps) {
                       <Button variant="outline">Sign In</Button>
                     </Link>
                     <Link href="/signup">
-                      <Button className="bg-orange-600 hover:bg-orange-700">Get Started</Button>
+                      <Button className="bg-pastel-orange-600 hover:bg-pastel-orange-700">Get Started</Button>
                     </Link>
                   </>
                 )}
@@ -341,7 +341,7 @@ export default function LandingClient({ }: LandingClientProps) {
                           <div className="space-y-4">
                             {isLoggedIn ? (
                               <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                                <Button className="w-full bg-orange-600 hover:bg-orange-700">
+                                <Button className="w-full bg-pastel-orange-600 hover:bg-pastel-orange-700">
                                   Dashboard
                                 </Button>
                               </Link>
@@ -353,7 +353,7 @@ export default function LandingClient({ }: LandingClientProps) {
                                   </Button>
                                 </Link>
                                 <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
-                                  <Button className="w-full bg-orange-600 hover:bg-orange-700">
+                                  <Button className="w-full bg-pastel-orange-600 hover:bg-pastel-orange-700">
                                     Get Started
                                   </Button>
                                 </Link>
@@ -396,7 +396,7 @@ export default function LandingClient({ }: LandingClientProps) {
               <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-start">
                 {isLoggedIn ? (
                   <Link href="/dashboard">
-                    <Button size="lg" className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700">
+                    <Button size="lg" className="w-full sm:w-auto bg-pastel-orange-600 hover:bg-pastel-orange-700">
                       {t("home.goToDashboard")}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -404,7 +404,7 @@ export default function LandingClient({ }: LandingClientProps) {
                 ) : (
                   <>
                     <Link href="/signup">
-                      <Button size="lg" className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700">
+                      <Button size="lg" className="w-full sm:w-auto bg-pastel-orange-600 hover:bg-pastel-orange-700">
                         {t("home.getStarted")}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
@@ -556,7 +556,7 @@ export default function LandingClient({ }: LandingClientProps) {
 
                     <Button
                       variant={plan.buttonVariant}
-                      className={`w-full mt-6 ${plan.buttonVariant === "default" ? "bg-orange-600 hover:bg-orange-700" : ""
+                      className={`w-full mt-6 ${plan.buttonVariant === "default" ? "bg-pastel-orange-600 hover:bg-pastel-orange-700" : ""
                         }`}
                       onClick={() => {
                         if (plan.variantId) {

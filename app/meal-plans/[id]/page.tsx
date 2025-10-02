@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Clock, RefreshCw, ShoppingCart, Calendar } from "lucide-react"
@@ -19,6 +20,13 @@ const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"] as const
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const
 
 export default function MealPlanDetailPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
+  
+  // Redireccionar automáticamente al dashboard
+  useEffect(() => {
+    router.replace('/dashboard');
+  }, [router]);
+
   const { mealPlan, loading, error, setMealPlan, regenerateMeal } = useMealPlan(params.id)
   const { addAllMealPlanIngredients } = useGroceryList(false)
   const { openRecipeSelector, confirmRecipeSelection, modalProps, currentMeal } = useMealPlanRecipeSelector(mealPlan)

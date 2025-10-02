@@ -4,44 +4,44 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 45 20% 97%;                    /* Beige blanco cálido */
     --foreground: 222.2 84% 4.9%;
 
-    --card: 0 0% 100%;
+    --card: 45 15% 98%;                          /* Tarjetas: beige muy claro */
     --card-foreground: 222.2 84% 4.9%;
 
-    --popover: 0 0% 100%;
+    --popover: 45 15% 98%;                       /* Popovers: beige muy claro */
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 16 100% 50%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 30 60% 70%;                       /* Naranja cálido y suave */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 160 25% 80%;                    /* Verde pastel muy suave */
+    --secondary-foreground: 160 40% 25%;
 
-    --muted: 210 40% 96.1%;
+    --muted: 45 20% 90%;                         /* Beige cálido para elementos muted */
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 280 20% 85%;                       /* Lila pastel muy suave */
+    --accent-foreground: 280 40% 30%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 50% 60%;                    /* Rojo suave para errores */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 16 100% 50%;
+    --border: 45 20% 88%;                        /* Bordes: beige pastel */
+    --input: 45 20% 92%;                         /* Inputs: beige pastel */
+    --ring: 24 85% 65%;                          /* Ring: naranja pastel */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 45 15% 95%;            /* Sidebar: beige pastel */
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-primary: 24 85% 65%;               /* Naranja pastel */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 280 25% 88%;               /* Lila pastel */
+    --sidebar-accent-foreground: 280 50% 25%;
+    --sidebar-border: 45 20% 88%;                /* Bordes: beige pastel */
+    --sidebar-ring: 24 85% 65%;                  /* Ring: naranja pastel */
   }
 
   .dark {

@@ -21,6 +21,13 @@ import { useSubscription } from "@/hooks/use-subscription";
 import { useLanguage } from "@/lib/i18n/context";
 
 export default function CustomMealPlanPage() {
+  const router = useRouter();
+  
+  // Redireccionar automáticamente al dashboard
+  useEffect(() => {
+    router.replace('/dashboard');
+  }, [router]);
+
   const searchParams = useSearchParams();
   const [distribution, setDistribution] = useState<Record<string, number>>({});
   const { user, loading: authLoading } = useAuthContext();
