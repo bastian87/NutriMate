@@ -15,6 +15,7 @@ import { motion } from "framer-motion"
 import { RecipeCardNew } from "@/components/recipe-card-new"
 import { RecipeFiltersNew } from "@/components/recipe-filters-new"
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons-new"
+import { Pagination, usePagination } from "@/components/ui/pagination"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 
 
@@ -28,8 +29,8 @@ export default function SavedRecipesPage() {
   const [maxCookTime, setMaxCookTime] = useState([120])
   const [calorieRange, setCalorieRange] = useState([0, 1000])
   const [sortOption, setSortOption] = useState<"az" | "za" | "calories-asc" | "calories-desc">("az")
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 12
+  // Paginación
+  const ITEMS_PER_PAGE = 12;
   const { t } = useLanguage()
 
   // Definir tipos de comida
@@ -102,10 +103,13 @@ export default function SavedRecipesPage() {
     return arr
   }, [favorites, searchQuery, selectedTags, maxCookTime, calorieRange, sortOption])
 
-  // Paginación
-  const totalPages = Math.ceil(filteredRecipes.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedRecipes = filteredRecipes.slice(startIndex, startIndex + itemsPerPage)
+  // Aplicar paginación a las recetas filtradas
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedRecipes,
+    goToPage
+  } = usePagination(filteredRecipes, ITEMS_PER_PAGE);
 
   // Contador de filtros activos
   const activeFiltersCount = useMemo(() => {
@@ -122,7 +126,7 @@ export default function SavedRecipesPage() {
     setSelectedTags([])
     setMaxCookTime([120])
     setCalorieRange([0, 1000])
-    setCurrentPage(1)
+    goToPage(1)
   }
 
   const toggleTag = (tag: string) => {
@@ -131,7 +135,7 @@ export default function SavedRecipesPage() {
         ? prev.filter(t => t !== tag)
         : [...prev, tag]
     )
-    setCurrentPage(1)
+    goToPage(1)
   }
 
   if (loading) {
@@ -268,47 +272,16 @@ export default function SavedRecipesPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="flex justify-center items-center gap-3 mt-12"
+            className="mt-12"
           >
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 border-gray-300 dark:border-gray-600"
-            >
-              <ChevronLeftIcon className="h-4 w-4" />
-              Anterior
-            </Button>
-            
-            <div className="flex items-center gap-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-10 h-10 p-0 rounded-xl font-medium ${
-                    currentPage === page 
-                      ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg" 
-                      : "hover:bg-orange-50 dark:hover:bg-orange-950 border-gray-300 dark:border-gray-600"
-                  }`}
-                >
-                  {page}
-                </Button>
-              ))}
-            </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 border-gray-300 dark:border-gray-600"
-            >
-              Siguiente
-              <ChevronRightIcon className="h-4 w-4" />
-            </Button>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={goToPage}
+              totalItems={filteredRecipes.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+              showInfo={true}
+            />
           </motion.div>
         )}
       </div>

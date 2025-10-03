@@ -72,10 +72,16 @@ export function useDashboardData() {
       try {
         setData(prev => ({ ...prev, loading: true, error: null }));
 
-        // Fetch food entries
+        // Fetch food entries with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
         const response = await fetch('/api/food-entries', {
-          headers: { 'x-user-id': user.id }
+          headers: { 'x-user-id': user.id },
+          signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
           throw new Error('Failed to fetch food entries');

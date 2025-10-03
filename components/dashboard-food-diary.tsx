@@ -189,10 +189,10 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
             title="Calorías Hoy"
             value={`${todayNutrition.calories.toFixed(0)} kcal`}
             subtitle=""
-            icon={<CaloriesIcon className="w-4 h-4 text-pastel-orange-500" />}
-            color="text-pastel-orange-500"
-            chart={<div className="w-12 h-12 rounded-full bg-pastel-orange-100 flex items-center justify-center">
-              <div className="w-8 h-8 rounded-full bg-pastel-orange-500 flex items-center justify-center">
+            icon={<CaloriesIcon className="w-4 h-4 text-orange-600" />}
+            color="text-orange-600"
+            chart={<div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center">
                 <div className="w-4 h-4 bg-white rounded-full"></div>
               </div>
             </div>}
@@ -205,10 +205,10 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
             title="Proteína"
             value={`${todayNutrition.protein.toFixed(1)}g`}
             subtitle=""
-            icon={<WeightIcon className="w-4 h-4 text-pastel-blue-500" />}
-            color="text-pastel-blue-500"
-            chart={<div className="w-12 h-12 rounded-full bg-pastel-blue-100 flex items-center justify-center">
-              <div className="w-8 h-8 rounded-full bg-pastel-blue-500 flex items-center justify-center">
+            icon={<WeightIcon className="w-4 h-4 text-blue-600" />}
+            color="text-blue-600"
+            chart={<div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
                 <div className="w-4 h-4 bg-white rounded-full"></div>
               </div>
             </div>}
@@ -221,10 +221,10 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
             title="Carbohidratos"
             value={`${todayNutrition.carbs.toFixed(1)}g`}
             subtitle=""
-            icon={<div className="w-4 h-4 bg-pastel-green-500 rounded-full" />}
-            color="text-pastel-green-500"
-            chart={<div className="w-12 h-12 rounded-full bg-pastel-green-100 flex items-center justify-center">
-              <div className="w-8 h-8 rounded-full bg-pastel-green-500 flex items-center justify-center">
+            icon={<div className="w-4 h-4 bg-green-600 rounded-full" />}
+            color="text-green-600"
+            chart={<div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center">
                 <div className="w-4 h-4 bg-white rounded-full"></div>
               </div>
             </div>}
@@ -237,10 +237,10 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
             title="Grasas"
             value={`${todayNutrition.fats.toFixed(1)}g`}
             subtitle=""
-            icon={<WaterIcon className="w-4 h-4 text-pastel-purple-500" />}
-            color="text-pastel-purple-500"
-            chart={<div className="w-12 h-12 rounded-full bg-pastel-purple-100 flex items-center justify-center">
-              <div className="w-8 h-8 rounded-full bg-pastel-purple-500 flex items-center justify-center">
+            icon={<WaterIcon className="w-4 h-4 text-purple-600" />}
+            color="text-purple-600"
+            chart={<div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
                 <div className="w-4 h-4 bg-white rounded-full"></div>
               </div>
             </div>}
@@ -301,11 +301,11 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
                     <button
                       key={dateStr}
                       className={`
-                        h-6 w-6 text-xs rounded transition-all hover:scale-110 flex items-center justify-center relative
+                        h-6 w-6 text-xs rounded transition-transform duration-100 ease-out hover:scale-110 flex items-center justify-center relative
                         ${dayStatus?.status === 'positive'
-                          ? 'bg-pastel-green-100 text-pastel-green-700 hover:bg-pastel-green-200 dark:bg-green-900/30 dark:text-green-300' 
+                          ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300' 
                           : dayStatus?.status === 'negative'
-                            ? 'bg-pastel-pink-100 text-pastel-pink-700 hover:bg-pastel-pink-200 dark:bg-red-900/30 dark:text-red-300'
+                            ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300'
                             : 'hover:bg-muted dark:hover:bg-gray-800'
                         }
                         ${isToday ? 'ring-2 ring-primary font-bold' : ''}
@@ -325,11 +325,11 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
               <div className="mt-3 pt-3 border-t border-border">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-pastel-green-100 rounded-full"></div>
+                    <div className="w-2 h-2 bg-green-100 rounded-full"></div>
                     <span>Bien</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-pastel-pink-100 rounded-full"></div>
+                    <div className="w-2 h-2 bg-red-100 rounded-full"></div>
                     <span>Regular</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -422,7 +422,7 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
                   <p className="text-sm mb-3">No hay entradas recientes</p>
                   <div className="space-y-2">
                     <Link href="/food-diary">
-                      <Button size="sm" className="w-full bg-green-600 hover:bg-green-700">
+                      <Button size="sm" className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30">
                         <PlusIcon className="w-4 h-4 mr-2" />
                         Registrar Comida
                       </Button>
@@ -455,21 +455,6 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
                     </div>
                   ))}
                   
-                  {/* Quick Actions */}
-                  <div className="pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
-                    <Link href="/food-diary">
-                      <Button size="sm" className="w-full bg-green-600 hover:bg-green-700">
-                        <PlusIcon className="w-4 h-4 mr-2" />
-                        Registrar Comida
-                      </Button>
-                    </Link>
-                    <Link href="/calendar">
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        Ver Calendario
-                      </Button>
-                    </Link>
-                  </div>
                 </div>
               )}
             </CardContent>

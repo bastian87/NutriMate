@@ -23,6 +23,8 @@ import {
   OthersIcon 
 } from "@/components/icons-new";
 import { ImageWithFallback } from "@/components/image-with-fallback";
+import { IngredientsSkeleton } from "@/components/loading-skeleton";
+import { Pagination, usePagination } from "@/components/ui/pagination";
 
 interface Ingredient {
   id: string;
@@ -40,6 +42,15 @@ export default function IngredientsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGroup, setSelectedGroup] = useState<string>('all');
+  
+  // Paginación
+  const ITEMS_PER_PAGE = 12;
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedIngredients,
+    goToPage
+  } = usePagination(ingredients, ITEMS_PER_PAGE);
 
   // Form state for adding new ingredient
   const [showAddForm, setShowAddForm] = useState(false);
@@ -158,6 +169,14 @@ export default function IngredientsPage() {
     return matchesSearch && matchesGroup;
   });
 
+  // Aplicar paginación a los ingredientes filtrados
+  const {
+    currentPage: filteredCurrentPage,
+    totalPages: filteredTotalPages,
+    paginatedItems: paginatedFilteredIngredients,
+    goToPage: goToFilteredPage
+  } = usePagination(filteredIngredients, ITEMS_PER_PAGE);
+
   // Calculate group statistics
   const groupStats = [
     { name: 'Fruits/Vegetables', color: '#22c55e', icon: '🥬', count: ingredients.filter(i => i.group === 'vegfruit').length },
@@ -170,8 +189,18 @@ export default function IngredientsPage() {
     percentage: ingredients.length > 0 ? Math.round((group.count / ingredients.length) * 100) : 0
   }));
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
+        <div className="container mx-auto px-4 py-8">
+          <IngredientsSkeleton />
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Header */}
         <motion.div
@@ -179,8 +208,10 @@ export default function IngredientsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold mb-2">{t("ingredients.title")}</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h1 className="text-4xl font-bold mb-2 text-gray-900">
+            {t("ingredients.title")}
+          </h1>
+          <p className="text-xl text-gray-600">
             {t("ingredients.subtitle")}
           </p>
         </motion.div>
@@ -192,26 +223,26 @@ export default function IngredientsPage() {
           transition={{ delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-4 gap-6"
         >
-          <Card className="bg-white shadow-sm">
+          <Card className="bg-white shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Total Ingredients</p>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl font-semibold">{ingredients.length}</span>
-                    <Badge className="bg-blue-100 text-blue-700 text-xs px-2 py-1">
+                    <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs px-2 py-1">
                       Active
                     </Badge>
                   </div>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
                   <span className="text-xl">🥘</span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-sm">
+          <Card className="bg-white shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -221,14 +252,14 @@ export default function IngredientsPage() {
                     <span className="text-xl">🥬</span>
                   </div>
                 </div>
-                <Badge className="bg-green-100 text-green-700 text-xs px-2 py-1">
+                <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white text-xs px-2 py-1">
                   {groupStats.find(g => g.name === 'Fruits/Vegetables')?.count || 0} items
                 </Badge>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-sm">
+          <Card className="bg-white shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -238,14 +269,14 @@ export default function IngredientsPage() {
                     <span className="text-sm text-gray-500">this week</span>
                   </div>
                 </div>
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg shadow-pink-500/30">
                   <span className="text-xl">📈</span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-sm">
+          <Card className="bg-white shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -255,7 +286,7 @@ export default function IngredientsPage() {
                     <span className="text-sm text-gray-500">categories</span>
                   </div>
                 </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30">
                   <span className="text-xl">🏷️</span>
                 </div>
               </div>
@@ -271,13 +302,13 @@ export default function IngredientsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Card className="bg-white shadow-sm">
+              <Card className="bg-white shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between mb-4">
-                    <CardTitle className="text-lg">Ingredients Database</CardTitle>
+                    <CardTitle className="text-xl text-gray-900">Ingredients Database</CardTitle>
                     <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
                       <DialogTrigger asChild>
-                        <Button className="bg-green-500 hover:bg-green-600 text-white">
+                        <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30">
                           <PlusIcon className="w-4 h-4 mr-2" />
                           Add Ingredient
                         </Button>
@@ -336,7 +367,7 @@ export default function IngredientsPage() {
                           </Button>
                           <Button 
                             onClick={addIngredient}
-                            className="bg-green-500 hover:bg-green-600"
+                            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30"
                           >
                             Add Ingredient
                           </Button>
@@ -378,13 +409,13 @@ export default function IngredientsPage() {
                   {/* Ingredients Grid */}
                   {loading ? (
                     <div className="text-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
                       <p className="mt-2 text-gray-600">{t("ingredients.loadingIngredients")}</p>
                     </div>
-                  ) : filteredIngredients.length === 0 ? (
+                  ) : paginatedFilteredIngredients.length === 0 ? (
                     <div className="text-center py-8">
                       <FruitsVegetablesIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600 dark:text-gray-400">
+                      <p className="text-gray-600">
                         {searchQuery || selectedGroup !== 'all' 
                           ? t("ingredients.noIngredientsFound")
                           : t("ingredients.noIngredientsInDatabase")
@@ -393,22 +424,22 @@ export default function IngredientsPage() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {filteredIngredients.map((ingredient) => (
-                        <Card key={ingredient.id} className="border border-gray-200 hover:shadow-md transition-shadow">
+                      {paginatedFilteredIngredients.map((ingredient) => (
+                        <Card key={ingredient.id} className="border border-gray-200 hover:shadow-lg hover:border-orange-200 transition-all duration-300">
                           <CardContent className="p-4">
                             <div className="flex items-start gap-4">
                               <ImageWithFallback
                                 src={`https://via.placeholder.com/60x60?text=${ingredient.name.charAt(0)}`}
                                 alt={ingredient.name}
-                                className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                                className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
                               />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between mb-2">
                                   <div>
-                                    <h3 className="font-medium text-sm">{ingredient.name}</h3>
+                                    <h3 className="font-medium text-sm text-gray-900">{ingredient.name}</h3>
                                     <p className="text-xs text-gray-500 mb-2">Fresh {ingredient.name.toLowerCase()}</p>
                                   </div>
-                                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-orange-50">
                                     <MoreIcon className="w-3 h-3" />
                                   </Button>
                                 </div>
@@ -440,23 +471,18 @@ export default function IngredientsPage() {
                   )}
 
                   {/* Pagination */}
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t">
-                    <div className="text-sm text-gray-500">
-                      Showing {filteredIngredients.length} of {ingredients.length} ingredients
+                  {filteredTotalPages > 1 && (
+                    <div className="mt-6 pt-4 border-t">
+                      <Pagination
+                        currentPage={filteredCurrentPage}
+                        totalPages={filteredTotalPages}
+                        onPageChange={goToFilteredPage}
+                        totalItems={filteredIngredients.length}
+                        itemsPerPage={ITEMS_PER_PAGE}
+                        showInfo={true}
+                      />
                     </div>
-                    <div className="flex items-center gap-2">
-                      {[1, 2, 3].map((page) => (
-                        <Button
-                          key={page}
-                          variant={page === 1 ? "default" : "outline"}
-                          size="sm"
-                          className={`w-8 h-8 ${page === 1 ? 'bg-green-500 hover:bg-green-600' : ''}`}
-                        >
-                          {page}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
@@ -468,9 +494,9 @@ export default function IngredientsPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="bg-white shadow-sm">
+            <Card className="bg-white shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Food Groups</CardTitle>
+                <CardTitle className="text-xl text-gray-900">Food Groups</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {groupStats.map((group, index) => (

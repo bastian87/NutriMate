@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,7 @@ import {
 } from "@/components/icons-new";
 import { Edit as EditIcon, Trash2 as TrashIcon } from 'lucide-react';
 import { ImageWithFallback } from "@/components/image-with-fallback";
+import { Pagination, usePagination } from "@/components/ui/pagination";
 
 interface Ingredient {
   id?: string;
@@ -89,6 +91,7 @@ export default function FoodDiaryPage() {
   const { user } = useAuthContext();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const searchParams = useSearchParams();
   const [foodEntries, setFoodEntries] = useState<FoodEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -96,6 +99,9 @@ export default function FoodDiaryPage() {
   const [timeFrame, setTimeFrame] = useState('This Week');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [entryMode, setEntryMode] = useState<'dish' | 'ingredients'>('dish');
+  
+  // Paginación
+  const ITEMS_PER_PAGE = 10;
   const [newEntry, setNewEntry] = useState({
     category: 'breakfast' as 'breakfast' | 'lunch' | 'dinner' | 'snack',
     menu: '',
@@ -466,6 +472,18 @@ export default function FoodDiaryPage() {
     fetchFoodEntries();
   }, []);
 
+  // Check for openAddDialog query parameter and open modal automatically
+  useEffect(() => {
+    const openAddDialog = searchParams.get('openAddDialog');
+    if (openAddDialog === 'true') {
+      setShowAddDialog(true);
+      // Clean up the URL by removing the query parameter
+      const url = new URL(window.location.href);
+      url.searchParams.delete('openAddDialog');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams]);
+
   // Calculate nutrition metrics
   const nutritionMetrics: NutritionMetrics = foodEntries.reduce(
     (acc, entry) => ({
@@ -531,6 +549,14 @@ export default function FoodDiaryPage() {
     return matchesSearch && matchesFilter;
   });
 
+  // Aplicar paginación a las entradas filtradas
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedEntries,
+    goToPage
+  } = usePagination(filteredEntries, ITEMS_PER_PAGE);
+
   const metricsData = [
     {
       title: 'Total Calories',
@@ -575,7 +601,7 @@ export default function FoodDiaryPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Header */}
         <motion.div
@@ -583,8 +609,8 @@ export default function FoodDiaryPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold mb-2">Food Diary</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h1 className="text-4xl font-bold mb-2 text-gray-900">Food Diary</h1>
+          <p className="text-xl text-gray-600">
             Track your daily nutrition and eating habits
           </p>
         </motion.div>
@@ -677,7 +703,7 @@ export default function FoodDiaryPage() {
                   </Select>
                   <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
                     <DialogTrigger asChild>
-                      <Button className="bg-pastel-green-500 hover:bg-pastel-green-600 text-white">
+                      <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30">
                         <PlusIcon className="w-4 h-4 mr-2" />
                         Add Entry
                       </Button>
@@ -1506,7 +1532,7 @@ export default function FoodDiaryPage() {
                 </div>
               ) : (
                 <div className="space-y-1">
-                  {filteredEntries.map((entry) => (
+                  {paginatedEntries.map((entry) => (
                     <div key={entry.id} className="grid grid-cols-10 gap-4 items-center py-3 hover:bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-pastel-green-500 rounded-full"></div>
@@ -1562,26 +1588,18 @@ export default function FoodDiaryPage() {
               )}
 
               {/* Pagination */}
-              <div className="flex items-center justify-between mt-6 pt-4 border-t">
-                <div className="text-sm text-gray-500">
-                  Showing {filteredEntries.length} out of {foodEntries.length} entries
+              {totalPages > 1 && (
+                <div className="mt-6 pt-4 border-t">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={goToPage}
+                    totalItems={filteredEntries.length}
+                    itemsPerPage={ITEMS_PER_PAGE}
+                    showInfo={true}
+                  />
                 </div>
-                <div className="flex items-center gap-2">
-                  {[1, 2, 3, '...', 7].map((page, index) => (
-                    <Button
-                      key={index}
-                      variant={page === 1 ? "default" : "outline"}
-                      size="sm"
-                      className={`w-8 h-8 ${page === 1 ? 'bg-pastel-green-500 hover:bg-pastel-green-600' : ''}`}
-                    >
-                      {page}
-                    </Button>
-                  ))}
-                  <Button variant="outline" size="sm">
-                    →
-                  </Button>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

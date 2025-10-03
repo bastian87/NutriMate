@@ -2,14 +2,18 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar, Home, Crown } from "lucide-react"
+import { Calendar, Home, Crown, Plus as PlusIcon } from "lucide-react"
 import Link from "next/link"
-import { DashboardFoodDiary } from "@/components/dashboard-food-diary"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider"
 import { Badge } from "@/components/ui/badge"
+import { DashboardSkeleton } from "@/components/loading-skeleton"
+import { Suspense, lazy } from "react"
+
+// Lazy load del componente pesado
+const DashboardFoodDiary = lazy(() => import("@/components/dashboard-food-diary").then(module => ({ default: module.DashboardFoodDiary })))
 
 export default function DashboardPage() {
   const { t } = useLanguage()
@@ -17,12 +21,11 @@ export default function DashboardPage() {
   const { userData, loading: profileLoading } = useUserProfile()
   const isPremium = useIsPremium()
 
-  if (authLoading || profileLoading) {
+  if (authLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[calc(100vh-200px)]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">{t("dashboard.loading")}</p>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
+        <div className="container mx-auto px-4 py-8">
+          <DashboardSkeleton />
         </div>
       </div>
     )
@@ -56,7 +59,7 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b">
         <div className="container mx-auto px-4 py-6">
@@ -89,26 +92,28 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-            <div className="flex gap-2">
-              <Link href="/food-diary">
-                <Button className="bg-green-600 hover:bg-green-700">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Registrar Comida
-                </Button>
-              </Link>
-              <Link href="/calendar">
-                <Button variant="outline">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Ver Calendario
-                </Button>
-              </Link>
-            </div>
+                  <div className="flex gap-3">
+                    <Link href="/food-diary?openAddDialog=true">
+                      <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30 px-6 py-3 text-base font-semibold">
+                        <PlusIcon className="h-5 w-5 mr-2" />
+                        Registrar Comida
+                      </Button>
+                    </Link>
+                    <Link href="/calendar">
+                      <Button variant="outline" className="px-6 py-3 text-base font-semibold border-2 border-orange-200 hover:border-orange-300 hover:bg-orange-50">
+                        <Calendar className="h-5 w-5 mr-2" />
+                        Ver Calendario
+                      </Button>
+                    </Link>
+                  </div>
           </motion.div>
         </div>
       </div>
 
       {/* Food Diary Dashboard Content */}
-      <DashboardFoodDiary />
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardFoodDiary />
+      </Suspense>
     </div>
   )
 }

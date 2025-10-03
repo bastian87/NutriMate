@@ -15,6 +15,8 @@ import { useLanguage } from "@/lib/i18n/context"
 import { RecipeCardNew } from "@/components/recipe-card-new"
 import { RecipeFiltersNew } from "@/components/recipe-filters-new"
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons-new"
+import { RecipeCardSkeleton, DashboardSkeleton } from "@/components/loading-skeleton"
+import { Pagination, usePagination } from "@/components/ui/pagination"
 
 export default function RecipesPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -29,6 +31,9 @@ export default function RecipesPage() {
   const [recipesState, setRecipesState] = useState<RecipeWithDetails[]>([])
   const [favoritedRecipes, setFavoritedRecipes] = useState<Set<string>>(new Set())
   const { t } = useLanguage()
+  
+  // Paginación
+  const ITEMS_PER_PAGE = 12;
 
   const filters = useMemo(
     () => ({
@@ -70,8 +75,7 @@ export default function RecipesPage() {
   }, [recipes])
 
   // Estado para paginación
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 12
+  // Paginación será manejada por el hook usePagination
 
   // Filtrado y ordenamiento
   const filteredRecipes = useMemo(() => {
@@ -124,10 +128,13 @@ export default function RecipesPage() {
     return arr
   }, [recipes, searchQuery, selectedTags, maxCookTime, calorieRange, sortOption])
 
-  // Paginación
-  const totalPages = Math.ceil(filteredRecipes.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedRecipes = filteredRecipes.slice(startIndex, startIndex + itemsPerPage)
+  // Aplicar paginación a las recetas filtradas
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedRecipes,
+    goToPage
+  } = usePagination(filteredRecipes, ITEMS_PER_PAGE);
 
   // Contador de filtros activos
   const activeFiltersCount = useMemo(() => {
@@ -144,7 +151,7 @@ export default function RecipesPage() {
     setSelectedTags([])
     setMaxCookTime([120])
     setCalorieRange([0, 1000])
-    setCurrentPage(1)
+    goToPage(1)
   }
 
   const toggleTag = (tag: string) => {
@@ -153,16 +160,25 @@ export default function RecipesPage() {
         ? prev.filter(t => t !== tag)
         : [...prev, tag]
     )
-    setCurrentPage(1)
+    goToPage(1)
   }
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Cargando recetas...</span>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
+        <div className="bg-white dark:bg-gray-800 shadow-sm border-b">
+          <div className="container mx-auto px-4 py-8">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <div className="h-8 w-64 bg-gray-200 rounded animate-pulse" />
+                <div className="h-4 w-96 bg-gray-200 rounded animate-pulse" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <RecipeCardSkeleton key={i} />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -181,7 +197,7 @@ export default function RecipesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b">
         <div className="container mx-auto px-4 py-8">
@@ -299,47 +315,16 @@ export default function RecipesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-            className="flex justify-center items-center gap-3 mt-12"
+          className="mt-12"
         >
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 border-gray-300 dark:border-gray-600"
-          >
-              <ChevronLeftIcon className="h-4 w-4" />
-            Anterior
-          </Button>
-          
-            <div className="flex items-center gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <Button
-                key={page}
-                variant={currentPage === page ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCurrentPage(page)}
-                  className={`w-10 h-10 p-0 rounded-xl font-medium ${
-                  currentPage === page 
-                      ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg" 
-                      : "hover:bg-orange-50 dark:hover:bg-orange-950 border-gray-300 dark:border-gray-600"
-                }`}
-              >
-                {page}
-              </Button>
-            ))}
-          </div>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-950 border-gray-300 dark:border-gray-600"
-          >
-            Siguiente
-              <ChevronRightIcon className="h-4 w-4" />
-          </Button>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+            totalItems={filteredRecipes.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+            showInfo={true}
+          />
         </motion.div>
       )}
       </div>

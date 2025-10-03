@@ -95,15 +95,28 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     setError(null)
 
     try {
-      // Cargar todos los datos en paralelo para máxima velocidad
-      const [profileResult, preferencesResult, subscriptionResult, usageResult] = await Promise.allSettled([
-        // Perfil del usuario
-        supabase
-          .from("users")
-          .select("*")
-          .eq("id", user.id)
-          .maybeSingle(),
-        
+      // Cargar datos críticos primero (perfil básico)
+      const profileResult = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle()
+
+      if (profileResult.data) {
+        // Actualizar inmediatamente con datos básicos
+        setUserData(prev => ({
+          profile: profileResult.data,
+          preferences: prev?.preferences || null,
+          subscription: prev?.subscription || null,
+          usage: prev?.usage || null,
+          isPremium: prev?.isPremium || false,
+          accountType: prev?.accountType || "free",
+          loading: false
+        }))
+      }
+
+      // Cargar datos secundarios en paralelo (no bloquean la UI)
+      const [preferencesResult, subscriptionResult, usageResult] = await Promise.allSettled([
         // Preferencias del usuario
         supabase
           .from("user_preferences")
@@ -119,7 +132,6 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
       ])
 
       // Procesar resultados
-      const profile = profileResult.status === 'fulfilled' ? profileResult.value.data : null
       const preferences = preferencesResult.status === 'fulfilled' ? preferencesResult.value.data : null
       const subscription = subscriptionResult.status === 'fulfilled' ? subscriptionResult.value : null
       const usage = usageResult.status === 'fulfilled' ? usageResult.value : null
@@ -141,7 +153,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
       } : null
 
       const newUserData: UserProfileData = {
-        profile,
+        profile: profileResult.data,
         preferences: normalizedPreferences,
         subscription,
         usage,

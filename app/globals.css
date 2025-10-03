@@ -4,82 +4,82 @@
 
 @layer base {
   :root {
-    --background: 45 20% 97%;                    /* Beige blanco cálido */
+    --background: 0 0% 100%;                     /* Clean white background */
     --foreground: 222.2 84% 4.9%;
 
-    --card: 45 15% 98%;                          /* Tarjetas: beige muy claro */
+    --card: 0 0% 100%;                           /* Pure white cards */
     --card-foreground: 222.2 84% 4.9%;
 
-    --popover: 45 15% 98%;                       /* Popovers: beige muy claro */
+    --popover: 0 0% 100%;                        /* Pure white popovers */
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 30 60% 70%;                       /* Naranja cálido y suave */
+    --primary: 24 100% 50%;                      /* Orange-500 from landing page */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 160 25% 80%;                    /* Verde pastel muy suave */
-    --secondary-foreground: 160 40% 25%;
+    --secondary: 0 0% 96%;                       /* Light gray for secondary */
+    --secondary-foreground: 222.2 84% 4.9%;
 
-    --muted: 45 20% 90%;                         /* Beige cálido para elementos muted */
+    --muted: 0 0% 96%;                           /* Light gray for muted elements */
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 280 20% 85%;                       /* Lila pastel muy suave */
-    --accent-foreground: 280 40% 30%;
+    --accent: 330 81% 60%;                       /* Pink-500 accent from landing */
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 50% 60%;                    /* Rojo suave para errores */
+    --destructive: 0 84% 60%;                    /* Red for errors */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 45 20% 88%;                        /* Bordes: beige pastel */
-    --input: 45 20% 92%;                         /* Inputs: beige pastel */
-    --ring: 24 85% 65%;                          /* Ring: naranja pastel */
+    --border: 0 0% 90%;                          /* Light gray borders */
+    --input: 0 0% 96%;                           /* Light gray inputs */
+    --ring: 24 100% 50%;                         /* Orange ring to match primary */
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;                           /* Slightly more rounded like landing */
 
-    --sidebar-background: 45 15% 95%;            /* Sidebar: beige pastel */
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 24 85% 65%;               /* Naranja pastel */
+    --sidebar-background: 0 0% 98%;              /* Very light gray sidebar */
+    --sidebar-foreground: 222.2 84% 4.9%;
+    --sidebar-primary: 24 100% 50%;              /* Orange primary */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 280 25% 88%;               /* Lila pastel */
-    --sidebar-accent-foreground: 280 50% 25%;
-    --sidebar-border: 45 20% 88%;                /* Bordes: beige pastel */
-    --sidebar-ring: 24 85% 65%;                  /* Ring: naranja pastel */
+    --sidebar-accent: 330 81% 60%;               /* Pink accent */
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 90%;                  /* Light gray borders */
+    --sidebar-ring: 24 100% 50%;                 /* Orange ring */
   }
 
   .dark {
-    --background: 225 15% 12%;              /* Fondo general: azul/lila pastel MUY oscuro */
-    --foreground: 0 0% 100%;                /* Blanco */
-    --card: 225 16% 22%;                    /* Tarjetas: lila/azul pastel oscuro */
+    --background: 222.2 84% 4.9%;           /* Dark gray background */
+    --foreground: 0 0% 100%;                /* White text */
+    --card: 222.2 84% 8%;                   /* Darker cards */
     --card-foreground: 0 0% 100%;
 
-    --popover: 225 16% 24%;
+    --popover: 222.2 84% 8%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 24 100% 70%;                 /* Naranja pastel suave */
+    --primary: 24 100% 60%;                 /* Orange-600 for dark mode */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 160 24% 28%;               /* Verde pastel oscuro */
+    --secondary: 222.2 84% 12%;             /* Dark gray secondary */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 16% 24%;                   /* Azul pastel más claro */
-    --muted-foreground: 220 16% 80%;
+    --muted: 222.2 84% 12%;                 /* Dark gray muted */
+    --muted-foreground: 215.4 16.3% 70%;
 
-    --accent: 280 24% 40%;                  /* Lila pastel */
+    --accent: 330 81% 70%;                  /* Pink-400 for dark mode */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 70% 40%;               /* Rojo oscuro para errores */
+    --destructive: 0 84% 60%;               /* Red for errors */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 16% 24%;                  /* Bordes: azul pastel */
-    --input: 220 16% 24%;
-    --ring: 24 100% 70%;
+    --border: 222.2 84% 12%;                /* Dark gray borders */
+    --input: 222.2 84% 12%;
+    --ring: 24 100% 60%;
 
-    --sidebar-background: 250 12% 18%;      /* Sidebar: lila pastel oscuro (menos azul) */
+    --sidebar-background: 222.2 84% 6%;     /* Darker sidebar */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 24 100% 70%;         /* Naranja pastel */
+    --sidebar-primary: 24 100% 60%;         /* Orange primary */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 280 24% 40%;          /* Lila pastel */
+    --sidebar-accent: 330 81% 70%;          /* Pink accent */
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 220 16% 24%;
-    --sidebar-ring: 24 100% 70%;
+    --sidebar-border: 222.2 84% 12%;
+    --sidebar-ring: 24 100% 60%;
   }
 }
 

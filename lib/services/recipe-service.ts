@@ -65,6 +65,9 @@ export const slugToName = (slug: string): string => {
 // Individual functions
 export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDetails[]> => {
   try {
+    // Aplicar límite por defecto para mejorar rendimiento
+    const limit = filters?.limit || 20;
+    
     let query = supabase.from("recipes").select("*, tags")
 
     if (filters?.search) {
@@ -76,9 +79,9 @@ export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDet
     if (filters?.calorieRange) {
       query = query.gte("calories", filters.calorieRange[0]).lte("calories", filters.calorieRange[1])
     }
-    if (filters?.limit) {
-      query = query.limit(filters.limit)
-    }
+    
+    // Siempre aplicar límite para evitar cargar demasiados datos
+    query = query.limit(limit);
 
     const { data: recipes, error } = await query
 
@@ -88,23 +91,17 @@ export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDet
     const recipeIds = recipes.map((r) => r.id)
     if (recipeIds.length === 0) return []
 
-    // Cargar todas las calificaciones (más eficiente que filtrar por IDs)
-    const { data: allRatings, error: allRatingsError } = await supabase
-      .from("recipe_ratings")
-      .select("recipe_id, rating, user_id");
-    
-    if (allRatingsError) {
-      console.error("Error loading ratings:", allRatingsError);
-    }
-    
-    const [ingredientsResult, favoritesResult] = await Promise.all([
+    // Optimizar: Solo cargar calificaciones para las recetas específicas
+    const [ingredientsResult, ratingsResult, favoritesResult] = await Promise.all([
       supabase.from("recipe_ingredients").select("*").in("recipe_id", recipeIds),
+      supabase.from("recipe_ratings").select("recipe_id, rating, user_id").in("recipe_id", recipeIds),
       filters?.userId
         ? supabase.from("user_favorites").select("recipe_id").eq("user_id", filters.userId).in("recipe_id", recipeIds)
         : Promise.resolve({ data: [] }),
     ]);
+    
     const ingredientsData = ingredientsResult.data;
-    const ratingsData = allRatings; // Usar todas las calificaciones sin filtro
+    const ratingsData = ratingsResult.data;
     const favoritesData = favoritesResult.data;
     
     // Debug: verificar datos de calificaciones

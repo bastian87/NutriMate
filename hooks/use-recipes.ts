@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { recipeService, type RecipeWithDetails, type RecipeFilters } from "@/lib/services/recipe-service"
+import { cache, CACHE_KEYS, createFilteredCacheKey } from "@/lib/cache"
 
 // Helper to compare filter objects to prevent unnecessary refetches
 const areFiltersEqual = (a?: RecipeFilters, b?: RecipeFilters) => {
@@ -20,6 +21,28 @@ export function useRecipes(filters?: RecipeFilters, limit?: number) {
   const isInitialLoadRef = useRef(true)
 
   const fetchRecipes = useCallback(async (currentFilters?: RecipeFilters, currentLimit?: number) => {
+    // Evitar llamadas duplicadas si los filtros no han cambiado
+    if (areFiltersEqual(prevFiltersRef.current, currentFilters) && 
+        prevLimitRef.current === currentLimit && 
+        !isInitialLoadRef.current) {
+      return
+    }
+
+    // Crear clave de caché
+    const cacheKey = createFilteredCacheKey(CACHE_KEYS.RECIPES, { 
+      ...(currentFilters || {}), 
+      limit: currentLimit 
+    })
+
+    // Verificar caché primero
+    const cachedData = cache.get<RecipeWithDetails[]>(cacheKey)
+    if (cachedData && !isInitialLoadRef.current) {
+      console.log("📦 Using cached recipes")
+      setRecipes(cachedData)
+      setLoading(false)
+      return
+    }
+
     prevFiltersRef.current = currentFilters;
     prevLimitRef.current = currentLimit;
     setLoading(true)
@@ -27,6 +50,9 @@ export function useRecipes(filters?: RecipeFilters, limit?: number) {
     try {
       const data = await recipeService.getRecipes({ ...(currentFilters || {}), limit: currentLimit })
       setRecipes(data || [])
+      
+      // Guardar en caché
+      cache.set(cacheKey, data || [], 2 * 60 * 1000) // 2 minutos
     } catch (err) {
       console.error("Error fetching recipes:", err)
       setError(err instanceof Error ? err.message : "Failed to fetch recipes")
@@ -37,10 +63,13 @@ export function useRecipes(filters?: RecipeFilters, limit?: number) {
     }
   }, [])
 
+  // Memoizar las dependencias para evitar re-renderizados innecesarios
+  const memoizedFilters = useMemo(() => filters, [JSON.stringify(filters)])
+  const memoizedLimit = useMemo(() => limit, [limit])
+
   useEffect(() => {
-    fetchRecipes(filters, limit)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, limit])
+    fetchRecipes(memoizedFilters, memoizedLimit)
+  }, [fetchRecipes, memoizedFilters, memoizedLimit])
 
   const toggleFavorite = async (recipeId: string, userId?: string) => {
     if (!userId) {

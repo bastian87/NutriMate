@@ -4,13 +4,26 @@ import type { NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
+  const pathname = req.nextUrl.pathname
+
+  // Rutas estáticas que no necesitan verificación de auth
+  const staticRoutes = [
+    '/_next',
+    '/api',
+    '/favicon.ico',
+    '/robots.txt',
+    '/sitemap.xml'
+  ]
+
+  if (staticRoutes.some(route => pathname.startsWith(route))) {
+    return res
+  }
+
   const supabase = createMiddlewareClient({ req, res })
 
   const {
     data: { session },
   } = await supabase.auth.getSession()
-
-  const pathname = req.nextUrl.pathname
 
   // Rutas públicas que no requieren autenticación
   const publicRoutes = [

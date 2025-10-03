@@ -11,7 +11,7 @@ interface AnimatedCardProps {
   hover?: boolean
 }
 
-export const AnimatedCard = ({ 
+export const AnimatedCard = React.memo(({ 
   children, 
   className = "", 
   delay = 0,
@@ -22,22 +22,18 @@ export const AnimatedCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ 
-        duration: 0.5, 
+        duration: 0.3, 
         delay,
         ease: "easeOut"
       }}
-      whileHover={hover ? { 
-        y: -2,
-        transition: { duration: 0.2 }
-      } : {}}
       className={className}
     >
-      <Card className="h-full transition-all duration-300 hover:shadow-lg">
+      <Card className={`h-full transition-transform duration-150 ease-out hover:scale-[1.02] hover:shadow-lg hover:shadow-orange-500/20 ${hover ? 'cursor-pointer' : ''}`}>
         {children}
       </Card>
     </motion.div>
   )
-}
+})
 
 interface MetricCardProps {
   title: string
@@ -49,7 +45,7 @@ interface MetricCardProps {
   delay?: number
 }
 
-export const MetricCard = ({ 
+export const MetricCard = React.memo(({ 
   title, 
   value, 
   subtitle, 
@@ -59,7 +55,7 @@ export const MetricCard = ({
   delay = 0 
 }: MetricCardProps) => {
   return (
-    <AnimatedCard delay={delay}>
+    <AnimatedCard delay={delay} hover={false}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm text-gray-600 dark:text-gray-400">{title}</CardTitle>
@@ -85,4 +81,4 @@ export const MetricCard = ({
       </CardContent>
     </AnimatedCard>
   )
-}
+})
