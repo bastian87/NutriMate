@@ -28,7 +28,7 @@ export default function PrivacyPolicyPage() {
           <strong>How We Use Your Data</strong><br/>
           Your personal data may be used for the following purposes:
           <ul className="list-disc pl-6">
-            <li>To provide and personalize our meal planning services.</li>
+            <li>To provide and personalize our nutrition tracking services.</li>
             <li>To manage your account and subscription.</li>
             <li>To analyze usage and improve our features and content.</li>
             <li>To process payments and deliver customer support.</li>

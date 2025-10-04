@@ -85,11 +85,6 @@ export default function DashboardPage() {
                     "Cuenta Gratuita"
                   )}
                 </Badge>
-                {userData?.usage && (
-                  <div className="text-xs text-gray-500">
-                    {userData.usage.mealPlans.created}/{userData.usage.mealPlans.maxCreated} planes de comida
-                  </div>
-                )}
               </div>
             </div>
                   <div className="flex gap-3">

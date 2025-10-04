@@ -11,7 +11,7 @@ import { getUserUsage, type UsageLimit } from "@/lib/subscription-service"
 import { useLanguage } from "@/lib/i18n/context"
 
 interface UsageLimitBannerProps {
-  feature: "recipes" | "mealPlans" | "customRecipes"
+  feature: "recipes" | "customRecipes"
   className?: string
 }
 
@@ -45,17 +45,10 @@ export function UsageLimitBanner({ feature, className }: UsageLimitBannerProps) 
     switch (feature) {
       case "recipes":
         return {
-          current: usage.recipes.saved,
-          max: usage.recipes.maxSaved,
+          current: usage.favorites.saved,
+          max: usage.favorites.maxSaved,
           label: t("recipes.title"),
           upgradeText: t("usageLimit.saveUnlimited"),
-        }
-      case "mealPlans":
-        return {
-          current: usage.mealPlans.created,
-          max: usage.mealPlans.maxCreated,
-          label: t("navigation.mealPlans"),
-          upgradeText: t("usageLimit.createUnlimitedMealPlans"),
         }
       case "customRecipes":
         return {

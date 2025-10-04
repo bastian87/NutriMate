@@ -15,12 +15,6 @@ interface UpgradePromptProps {
 }
 
 const featureDetails = {
-  advanced_meal_planning: {
-    icon: Calendar,
-    title: "Advanced Meal Planning",
-    description: "Create detailed meal plans for up to 4 weeks with nutritional insights.",
-    benefit: "Plan your meals like a pro nutritionist",
-  },
   unlimited_grocery_lists: {
     icon: ShoppingCart,
     title: "Unlimited Grocery Lists",
@@ -36,8 +30,8 @@ const featureDetails = {
   custom_dietary_restrictions: {
     icon: Heart,
     title: "Custom Dietary Restrictions",
-    description: "Set up custom dietary filters and restrictions for personalized meal planning.",
-    benefit: "Meals tailored to your specific needs",
+    description: "Set up custom dietary filters and restrictions for personalized nutrition tracking.",
+    benefit: "Nutrition tailored to your specific needs",
   },
 }
 
@@ -52,7 +46,7 @@ export default function UpgradePrompt({ feature, onClose, trigger = "feature_loc
 
   if (!isVisible) return null
 
-  const details = featureDetails[feature as keyof typeof featureDetails] || featureDetails.advanced_meal_planning
+  const details = featureDetails[feature as keyof typeof featureDetails] || featureDetails.nutrition_insights
   const IconComponent = details.icon
 
   const getTriggerMessage = () => {

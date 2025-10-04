@@ -67,7 +67,7 @@ const publicRoutes = [
 #### Protected Routes (Authentication Required)
 ```typescript
 const protectedRoutes = [
-  '/dashboard', '/calendar', '/meal-plans',
+  '/dashboard', '/calendar',
   '/recipes', '/saved-recipes', '/grocery-list',
   '/ingredients', '/goals', '/gamification',
   '/monthly-summary', '/weekly-summary',

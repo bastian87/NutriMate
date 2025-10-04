@@ -163,6 +163,19 @@ class Analytics {
     this.track("premium_feature_blocked", { feature }, userId)
   }
 
+  // Premium preview events
+  paywallView(feature: string, location: string, userId?: string) {
+    this.track("paywall_view", { feature, location }, userId)
+  }
+
+  upgradeClick(feature: string, source: string, location: string, userId?: string) {
+    this.track("upgrade_click", { feature, source, location }, userId)
+  }
+
+  limitReached(feature: string, currentUsage: number, maxUsage: number, userId?: string) {
+    this.track("limit_reached", { feature, current_usage: currentUsage, max_usage: maxUsage }, userId)
+  }
+
   // Engagement events
   sessionStart(userId?: string) {
     this.track("session_start", {}, userId)

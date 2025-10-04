@@ -255,10 +255,12 @@ export const createRecipe = async (
   > & { ingredients: Array<{ name: string; amount: string }>; tagsInput?: string[] },
 ): Promise<RecipeWithDetails | null> => {
   try {
-    // Crear la receta principal
-    const { data: recipe, error: recipeError } = await supabase
-      .from("recipes")
-      .insert({
+    const response = await fetch('/api/recipes/private', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         name: recipeData.name,
         description: recipeData.description,
         image_url: recipeData.image_url,
@@ -276,133 +278,34 @@ export const createRecipe = async (
         cuisine_type: recipeData.cuisine_type,
         meal_type: recipeData.meal_type,
         instructions: recipeData.instructions,
-        created_by: recipeData.created_by,
+        ingredients: recipeData.ingredients,
+        tags: recipeData.tagsInput?.map(tag => ({ name: tag })) || []
       })
-      .select()
-      .single()
+    })
 
-    if (recipeError) {
-      console.error("Error creating recipe:", recipeError)
-      throw recipeError
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error("Error creating recipe:", errorData.error)
+      throw new Error(errorData.error || 'Failed to create recipe')
     }
+
+    const { recipe } = await response.json()
 
     if (!recipe) {
       throw new Error("Failed to create recipe")
     }
 
-    // Crear los ingredientes
-    if (recipeData.ingredients && recipeData.ingredients.length > 0) {
-      const ingredientsToInsert = recipeData.ingredients.map((ingredient) => ({
-        recipe_id: recipe.id,
-        name: ingredient.name,
-        amount: ingredient.amount, // Ahora usamos amount en lugar de quantity y unit
-      }))
-
-      const { error: ingredientsError } = await supabase
-        .from("recipe_ingredients")
-        .insert(ingredientsToInsert)
-
-      if (ingredientsError) {
-        console.error("Error creating ingredients:", ingredientsError)
-        // No lanzamos error aquí, solo logueamos
-      }
-    }
-
-    // Crear tags si se proporcionan
-    if (recipeData.tagsInput && recipeData.tagsInput.length > 0) {
-      // Primero obtener o crear los tags
-      const tagIds: string[] = []
-      
-      for (const tagName of recipeData.tagsInput) {
-        // Buscar si el tag ya existe
-        const { data: existingTag } = await supabase
-          .from("tags")
-          .select("id")
-          .eq("name", tagName)
-          .single()
-
-        if (existingTag) {
-          tagIds.push(existingTag.id)
-        } else {
-          // Crear el tag si no existe
-          const { data: newTag, error: tagError } = await supabase
-            .from("tags")
-            .insert({ name: tagName })
-            .select()
-            .single()
-
-          if (tagError) {
-            console.error("Error creating tag:", tagError)
-            continue
-          }
-
-          if (newTag) {
-            tagIds.push(newTag.id)
-          }
-        }
-      }
-
-      // Asociar los tags con la receta
-      if (tagIds.length > 0) {
-        const recipeTags = tagIds.map((tagId) => ({
-          recipe_id: recipe.id,
-          tag_id: tagId,
-        }))
-
-        const { error: recipeTagsError } = await supabase
-          .from("recipe_tags")
-          .insert(recipeTags)
-
-        if (recipeTagsError) {
-          console.error("Error creating recipe tags:", recipeTagsError)
-        }
-      }
-    }
-
-    // Obtener la receta completa con todos los datos
-    const { data: fullRecipe, error: fetchError } = await supabase
-      .from("recipes")
-      .select(`
-        *,
-        recipe_ingredients (
-          id,
-          name,
-          amount
-        ),
-        recipe_tags (
-          tags (
-            id,
-            name
-          )
-        )
-      `)
-      .eq("id", recipe.id)
-      .single()
-
-    if (fetchError) {
-      console.error("Error fetching created recipe:", fetchError)
-      // Retornar la receta básica si no podemos obtener los detalles completos
-      return {
-        ...recipe,
-        ingredients: recipeData.ingredients,
-        tags: [],
-        average_rating: 0,
-        is_favorited: false,
-        created_at: recipe.created_at,
-        updated_at: recipe.updated_at,
-      } as RecipeWithDetails
-    }
-
-    // Transformar los datos para que coincidan con la interfaz
-    const transformedRecipe: RecipeWithDetails = {
-      ...fullRecipe,
-      ingredients: fullRecipe.recipe_ingredients || [],
-      tags: fullRecipe.recipe_tags?.map((rt: any) => rt.tags) || [],
+    // Ingredients and tags are now handled by the API
+    // Return the recipe data from the API response
+    return {
+      ...recipe,
+      ingredients: recipeData.ingredients,
+      tags: recipeData.tagsInput?.map(tag => ({ id: '', name: tag })) || [],
       average_rating: 0,
       is_favorited: false,
-    }
-
-    return transformedRecipe
+      created_at: recipe.created_at,
+      updated_at: recipe.updated_at,
+    } as RecipeWithDetails
   } catch (error) {
     console.error("Error in createRecipe:", error)
     throw error
@@ -430,10 +333,13 @@ export const updateRecipe = async (
   }
 ): Promise<RecipeWithDetails | null> => {
   try {
-    // Update the main recipe record
-    const { data: recipe, error: recipeError } = await supabase
-      .from("recipes")
-      .update({
+    const response = await fetch('/api/recipes/private', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id,
         name: recipeData.name,
         description: recipeData.description,
         prep_time_minutes: recipeData.prep_time_minutes,
@@ -448,38 +354,23 @@ export const updateRecipe = async (
         sugar: recipeData.sugar || 0,
         sodium: recipeData.sodium || 0,
         fiber: recipeData.fiber || 0,
-        updated_at: new Date().toISOString(),
+        ingredients: recipeData.ingredients
       })
-      .eq("id", id)
-      .select()
-      .single()
+    })
 
-    if (recipeError) throw recipeError
-    if (!recipe) return null
-
-    // Delete existing ingredients
-    const { error: deleteIngredientsError } = await supabase
-      .from("recipe_ingredients")
-      .delete()
-      .eq("recipe_id", id)
-
-    if (deleteIngredientsError) throw deleteIngredientsError
-
-    // Insert new ingredients
-    if (recipeData.ingredients.length > 0) {
-      const ingredientsToInsert = recipeData.ingredients.map(ingredient => ({
-        recipe_id: id,
-        name: ingredient.name,
-        amount: ingredient.amount,
-      }))
-
-      const { error: insertIngredientsError } = await supabase
-        .from("recipe_ingredients")
-        .insert(ingredientsToInsert)
-
-      if (insertIngredientsError) throw insertIngredientsError
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error("Error updating recipe:", errorData.error)
+      throw new Error(errorData.error || 'Failed to update recipe')
     }
 
+    const { recipe } = await response.json()
+
+    if (!recipe) {
+      throw new Error("Failed to update recipe")
+    }
+
+    // Ingredients are now handled by the API
     // Return the updated recipe with full details
     return await getRecipeById(id)
   } catch (error) {
@@ -495,33 +386,25 @@ export const deleteRecipe = async (id: string): Promise<boolean> => {
 
 export const rateRecipe = async (recipeId: string, userId: string, rating: number, review?: string): Promise<any> => {
   try {
-    // Verificar si ya existe un rating para este usuario y receta
-    const { data: existing, error: checkError } = await supabase
-      .from("recipe_ratings")
-      .select("recipe_id, user_id")
-      .eq("recipe_id", recipeId)
-      .eq("user_id", userId)
-      .maybeSingle()
+    const response = await fetch('/api/recipes/ratings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        recipe_id: recipeId,
+        rating,
+        review: review || ''
+      })
+    })
 
-    if (checkError) throw checkError
-
-    if (existing) {
-      // Actualizar el rating existente (solo calificación, sin comentario)
-      const { error: updateError } = await supabase
-        .from("recipe_ratings")
-        .update({ rating, review: "", created_at: new Date().toISOString() })
-        .eq("recipe_id", recipeId)
-        .eq("user_id", userId)
-      if (updateError) throw updateError
-      return { updated: true }
-    } else {
-      // Crear un nuevo rating (solo calificación, sin comentario)
-      const { error: insertError } = await supabase
-        .from("recipe_ratings")
-        .insert({ recipe_id: recipeId, user_id: userId, rating, review: "", created_at: new Date().toISOString() })
-      if (insertError) throw insertError
-      return { created: true }
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to rate recipe')
     }
+
+    const data = await response.json()
+    return data.rating
   } catch (error) {
     console.error("Error in rateRecipe:", error)
     if (error instanceof Error) throw new Error(`Failed to rate recipe: ${error.message}`)
@@ -531,42 +414,49 @@ export const rateRecipe = async (recipeId: string, userId: string, rating: numbe
 
 export const toggleFavorite = async (recipeId: string, userId: string): Promise<boolean> => {
   try {
-    // First, check if the favorite exists
-    const { data: existing, error: checkError } = await supabase
-      .from("user_favorites")
-      .select("user_id,recipe_id")
-      .eq("user_id", userId)
-      .eq("recipe_id", recipeId)
-      .maybeSingle()
+    // First, check if the favorite exists by trying to get favorites
+    const getResponse = await fetch('/api/favorites', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
 
-    if (checkError) {
-      console.error("Error checking existing favorite:", checkError)
-      throw checkError
+    if (!getResponse.ok) {
+      throw new Error('Failed to fetch favorites');
     }
+
+    const { favorites } = await getResponse.json();
+    const existing = favorites.find((fav: any) => fav.recipe_id === recipeId);
 
     if (existing) {
       // Favorite exists, so remove it
-      const { error: deleteError } = await supabase
-        .from("user_favorites")
-        .delete()
-        .eq("user_id", userId)
-        .eq("recipe_id", recipeId)
-      
-      if (deleteError) {
-        console.error("Error deleting favorite:", deleteError)
-        throw deleteError
+      const deleteResponse = await fetch(`/api/favorites?recipe_id=${recipeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!deleteResponse.ok) {
+        const errorData = await deleteResponse.json();
+        throw new Error(errorData.error || 'Failed to remove favorite');
       }
       
       return false // Not favorited anymore
     } else {
       // Favorite doesn't exist, so add it
-      const { error: insertError } = await supabase
-        .from("user_favorites")
-        .insert({ user_id: userId, recipe_id: recipeId })
-      
-      if (insertError) {
-        console.error("Error inserting favorite:", insertError)
-        throw insertError
+      const addResponse = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ recipe_id: recipeId })
+      });
+
+      if (!addResponse.ok) {
+        const errorData = await addResponse.json();
+        throw new Error(errorData.error || 'Failed to add favorite');
       }
       
       return true // Now favorited
@@ -580,35 +470,34 @@ export const toggleFavorite = async (recipeId: string, userId: string): Promise<
 
 export const getUserFavorites = async (userId: string): Promise<RecipeWithDetails[]> => {
   try {
-    const { data: favoriteEntries, error: favError } = await supabase
-      .from("user_favorites")
-      .select("recipe_id")
-      .eq("user_id", userId)
+    const response = await fetch('/api/favorites', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
 
-    if (favError) {
-      console.error("Error fetching user favorite entries:", favError)
-      throw new Error(`Failed to fetch favorite entries: ${favError.message}`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch favorites');
     }
-    if (!favoriteEntries || favoriteEntries.length === 0) {
+
+    const { favorites } = await response.json();
+    
+    if (!favorites || favorites.length === 0) {
       return []
     }
 
-    const recipeIds = favoriteEntries.map((fav) => fav.recipe_id)
+    // Transform the API response to match RecipeWithDetails format
+    const recipes: RecipeWithDetails[] = favorites.map((fav: any) => ({
+      ...fav.recipes,
+      is_favorited: true,
+      ingredients: fav.recipes.ingredients || [],
+      tags: fav.recipes.tags || [],
+      creator: fav.recipes.creator || null,
+      user_rating: fav.recipes.user_rating || 0
+    }));
 
-    // Fetch details for these recipes
-    // We can reuse getRecipes with a filter for these IDs, or fetch them individually
-    // For simplicity here, let's assume we fetch them with full details.
-    // This could be optimized by passing recipeIds to a modified getRecipes or a new function.
-
-    const recipesDetailsPromises = recipeIds.map((id) => getRecipeById(id, userId))
-    const results = await Promise.allSettled(recipesDetailsPromises)
-
-    const successfullyFetchedRecipes = results
-      .filter((result) => result.status === "fulfilled" && result.value !== null)
-      .map((result) => (result as PromiseFulfilledResult<RecipeWithDetails>).value)
-
-    // Ensure all returned recipes have is_favorited = true
-    return successfullyFetchedRecipes.map((recipe) => ({ ...recipe, is_favorited: true }))
+    return recipes;
   } catch (error) {
     console.error("Error in getUserFavorites:", error)
     if (error instanceof Error) throw error

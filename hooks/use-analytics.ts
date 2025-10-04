@@ -61,5 +61,11 @@ export function useAnalytics() {
     trackFeatureUsage: (feature: string, context?: string) => analytics.featureUsed(feature, context, user?.id),
 
     trackPremiumBlock: (feature: string) => analytics.premiumFeatureBlocked(feature, user?.id),
+
+    // Premium preview analytics
+    track: (event: string, properties?: Record<string, any>) => analytics.track(event, properties, user?.id),
+    paywallView: (feature: string, location: string) => analytics.paywallView(feature, location, user?.id),
+    upgradeClick: (feature: string, source: string, location: string) => analytics.upgradeClick(feature, source, location, user?.id),
+    limitReached: (feature: string, currentUsage: number, maxUsage: number) => analytics.limitReached(feature, currentUsage, maxUsage, user?.id),
   }
 }

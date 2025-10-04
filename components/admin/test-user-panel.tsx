@@ -19,13 +19,13 @@ const testUsers: TestUser[] = [
     email: "john.free@nutrimate.test",
     plan: "free",
     status: "active",
-    features: ["3 AI suggestions/day", "1 meal plan", "Basic recipes"],
+    features: ["3 AI suggestions/day", "Basic recipes"],
   },
   {
     email: "jane.premium@nutrimate.test",
     plan: "premium",
     status: "active",
-    features: ["Unlimited AI suggestions", "Unlimited meal plans", "Advanced nutrition insights", "Export features"],
+    features: ["Unlimited AI suggestions", "Advanced nutrition insights", "Export features"],
   },
 ]
 

@@ -67,7 +67,6 @@ export default function UsageTracker({ userId }: UsageTrackerProps) {
   const isPremium = subscription.plan === "premium" && subscription.status === "active"
 
   // Ensure all required properties exist with defaults
-  const mealPlans = usage.mealPlans
 
   return (
     <Card>
@@ -86,22 +85,6 @@ export default function UsageTracker({ userId }: UsageTrackerProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Meal Plans */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">{t("usageTracker.advancedMealPlans")}</span>
-            <span className="text-sm text-gray-600">
-              {isPremium ? (
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  {t("usageTracker.unlimited")}
-                </Badge>
-              ) : (
-                `${mealPlans.created}/${mealPlans.maxCreated} ${t("usageTracker.used")}`
-              )}
-            </span>
-          </div>
-          {!isPremium && <Progress value={(mealPlans.created / mealPlans.maxCreated) * 100} className="h-2" />}
-        </div>
 
         {/* Premium Features */}
         {!isPremium && (

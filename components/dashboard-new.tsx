@@ -26,7 +26,6 @@ import {
 import { useLanguage } from "@/lib/i18n/context"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider"
-import { useMealPlans } from "@/hooks/use-meal-plans"
 import { Crown, Calendar, RefreshCw } from "lucide-react"
 import Link from "next/link"
 

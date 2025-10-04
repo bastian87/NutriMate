@@ -79,9 +79,6 @@ export function useOptimizedNavigation() {
     navigateTo('/grocery-list')
   }, [navigateTo])
 
-  const navigateToMealPlans = useCallback(() => {
-    navigateTo('/meal-plans')
-  }, [navigateTo])
 
   const navigateToCalendar = useCallback(() => {
     navigateTo('/calendar')
@@ -97,7 +94,6 @@ export function useOptimizedNavigation() {
     navigateToRecipes,
     navigateToIngredients,
     navigateToGroceryList,
-    navigateToMealPlans,
     navigateToCalendar,
     navigateToAccount,
     isNavigating: stateRef.current.isNavigating

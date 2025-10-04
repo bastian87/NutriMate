@@ -72,7 +72,6 @@ export const CACHE_KEYS = {
   INGREDIENTS: 'ingredients',
   FOOD_ENTRIES: 'food_entries',
   GROCERY_LIST: 'grocery_list',
-  MEAL_PLANS: 'meal_plans'
 } as const
 
 // Helper function to create cache key with user ID

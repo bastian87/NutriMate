@@ -45,18 +45,8 @@ export async function DELETE(request: NextRequest) {
       // Note: recipe_ratings are NOT deleted to preserve community ratings and recipe popularity
       // This helps maintain the quality and reputation of recipes for all users
 
-      // Delete meal plan meals (before meal plans)
-      // First get all meal plan IDs for this user
-      const { data: mealPlanIds } = await supabaseAdmin.from("meal_plans").select("id").eq("user_id", userId)
-      if (mealPlanIds && mealPlanIds.length > 0) {
-        const planIds = mealPlanIds.map(plan => plan.id)
-        const { error: mealPlanMealsError } = await supabaseAdmin.from("meal_plan_meals").delete().in("meal_plan_id", planIds)
-        if (mealPlanMealsError) console.log("Error deleting meal plan meals:", mealPlanMealsError)
-      }
-
-      // Delete meal plans
-      const { error: mealPlansError } = await supabaseAdmin.from("meal_plans").delete().eq("user_id", userId)
-      if (mealPlansError) console.log("Error deleting meal plans:", mealPlansError)
+      // Note: meal plans and meal plan meals are preserved in legacy tables
+      // They are not deleted to maintain data integrity for potential future use
 
       // Delete grocery list items (before grocery lists)
       // First get all grocery list IDs for this user

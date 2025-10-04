@@ -48,46 +48,49 @@ export function useGroceryList(shouldFetch = true) {
       setLoading(true)
       setError(null)
 
-      // Get the user's grocery lists (there might be multiple)
-      const { data: lists, error: listsError } = await supabase
-        .from("grocery_lists")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
+      // Get the user's grocery lists
+      const response = await fetch('/api/grocery-lists', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
 
-      if (listsError) throw listsError
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to fetch grocery lists')
+      }
+
+      const { lists } = await response.json()
 
       let list
       if (!lists || lists.length === 0) {
         // No lists found, create one
-        const { data: newList, error: createError } = await supabase
-          .from("grocery_lists")
-          .insert({
-            user_id: user.id,
-            name: "My Grocery List",
+        const createResponse = await fetch('/api/grocery-lists', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: "My Grocery List"
           })
-          .select()
-          .single()
+        })
 
-        if (createError) throw createError
+        if (!createResponse.ok) {
+          const errorData = await createResponse.json()
+          throw new Error(errorData.error || 'Failed to create grocery list')
+        }
+
+        const { list: newList } = await createResponse.json()
         list = newList
       } else {
         // Use the first (most recent) list
         list = lists[0]
       }
 
-      // Get the items for this list
-      const { data: items, error: itemsError } = await supabase
-        .from("grocery_list_items")
-        .select("*")
-        .eq("grocery_list_id", list.id)
-        .order("created_at", { ascending: false })
-
-      if (itemsError) throw itemsError
-
       setGroceryList({
         ...list,
-        items: items || [],
+        items: list.grocery_list_items || [],
       })
     } catch (err) {
       console.error("Error fetching grocery list:", err)
@@ -107,25 +110,31 @@ export function useGroceryList(shouldFetch = true) {
     if (!user || !groceryList) return
 
     try {
-      const { data, error } = await supabase
-        .from("grocery_list_items")
-        .insert({
+      const response = await fetch('/api/grocery-lists/items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           grocery_list_id: groceryList.id,
           name: item.name,
           quantity: item.quantity,
           unit: item.unit,
           category: item.category || "other",
           recipe_id: item.recipe_id,
-          is_checked: false,
         })
-        .select()
-        .single()
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to add item')
+      }
+
+      const { item: newItem } = await response.json()
 
       setGroceryList((prev) => ({
         ...prev!,
-        items: [data, ...prev!.items],
+        items: [newItem, ...prev!.items],
       }))
     } catch (err) {
       console.error("Error adding item:", err)
@@ -137,18 +146,27 @@ export function useGroceryList(shouldFetch = true) {
     if (!groceryList) return
 
     try {
-      const { data, error } = await supabase
-        .from("grocery_list_items")
-        .update(updates)
-        .eq("id", itemId)
-        .select()
-        .single()
+      const response = await fetch('/api/grocery-lists/items', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: itemId,
+          ...updates
+        })
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update item')
+      }
+
+      const { item: updatedItem } = await response.json()
 
       setGroceryList((prev) => ({
         ...prev!,
-        items: prev!.items.map((item) => (item.id === itemId ? data : item)),
+        items: prev!.items.map((item) => (item.id === itemId ? updatedItem : item)),
       }))
     } catch (err) {
       console.error("Error updating item:", err)
@@ -160,9 +178,17 @@ export function useGroceryList(shouldFetch = true) {
     if (!groceryList) return
 
     try {
-      const { error } = await supabase.from("grocery_list_items").delete().eq("id", itemId)
+      const response = await fetch(`/api/grocery-lists/items?id=${itemId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete item')
+      }
 
       setGroceryList((prev) => ({
         ...prev!,
@@ -230,23 +256,39 @@ export function useGroceryList(shouldFetch = true) {
 
       console.log("📋 Items a insertar:", itemsToInsert.length)
 
-      const { data, error: insertError } = await supabase.from("grocery_list_items").insert(itemsToInsert).select()
+      // Insert items one by one using the API
+      const insertedItems: any[] = []
+      for (const item of itemsToInsert) {
+        try {
+          const response = await fetch('/api/grocery-lists/items', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(item)
+          })
 
-      if (insertError) {
-        console.error("❌ Error insertando items:", insertError)
-        throw insertError
+          if (response.ok) {
+            const { item: newItem } = await response.json()
+            insertedItems.push(newItem)
+          } else {
+            console.error("❌ Error inserting item:", item.name)
+          }
+        } catch (error) {
+          console.error("❌ Error inserting item:", item.name, error)
+        }
       }
 
-      console.log("✅ Items insertados exitosamente:", data?.length || 0)
+      console.log("✅ Items insertados exitosamente:", insertedItems.length)
 
       setGroceryList((prev) => {
         const updated = {
           ...prev!,
-          items: [...(data || []), ...prev!.items],
+          items: [...insertedItems, ...prev!.items],
         }
         console.log("🔄 Lista de compras actualizada:", {
           itemsAnteriores: prev!.items.length,
-          itemsNuevos: data?.length || 0,
+          itemsNuevos: insertedItems.length,
           itemsTotales: updated.items.length
         })
         return updated
@@ -259,72 +301,10 @@ export function useGroceryList(shouldFetch = true) {
     }
   }
 
-  const addAllMealPlanIngredients = async (mealPlanId: string) => {
-    if (!user || !groceryList) return
-
-    try {
-      // Get all meals from the meal plan
-      const { data: meals, error: mealsError } = await supabase
-        .from("meal_plan_meals")
-        .select("recipe_id")
-        .eq("meal_plan_id", mealPlanId)
-
-      if (mealsError) throw mealsError
-
-      // Get ingredients for all recipes in the meal plan
-      const recipeIds = meals.map((meal) => meal.recipe_id)
-
-      const { data: ingredients, error: ingredientsError } = await supabase
-        .from("recipe_ingredients")
-        .select("*")
-        .in("recipe_id", recipeIds)
-
-      if (ingredientsError) throw ingredientsError
-
-      if (!ingredients || ingredients.length === 0) {
-        throw new Error("No ingredients found for this meal plan")
-      }
-
-      // Group ingredients by name and sum quantities
-      const groupedIngredients = ingredients.reduce(
-        (acc, ingredient) => {
-          const key = `${ingredient.name}-${ingredient.unit || "item"}`
-          if (acc[key]) {
-            // Simple quantity addition (you might want more sophisticated logic)
-            const existingQty = Number.parseFloat(acc[key].quantity) || 1
-            const newQty = Number.parseFloat(ingredient.quantity) || 1
-            acc[key].quantity = (existingQty + newQty).toString()
-          } else {
-            acc[key] = { ...ingredient }
-          }
-          return acc
-        },
-        {} as Record<string, any>,
-      )
-
-      // Add grouped ingredients to grocery list
-      const itemsToInsert = Object.values(groupedIngredients).map((ingredient: any) => ({
-        grocery_list_id: groceryList.id,
-        name: ingredient.name,
-        quantity: ingredient.quantity,
-        unit: ingredient.unit,
-        category: "other",
-        is_checked: false,
-      }))
-
-      const { data, error: insertError } = await supabase.from("grocery_list_items").insert(itemsToInsert).select()
-
-      if (insertError) throw insertError
-
-      setGroceryList((prev) => ({
-        ...prev!,
-        items: [...(data || []), ...prev!.items],
-      }))
-    } catch (err) {
-      console.error("Error adding meal plan ingredients:", err)
-      throw err
-    }
-  }
+  // Legacy function - meal planning removed
+  // const addAllMealPlanIngredients = async (mealPlanId: string) => {
+  //   // Function removed - meal planning no longer available
+  // }
 
   const clearAllItems = async () => {
     if (!groceryList) return
@@ -349,7 +329,6 @@ export function useGroceryList(shouldFetch = true) {
     updateItem,
     deleteItem,
     addRecipeIngredients,
-    addAllMealPlanIngredients,
     refetch: fetchGroceryList,
     clearAllItems,
   }

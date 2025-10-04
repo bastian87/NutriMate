@@ -125,7 +125,7 @@ export default function LandingClient({ }: LandingClientProps) {
     {
       icon: <Users className="w-10 h-10" />,
       title: 'Auto Grocery Lists',
-      description: 'Generate shopping lists from your meal plans automatically'
+      description: 'Generate shopping lists from your recipes automatically'
     },
     {
       icon: <Sparkles className="w-10 h-10" />,
@@ -186,7 +186,6 @@ export default function LandingClient({ }: LandingClientProps) {
         t("pricing.everythingInPremium"),
         t("pricing.advancedAnalytics"),
         t("pricing.recipeRecommendations"),
-        // t("pricing.mealPlanTemplates"), // Oculto temporalmente
         t("pricing.premiumSupport"),
       ],
       buttonText: t("pricing.startAnnual"),

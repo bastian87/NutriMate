@@ -40,12 +40,6 @@ const navigationItems = [
     description: "Compras inteligentes"
   },
   {
-    name: "Planes de Comida",
-    href: "/meal-plans",
-    icon: Target,
-    description: "Planificación semanal"
-  },
-  {
     name: "Calendario",
     href: "/calendar",
     icon: Calendar,
@@ -66,7 +60,6 @@ export function OptimizedNavigation() {
     navigateToRecipes,
     navigateToIngredients,
     navigateToGroceryList,
-    navigateToMealPlans,
     navigateToCalendar,
     navigateToAccount,
     isNavigating
@@ -93,8 +86,6 @@ export function OptimizedNavigation() {
               return () => handleNavigation(item.href, navigateToIngredients)
             case "/grocery-list":
               return () => handleNavigation(item.href, navigateToGroceryList)
-            case "/meal-plans":
-              return () => handleNavigation(item.href, navigateToMealPlans)
             case "/calendar":
               return () => handleNavigation(item.href, navigateToCalendar)
             case "/account":

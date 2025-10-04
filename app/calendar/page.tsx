@@ -11,7 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useActiveGoal } from "@/hooks/useActiveGoal";
 import { useLanguage } from "@/lib/i18n/context";
 import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider";
-import { useMealPlans } from "@/hooks/use-meal-plans";
 import { 
   CalendarIcon, 
   MoreIcon, 
@@ -38,7 +37,6 @@ export default function CalendarPage() {
   const { activeGoal, loading: goalLoading, createDefaultGoal } = useActiveGoal();
   const { userData } = useUserProfile();
   const isPremium = useIsPremium();
-  const { mealPlans } = useMealPlans();
   const { t } = useLanguage();
   const [range, setRange] = useState<"week" | "month">("month");
   const [isCreatingGoal, setIsCreatingGoal] = useState(false);
@@ -129,11 +127,6 @@ export default function CalendarPage() {
                     "Cuenta Gratuita"
                   )}
                 </Badge>
-                {mealPlans && mealPlans.length > 0 && (
-                  <div className="text-xs text-gray-500">
-                    {mealPlans.length} plan{mealPlans.length !== 1 ? 'es' : ''} de comida
-                  </div>
-                )}
               </div>
             </div>
             <div className="flex gap-2">

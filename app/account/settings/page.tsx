@@ -183,7 +183,7 @@ const AccountSettingsPage = () => {
                 <p className="text-sm text-red-800 font-medium mb-2">This will permanently delete:</p>
                 <ul className="text-sm text-red-700 space-y-1">
                   <li>• {t("accountSettings.deleteProfile")}</li>
-                  <li>• All saved recipes and meal plans</li>
+                  <li>• All saved recipes</li>
                   <li>• Your subscription and billing history</li>
                   <li>• All preferences and settings</li>
                   <li>• <strong>{t("accountSettings.deleteSignIn")}</strong></li>

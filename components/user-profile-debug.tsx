@@ -10,8 +10,7 @@ export function UserProfileDebug() {
   const isPremium = useIsPremium()
   const accountType = useAccountType()
   const saveRecipesAccess = useFeatureAccess("save_recipes")
-  const mealPlansAccess = useFeatureAccess("create_meal_plans")
-  const smartGroceryAccess = useFeatureAccess("smart_grocery_lists")
+  const smartGroceryAccess = useFeatureAccess("grocery_lists")
 
   if (loading) {
     return (
@@ -119,11 +118,11 @@ export function UserProfileDebug() {
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-medium">Saved Recipes:</span>
-              <span>{userData.usage.recipes.saved}/{userData.usage.recipes.maxSaved}</span>
+              <span>{userData.usage.favorites.saved}/{userData.usage.favorites.maxSaved}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="font-medium">Meal Plans:</span>
-              <span>{userData.usage.mealPlans.created}/{userData.usage.mealPlans.maxCreated}</span>
+              <span>N/A</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="font-medium">Custom Recipes:</span>
@@ -155,17 +154,6 @@ export function UserProfileDebug() {
             </div>
           </div>
           
-          <div className="flex items-center justify-between">
-            <span className="font-medium">Create Meal Plans:</span>
-            <div className="flex items-center gap-2">
-              {mealPlansAccess.canAccess ? (
-                <CheckCircle className="h-4 w-4 text-green-600" />
-              ) : (
-                <XCircle className="h-4 w-4 text-red-600" />
-              )}
-              <span className="text-sm">{mealPlansAccess.canAccess ? "Allowed" : "Limited"}</span>
-            </div>
-          </div>
           
           <div className="flex items-center justify-between">
             <span className="font-medium">Smart Grocery Lists:</span>

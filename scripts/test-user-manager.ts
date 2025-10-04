@@ -149,12 +149,6 @@ export async function createTestUsers() {
           usage_count: testUser.plan === "free" ? 2 : 15,
           reset_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0],
         },
-        {
-          user_id: authData.user.id,
-          feature: "meal_plans",
-          usage_count: testUser.plan === "free" ? 1 : 5,
-          reset_date: new Date().toISOString().split("T")[0],
-        },
       ]
 
       const { error: usageError } = await supabase.from("usage_tracking").upsert(usageData)

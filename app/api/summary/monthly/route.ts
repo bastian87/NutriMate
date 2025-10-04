@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MonthlySummaryQuerySchema } from '@/lib/validation/zod';
 import { createServerClient } from '@/lib/supabase/server';
 import { getUserId } from '@/lib/auth/getUserId';
+import { requirePremiumFeature } from '@/lib/api-guards';
 
 export async function GET(req: NextRequest) {
-  const supa = createServerClient();
   try {
+    // Check premium access for monthly analytics
+    const guardResult = await requirePremiumFeature(req, "monthly_analytics");
+    if (!guardResult.success) {
+      return guardResult.response;
+    }
+
+    const supa = createServerClient();
     const userId = await getUserId(req as unknown as Request);
     const { searchParams } = new URL(req.url);
     

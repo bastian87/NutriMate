@@ -41,7 +41,7 @@ export default function HomeClient({ isLoggedIn, featuredRecipes }: HomeClientPr
       description: t("home.planMealsDesc"),
       color: "text-orange-600",
       bgColor: "bg-orange-50",
-      image: "/images/smart-meal-planning.png",
+      image: "/images/smart-nutrition-tracking.png",
     },
     {
       icon: Target,
@@ -62,7 +62,7 @@ export default function HomeClient({ isLoggedIn, featuredRecipes }: HomeClientPr
     {
       icon: Users,
       title: "Community Driven",
-      description: "Share recipes, meal plans, and connect with like-minded health enthusiasts.",
+      description: "Share recipes and connect with like-minded health enthusiasts.",
       color: "text-green-600",
       bgColor: "bg-green-50",
       image: "/images/community-driven.png",

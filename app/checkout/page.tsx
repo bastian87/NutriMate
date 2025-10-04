@@ -92,7 +92,6 @@ export default function CheckoutPage() {
                   <ul className="space-y-2 text-sm">
                     {[
                       "Unlimited recipe access",
-                      // "Advanced meal planning (4 weeks)", // Oculto temporalmente
                       "Smart grocery lists",
                       "Nutritional analysis",
                       "Custom recipe creation",

@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/i18n/context";
+import { CustomIngredientsPreview } from "@/components/premium-preview";
+import { useIsPremium } from "@/components/auth/user-profile-provider";
 import { motion } from "framer-motion";
 import { 
   SearchIcon, 
@@ -38,6 +40,7 @@ export default function IngredientsPage() {
   const { user } = useAuthContext();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const isPremium = useIsPremium();
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,12 +102,18 @@ export default function IngredientsPage() {
     }
 
     try {
-      const response = await fetch('/api/ingredients', {
+      const response = await fetch('/api/custom-ingredients', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newIngredient)
+        body: JSON.stringify({
+          name: newIngredient.name,
+          nutrition_data: {
+            kcalPer100g: newIngredient.kcalPer100g,
+            group: newIngredient.group
+          }
+        })
       });
 
       if (response.ok) {
@@ -306,13 +315,14 @@ export default function IngredientsPage() {
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between mb-4">
                     <CardTitle className="text-xl text-gray-900">Ingredients Database</CardTitle>
-                    <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
-                      <DialogTrigger asChild>
-                        <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30">
-                          <PlusIcon className="w-4 h-4 mr-2" />
-                          Add Ingredient
-                        </Button>
-                      </DialogTrigger>
+                    {isPremium ? (
+                      <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
+                        <DialogTrigger asChild>
+                          <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30">
+                            <PlusIcon className="w-4 h-4 mr-2" />
+                            Add Ingredient
+                          </Button>
+                        </DialogTrigger>
                       <DialogContent className="sm:max-w-[500px]">
                         <DialogHeader>
                           <DialogTitle>Add New Ingredient</DialogTitle>
@@ -374,6 +384,16 @@ export default function IngredientsPage() {
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
+                    ) : (
+                      <CustomIngredientsPreview
+                        ctaText={t("premiumPreview.customIngredients.cta")}
+                      >
+                        <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30">
+                          <PlusIcon className="w-4 h-4 mr-2" />
+                          Add Ingredient
+                        </Button>
+                      </CustomIngredientsPreview>
+                    )}
                   </div>
                   
                   {/* Filters */}

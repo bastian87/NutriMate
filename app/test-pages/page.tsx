@@ -19,7 +19,6 @@ export default function TestPagesPage() {
       description: t("testPages.recipeDetailDesc"),
     },
     { name: t("testPages.groceryList"), path: "/grocery-list", description: t("testPages.groceryListDesc") },
-    { name: t("testPages.mealPlans"), path: "/meal-plans", description: t("testPages.mealPlansDesc") },
     { name: t("testPages.aiAssistant"), path: "/ai-assistant", description: "Recipe suggestions chat" },
     { name: t("testPages.pricing"), path: "/pricing", description: t("testPages.pricingDesc") },
     { name: t("testPages.checkout"), path: "/checkout", description: t("testPages.checkoutDesc") },
@@ -32,7 +31,6 @@ export default function TestPagesPage() {
 
   const mobilePages = [
     { name: t("testPages.mobileHome"), path: "/mobile", description: t("testPages.mobileHomeDesc") },
-    { name: t("testPages.mobileMealPlans"), path: "/mobile/meal-plans", description: "Mobile meal planning" },
     { name: t("testPages.mobileGroceryList"), path: "/mobile/grocery-list", description: "Mobile shopping lists" },
     { name: t("testPages.mobileAccount"), path: "/mobile/account", description: "Mobile account management" },
     {

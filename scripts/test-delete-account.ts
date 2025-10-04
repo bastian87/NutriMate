@@ -20,8 +20,6 @@ async function testDeleteAccount() {
       'users',
       'user_preferences', 
       'user_favorites',
-      'meal_plans',
-      'meal_plan_meals',
       'grocery_lists',
       'grocery_list_items',
       'user_subscriptions',

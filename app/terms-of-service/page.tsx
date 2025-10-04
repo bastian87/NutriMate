@@ -12,11 +12,11 @@ export default function TermsOfServicePage() {
         </li>
         <li>
           <strong>Description of the Service</strong><br />
-          NutriMate is a web-based meal planning application designed for personal and recreational use only. The Service includes tools for:
+          NutriMate is a web-based nutrition tracking application designed for personal and recreational use only. The Service includes tools for:
           <ul className="list-disc pl-6 mt-2">
-            <li>Meal planning and recipe discovery.</li>
-            <li>Generating shopping lists based on selected meals.</li>
-            <li>Nutritional analysis of meals and meal plans.</li>
+            <li>Recipe discovery and nutrition tracking.</li>
+            <li>Generating shopping lists based on selected recipes.</li>
+            <li>Nutritional analysis of meals and recipes.</li>
             <li>Calorie calculators.</li>
             <li>Saving dietary preferences, restrictions, and personal goals.</li>
             <li>Accessing premium features such as advanced planning, additional recipes, unlimited lists, and enhanced customization.</li>
@@ -28,7 +28,7 @@ export default function TermsOfServicePage() {
           <strong>Medical Disclaimer</strong><br />
           All content and tools provided through NutriMate are intended for informational and entertainment purposes only.<br />
           They are not a substitute for professional medical advice, diagnosis, or treatment.<br />
-          Always consult with your physician, nutritionist, or healthcare professional before making health-related decisions or starting any new diet or meal plan.<br />
+          Always consult with your physician, nutritionist, or healthcare professional before making health-related decisions or starting any new diet or nutrition plan.<br />
           Do not use NutriMate to diagnose, treat, or manage health conditions.
         </li>
         <li>

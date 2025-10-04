@@ -7,6 +7,7 @@ import { Crown, Lock, AlertTriangle } from "lucide-react"
 import { useFeatureAccess } from "@/components/auth/user-profile-provider"
 import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/context"
+import { PREMIUM_FEATURES, normalizeFeatureKey } from "@/lib/entitlements"
 
 interface FeatureGateProps {
   children: ReactNode
@@ -36,20 +37,11 @@ export function FeatureGate({
     return <>{fallback}</>
   }
 
-  // Premium-only features that free users cannot access
-  const premiumOnlyFeatures = [
-    "export_meal_plans",
-    "priority_support",
-    "advanced_nutrition_analysis",
-    "unlimited_meal_plans",
-    "unlimited_custom_recipes",
-    "unlimited_saved_recipes",
-    "advanced_meal_planning",
-    "smart_grocery_lists",
-    "monthly_summary",
-  ]
-
-  const isPremiumOnly = premiumOnlyFeatures.includes(feature)
+  // Normalize feature key to handle legacy mappings
+  const normalizedFeature = normalizeFeatureKey(feature)
+  
+  // Check if feature is premium-only using centralized list
+  const isPremiumOnly = PREMIUM_FEATURES.includes(normalizedFeature)
 
   return (
     <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950 dark:to-yellow-950">

@@ -295,61 +295,61 @@ export interface Database {
           updated_at?: string
         }
       }
-      meal_plans: {
-        Row: {
-          id: string
-          user_id: string
-          name: string
-          start_date: string
-          end_date: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          name?: string
-          start_date?: string
-          end_date?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          name?: string
-          start_date?: string
-          end_date?: string
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      meal_plan_meals: {
-        Row: {
-          id: string
-          meal_plan_id: string
-          recipe_id: string
-          day_number: number
-          meal_type: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          meal_plan_id: string
-          recipe_id: string
-          day_number?: number
-          meal_type?: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          meal_plan_id?: string
-          recipe_id?: string
-          day_number?: number
-          meal_type?: string
-          created_at?: string
-        }
-      }
+      // meal_plans: {
+      //   Row: {
+      //     id: string
+      //     user_id: string
+      //     name: string
+      //     start_date: string
+      //     end_date: string
+      //     created_at: string
+      //     updated_at: string
+      //   }
+      //   Insert: {
+      //     id?: string
+      //     user_id: string
+      //     name?: string
+      //     start_date?: string
+      //     end_date?: string
+      //     created_at?: string
+      //     updated_at?: string
+      //   }
+      //   Update: {
+      //     id?: string
+      //     user_id?: string
+      //     name?: string
+      //     start_date?: string
+      //     end_date?: string
+      //     created_at?: string
+      //     updated_at?: string
+      //   }
+      // }
+      // meal_plan_meals: {
+      //   Row: {
+      //     id: string
+      //     meal_plan_id: string
+      //     recipe_id: string
+      //     day_number: number
+      //     meal_type: string
+      //     created_at: string
+      //   }
+      //   Insert: {
+      //     id?: string
+      //     meal_plan_id: string
+      //     recipe_id: string
+      //     day_number?: number
+      //     meal_type?: string
+      //     created_at?: string
+      //   }
+      //   Update: {
+      //     id?: string
+      //     meal_plan_id?: string
+      //     recipe_id?: string
+      //     day_number?: number
+      //     meal_type?: string
+      //     created_at?: string
+      //   }
+      // }
     }
     Views: {
       [_ in never]: never

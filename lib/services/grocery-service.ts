@@ -46,25 +46,52 @@ export class GroceryService {
   }
 
   async updateGrocery(id: string, updates: Partial<GroceryItem>): Promise<GroceryItem | null> {
-    const { data, error } = await this.supabase.from("grocery_list_items").update(updates).eq("id", id).select().single()
+    try {
+      const response = await fetch('/api/grocery-lists/items', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          ...updates
+        })
+      })
 
-    if (error) {
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error("Error updating grocery:", errorData.error)
+        return null
+      }
+
+      const { item } = await response.json()
+      return item
+    } catch (error) {
       console.error("Error updating grocery:", error)
       return null
     }
-
-    return data
   }
 
   async deleteGrocery(id: string): Promise<boolean> {
-    const { error } = await this.supabase.from("grocery_list_items").delete().eq("id", id)
+    try {
+      const response = await fetch(`/api/grocery-lists/items?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
 
-    if (error) {
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error("Error deleting grocery:", errorData.error)
+        return false
+      }
+
+      return true
+    } catch (error) {
       console.error("Error deleting grocery:", error)
       return false
     }
-
-    return true
   }
 
   async addRecipeIngredients(userId: string, recipeId: string, selectedIngredientIds?: string[]): Promise<boolean> {
@@ -82,18 +109,29 @@ export class GroceryService {
         ? ingredients.filter((ing) => selectedIngredientIds.includes(ing.id))
         : ingredients
 
-      // Add to grocery list
-      const groceryItems = ingredientsToAdd.map((ingredient) => ({
-        user_id: userId,
-        name: ingredient.name,
-        quantity: ingredient.quantity,
-        unit: ingredient.unit,
-        is_completed: false,
-      }))
+      // Add to grocery list using API
+      for (const ingredient of ingredientsToAdd) {
+        try {
+          const response = await fetch('/api/grocery-lists/items', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: ingredient.name,
+              quantity: ingredient.quantity,
+              unit: ingredient.unit,
+              is_checked: false,
+            })
+          })
 
-      const { error: insertError } = await this.supabase.from("grocery_list_items").insert(groceryItems)
-
-      if (insertError) throw insertError
+          if (!response.ok) {
+            console.error("Error adding ingredient to grocery list:", ingredient.name)
+          }
+        } catch (error) {
+          console.error("Error adding ingredient to grocery list:", ingredient.name, error)
+        }
+      }
 
       return true
     } catch (error) {
@@ -103,14 +141,51 @@ export class GroceryService {
   }
 
   async clearCompleted(userId: string): Promise<boolean> {
-    const { error } = await this.supabase.from("grocery_list_items").delete().eq("user_id", userId).eq("is_completed", true)
+    try {
+      // Get user's grocery lists first
+      const listsResponse = await fetch('/api/grocery-lists', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
 
-    if (error) {
+      if (!listsResponse.ok) {
+        console.error("Error fetching grocery lists for clear completed")
+        return false
+      }
+
+      const { lists } = await listsResponse.json()
+      
+      // Clear completed items from each list
+      for (const list of lists) {
+        const itemsResponse = await fetch(`/api/grocery-lists/items?list_id=${list.id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+
+        if (itemsResponse.ok) {
+          const { items } = await itemsResponse.json()
+          const completedItems = items.filter((item: any) => item.is_checked)
+          
+          for (const item of completedItems) {
+            await fetch(`/api/grocery-lists/items?id=${item.id}`, {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            })
+          }
+        }
+      }
+
+      return true
+    } catch (error) {
       console.error("Error clearing completed items:", error)
       return false
     }
-
-    return true
   }
 }
 

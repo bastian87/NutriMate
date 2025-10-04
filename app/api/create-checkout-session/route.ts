@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
           },
           product_options: {
             name: "NutriMate Premium",
-            description: "Unlock unlimited AI-powered meal planning and nutrition insights",
+            description: "Unlock unlimited AI-powered nutrition insights and advanced features",
             media: ["https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=300&fit=crop"],
             redirect_url: `${req.headers.get("origin")}/checkout/success`,
             receipt_button_text: "Go to Dashboard",

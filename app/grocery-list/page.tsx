@@ -41,6 +41,7 @@ import { useToast } from "@/hooks/use-toast"
 import { getRecipeById } from "@/lib/services/recipe-service"
 import type { GroceryListItem } from "@/hooks/use-grocery-list"
 import { FeatureGate } from "@/components/feature-gate"
+import { PremiumPreview } from "@/components/premium-preview"
 import { motion } from "framer-motion"
 import { 
   ArrowLeftIcon, 
@@ -105,7 +106,7 @@ export default function GroceryListPage() {
   const currentList = selectedList ? {
     id: selectedList.id,
     name: selectedList.name || 'Current Grocery List',
-    description: selectedList.description || 'Items from your meal plans',
+    description: selectedList.description || 'Items from your recipes',
     createdDate: new Date(selectedList.created_at).toISOString().split('T')[0],
     itemCount: selectedList.items?.length || 0,
     completedItems: selectedList.items?.filter(item => item.is_checked).length || 0,
@@ -805,7 +806,7 @@ export default function GroceryListPage() {
   }
 
   return (
-    <FeatureGate feature="smart_grocery_lists">
+    <FeatureGate feature="grocery_lists">
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 shadow-sm border-b">
@@ -936,34 +937,48 @@ export default function GroceryListPage() {
               </Dialog>
               
               {/* Download and Share Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+              {isPremium ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <DownloadIcon className="w-4 h-4" />
+                      Export & Share
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Download</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={handleDownloadWord}>
+                      📝 Download as Word
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handlePrint}>
+                      🖨️ Print List
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Share</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={handleShareWhatsApp}>
+                      💬 Share on WhatsApp
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleShareSocial('facebook')}>
+                      📘 Share on Facebook
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleShareSocial('twitter')}>
+                      🐦 Share on Twitter
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <PremiumPreview
+                  feature="exports"
+                  title={t("premiumPreview.exports.title")}
+                  description={t("premiumPreview.exports.description")}
+                  ctaText={t("premiumPreview.exports.cta")}
+                >
                   <Button variant="outline" size="sm" className="flex items-center gap-2">
                     <DownloadIcon className="w-4 h-4" />
                     Export & Share
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Download</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={handleDownloadWord}>
-                    📝 Download as Word
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handlePrint}>
-                    🖨️ Print List
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Share</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={handleShareWhatsApp}>
-                    💬 Share on WhatsApp
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShareSocial('facebook')}>
-                    📘 Share on Facebook
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShareSocial('twitter')}>
-                    🐦 Share on Twitter
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </PremiumPreview>
+              )}
             </div>
           </div>
 
@@ -1007,7 +1022,7 @@ export default function GroceryListPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-semibold mb-1">No Grocery List Yet</h2>
-                    <p className="text-gray-100 text-sm mb-2">Start by adding items from your meal plans or manually</p>
+                    <p className="text-gray-100 text-sm mb-2">Start by adding items from your recipes or manually</p>
                     <div className="flex items-center gap-4 text-sm">
                       <span>0 items</span>
                       <span>•</span>
@@ -1408,7 +1423,7 @@ export default function GroceryListPage() {
                     <ShoppingBagIcon className="w-8 h-8 text-gray-400" />
                   </div>
                   <p className="text-gray-500 mb-2">No items in your grocery list</p>
-                  <p className="text-sm text-gray-400 mb-4">Add items from your meal plans or manually</p>
+                  <p className="text-sm text-gray-400 mb-4">Add items from your recipes or manually</p>
                   <Button 
                     onClick={() => setIsAddItemDialogOpen(true)}
                     className="bg-green-500 hover:bg-green-600 text-white"

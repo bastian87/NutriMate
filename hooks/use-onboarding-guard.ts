@@ -50,7 +50,6 @@ export function useOnboardingGuard() {
   const protectedRoutes = [
     '/dashboard',
     '/calendar',
-    '/meal-plans',
     '/recipes',
     '/saved-recipes',
     '/grocery-list',

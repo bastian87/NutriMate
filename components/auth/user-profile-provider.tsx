@@ -5,6 +5,7 @@ import { useAuthContext } from "./simple-auth-provider"
 import { supabase } from "@/lib/supabase/client"
 import type { UserPreferences } from "@/lib/types/database"
 import { Subscription, UsageLimit, getUserSubscription, getUserUsage } from "@/lib/subscription-service"
+import { normalizeFeatureKey, getFeatureAccess, FeatureAccess } from "@/lib/entitlements"
 
 // Tipos para el perfil completo del usuario
 interface UserProfile {
@@ -366,56 +367,14 @@ export function useAccountType() {
 }
 
 // Hook de conveniencia para verificar acceso a características
-export function useFeatureAccess(feature: string) {
+export function useFeatureAccess(feature: string): FeatureAccess {
   const { userData } = useUserProfile()
   
   if (!userData) return { canAccess: false, reason: "User not loaded" }
   
-  // Usuarios premium tienen acceso completo
-  if (userData.isPremium) {
-    return { canAccess: true }
-  }
-
-  // Verificar límites para usuarios free
-  const usage = userData.usage
-  if (!usage) return { canAccess: false, reason: "Usage data not available" }
-
-  switch (feature) {
-    case "save_recipes":
-      return {
-        canAccess: usage.recipes.saved < usage.recipes.maxSaved,
-        reason: usage.recipes.saved >= usage.recipes.maxSaved 
-          ? `You've reached the limit of ${usage.recipes.maxSaved} saved recipes` 
-          : undefined
-      }
-    case "create_meal_plans":
-      return {
-        canAccess: usage.mealPlans.created < usage.mealPlans.maxCreated,
-        reason: usage.mealPlans.created >= usage.mealPlans.maxCreated 
-          ? `You've reached the limit of ${usage.mealPlans.maxCreated} meal plans` 
-          : undefined
-      }
-    case "create_custom_recipes":
-      return {
-        canAccess: usage.customRecipes.created < usage.customRecipes.maxCreated,
-        reason: usage.customRecipes.created >= usage.customRecipes.maxCreated 
-          ? `You've reached the limit of ${usage.customRecipes.maxCreated} custom recipes` 
-          : undefined
-      }
-    case "export_meal_plans":
-    case "priority_support":
-    case "advanced_nutrition_analysis":
-    case "unlimited_meal_plans":
-    case "unlimited_custom_recipes":
-    case "unlimited_saved_recipes":
-    case "advanced_meal_planning":
-    case "smart_grocery_lists":
-    case "monthly_summary":
-      return {
-        canAccess: false,
-        reason: "This feature is available for Premium users only"
-      }
-    default:
-      return { canAccess: true }
-  }
+  // Normalize feature key to handle legacy mappings
+  const normalizedFeature = normalizeFeatureKey(feature)
+  
+  // Use centralized feature access logic
+  return getFeatureAccess(normalizedFeature, userData.isPremium, userData.usage || undefined)
 } 

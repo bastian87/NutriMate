@@ -285,7 +285,7 @@ export default function TestAnalyticsPage() {
   const testSubscriptionEvents = async (): Promise<TestResult> => {
     try {
       analytics.subscriptionStart("premium", "monthly", 9.99, testUserString)
-      analytics.premiumFeatureBlocked("advanced_meal_planning", testUserString)
+      analytics.premiumFeatureBlocked("grocery_lists", testUserString)
       return {
         name: "Subscription Events",
         status: "success",
