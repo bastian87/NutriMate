@@ -88,54 +88,54 @@ export default function LandingClient({ }: LandingClientProps) {
   const speedFeatures = [
     {
       icon: <Clock className="w-6 h-6" />,
-      time: '10 seconds',
-      action: 'Log a meal',
-      description: 'Quick search and one-tap logging'
+      time: t("landing.speed.features.logMeal.time"),
+      action: t("landing.speed.features.logMeal.action"),
+      description: t("landing.speed.features.logMeal.description")
     },
     {
       icon: <Zap className="w-6 h-6" />,
-      time: '2 minutes',
-      action: 'Plan your week',
-      description: 'Smart calendar scheduling'
+      time: t("landing.speed.features.planWeek.time"),
+      action: t("landing.speed.features.planWeek.action"),
+      description: t("landing.speed.features.planWeek.description")
     },
     {
       icon: <TrendingUp className="w-6 h-6" />,
-      time: '5 seconds',
-      action: 'Check your progress',
-      description: 'Visual insights at a glance'
+      time: t("landing.speed.features.checkProgress.time"),
+      action: t("landing.speed.features.checkProgress.action"),
+      description: t("landing.speed.features.checkProgress.description")
     }
   ]
 
   const features = [
     {
       icon: <ChefHat className="w-10 h-10" />,
-      title: 'Simple Meal Logging',
-      description: 'Track meals in seconds with smart search and auto-complete'
+      title: t("landing.features.items.mealLogging.title"),
+      description: t("landing.features.items.mealLogging.description")
     },
     {
       icon: <Target className="w-10 h-10" />,
-      title: 'Easy Meal Planning',
-      description: 'Plan your nutrition week-by-week with drag-and-drop'
+      title: t("landing.features.items.mealPlanning.title"),
+      description: t("landing.features.items.mealPlanning.description")
     },
     {
       icon: <BookOpen className="w-10 h-10" />,
-      title: 'Recipe Library',
-      description: 'Access thousands of recipes with instant nutritional data'
+      title: t("landing.features.items.recipeLibrary.title"),
+      description: t("landing.features.items.recipeLibrary.description")
     },
     {
       icon: <Users className="w-10 h-10" />,
-      title: 'Auto Grocery Lists',
-      description: 'Generate shopping lists from your recipes automatically'
+      title: t("landing.features.items.groceryLists.title"),
+      description: t("landing.features.items.groceryLists.description")
     },
     {
       icon: <Sparkles className="w-10 h-10" />,
-      title: 'Clear Analytics',
-      description: 'Understand your nutrition with simple, beautiful charts'
+      title: t("landing.features.items.analytics.title"),
+      description: t("landing.features.items.analytics.description")
     },
     {
       icon: <Calculator className="w-10 h-10" />,
-      title: 'Smart Tracking',
-      description: 'Monitor weight, calories, and macros effortlessly'
+      title: t("landing.features.items.tracking.title"),
+      description: t("landing.features.items.tracking.description")
     }
   ]
 
@@ -209,28 +209,27 @@ export default function LandingClient({ }: LandingClientProps) {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h1 className="text-5xl sm:text-6xl lg:text-7xl text-gray-900 mb-6 tracking-tight">
-                Your Personal<br />
+                {t("landing.hero.title").split(" ").slice(0, -2).join(" ")}<br />
                 <span className="bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
-                  Nutrition Assistant
+                  {t("landing.hero.title").split(" ").slice(-2).join(" ")}
                 </span>
               </h1>
               
               <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-xl">
-                Registra tu comida en solo 10 segundos. NutriMate hace el seguimiento nutricional súper fácil y rápido. 
-                Sin complicaciones, solo resultados.
+                {t("landing.hero.subtitle")}
               </p>
               
               <div className="flex flex-col gap-4 sm:flex-row sm:justify-start">
                 {isLoggedIn ? (
                   <Link href="/dashboard">
                     <Button size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-6 rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:shadow-xl hover:shadow-orange-500/40">
-                      Go to Dashboard <ArrowRight className="ml-2 w-5 h-5" />
+                      {t("landing.hero.goToDashboard")} <ArrowRight className="ml-2 w-5 h-5" />
                     </Button>
                   </Link>
                 ) : (
                     <Link href="/signup">
                     <Button size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-6 rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:shadow-xl hover:shadow-orange-500/40">
-                      Start Now <ArrowRight className="ml-2 w-5 h-5" />
+                      {t("landing.hero.startNow")} <ArrowRight className="ml-2 w-5 h-5" />
                       </Button>
                     </Link>
                 )}
@@ -281,10 +280,10 @@ export default function LandingClient({ }: LandingClientProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl text-gray-900 mb-4 tracking-tight">
-              Effortlessly simple. Lightning fast.
+              {t("landing.speed.title")}
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Save time with tools designed for speed and simplicity
+              {t("landing.speed.subtitle")}
             </p>
           </div>
 
@@ -553,23 +552,23 @@ export default function LandingClient({ }: LandingClientProps) {
       <section className="py-20 bg-gradient-to-r from-orange-600 to-red-600">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-white sm:text-4xl mb-4">
-            Ready to transform your nutrition journey?
+            {t("landing.cta.title")}
           </h2>
           <p className="mt-4 text-lg text-orange-100 mb-8">
-            Join thousands of users who have already improved their health with NutriMate.
+            {t("landing.cta.subtitle")}
           </p>
             <div className="mt-8">
               {isLoggedIn ? (
                 <Link href="/dashboard">
                 <Button size="lg" variant="secondary" className="bg-white text-orange-600 hover:bg-gray-100 px-8 py-6 rounded-xl">
-                  Go to Dashboard
+                  {t("landing.hero.goToDashboard")}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
               ) : (
                 <Link href="/signup">
                 <Button size="lg" variant="secondary" className="bg-white text-orange-600 hover:bg-gray-100 px-8 py-6 rounded-xl">
-                  Start Now
+                  {t("landing.cta.button")}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
