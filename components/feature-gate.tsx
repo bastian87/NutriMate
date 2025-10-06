@@ -8,6 +8,7 @@ import { useFeatureAccess } from "@/components/auth/user-profile-provider"
 import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/context"
 import { PREMIUM_FEATURES, normalizeFeatureKey } from "@/lib/entitlements"
+import PremiumUpgradePrompt from "./premium-upgrade-prompt"
 
 interface FeatureGateProps {
   children: ReactNode
@@ -43,29 +44,39 @@ export function FeatureGate({
   // Check if feature is premium-only using centralized list
   const isPremiumOnly = PREMIUM_FEATURES.includes(normalizedFeature)
 
+  // For premium-only features, use the unified upgrade prompt
+  if (isPremiumOnly) {
+    const featureTitle = title || t("featureGate.premiumFeature")
+    const featureDescription = description || t("featureGate.availableForPremium", { feature: feature.replace(/_/g, " ") })
+    const featureDisclaimer = t("featureGate.continueFree")
+    
+    return (
+      <PremiumUpgradePrompt
+        title={featureTitle}
+        description={featureDescription}
+        disclaimer={featureDisclaimer}
+        feature={feature}
+      />
+    )
+  }
+
+  // For usage limit features, use the original card style
   return (
     <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950 dark:to-yellow-950">
       <CardHeader className="text-center">
         <div className="mx-auto w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mb-4">
-          {isPremiumOnly ? (
-            <Crown className="h-6 w-6 text-orange-600" />
-          ) : (
-            <AlertTriangle className="h-6 w-6 text-orange-600" />
-          )}
+          <AlertTriangle className="h-6 w-6 text-orange-600" />
         </div>
         <CardTitle className="flex items-center justify-center gap-2">
           <Lock className="h-5 w-5" />
-          {title || (isPremiumOnly ? t("featureGate.premiumFeature") : t("featureGate.upgradeRequired"))}
+          {title || t("featureGate.upgradeRequired")}
         </CardTitle>
         <CardDescription>
-          {description || reason ||
-            (isPremiumOnly
-              ? t("featureGate.availableForPremium", { feature: feature.replace(/_/g, " ") })
-              : t("featureGate.freeLimitReached", { feature: feature.replace(/_/g, " ") }))}
+          {description || reason || t("featureGate.freeLimitReached", { feature: feature.replace(/_/g, " ") })}
         </CardDescription>
       </CardHeader>
       <CardContent className="text-center space-y-4">
-        {!isPremiumOnly && showUsageLimit && (
+        {showUsageLimit && (
           <div className="bg-white dark:bg-gray-800 rounded-lg p-3 text-sm">
             <p className="text-gray-600 dark:text-gray-400">
               {t("featureGate.freeLimited")}
@@ -79,7 +90,7 @@ export function FeatureGate({
               {t("featureGate.upgrade")}
             </Link>
           </Button>
-          {!isPremiumOnly && <p className="text-xs text-gray-500">{t("featureGate.continueFree")}</p>}
+          <p className="text-xs text-gray-500">{t("featureGate.continueFree")}</p>
         </div>
       </CardContent>
     </Card>

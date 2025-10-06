@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/i18n/context";
-import { Target, Calendar, Zap, Trash2 } from "lucide-react";
+import { Target, Calendar, Zap, Trash2, Plus, TrendingUp } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { motion } from "framer-motion";
 
 interface Goal {
   id: string;
@@ -197,15 +198,20 @@ export default function GoalsPage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">{t("goals.accessRequired")}</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {t("goals.mustSignIn")}
-          </p>
-          <Button asChild>
-            <a href="/login">{t("goals.signIn")}</a>
-          </Button>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <Target className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-3xl font-bold mb-4 text-gray-900">{t("goals.accessRequired")}</h2>
+            <p className="text-xl text-gray-600 mb-8">
+              {t("goals.mustSignIn")}
+            </p>
+            <Button asChild className="bg-orange-600 hover:bg-orange-700" size="lg">
+              <a href="/login">{t("goals.signIn")}</a>
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -222,23 +228,34 @@ export default function GoalsPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{t("goals.title")}</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          {t("goals.manageGoals")}
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-4xl font-bold mb-2 text-gray-900">{t("goals.title")}</h1>
+          <p className="text-xl text-gray-600">
+            {t("goals.manageGoals")}
+          </p>
+        </motion.div>
 
-      {/* Create New Goal */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5" />
-            {t("goals.createNewGoal")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        {/* Create New Goal */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="bg-white shadow-lg border border-gray-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Plus className="w-5 h-5 text-orange-600" />
+                {t("goals.createNewGoal")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="targetKcal">{t("goals.dailyCalories")}</Label>
@@ -288,27 +305,35 @@ export default function GoalsPage() {
             </div>
           </div>
 
-          <div className="mt-6">
-            <Button 
-              onClick={createGoal}
-              disabled={creating}
-              className="bg-orange-600 hover:bg-orange-700"
-            >
-              {creating ? t("goals.creating") : t("goals.createGoal")}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+              <div className="mt-6">
+                <Button 
+                  onClick={createGoal}
+                  disabled={creating}
+                  className="bg-orange-600 hover:bg-orange-700"
+                  size="lg"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {creating ? t("goals.creating") : t("goals.createGoal")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-      {/* Existing Goals */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            {t("goals.myGoals")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        {/* Existing Goals */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="bg-white shadow-lg border border-gray-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-orange-600" />
+                {t("goals.myGoals")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
@@ -327,31 +352,38 @@ export default function GoalsPage() {
           ) : (
             <div className="space-y-4">
               {goals.map((goal) => (
-                <div key={goal.id} className="border rounded-lg p-4">
+                <div key={goal.id} className="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-6 hover:shadow-md transition-all duration-200">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">
-                        {goal.target_kcal_day} kcal/día
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400">
-                        {getObjectiveLabel(goal.objective)}
-                      </p>
-                      <p className="text-sm text-gray-500">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
+                          <Target className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-xl text-gray-900">
+                            {goal.target_kcal_day} kcal/día
+                          </h3>
+                          <p className="text-orange-700 font-medium">
+                            {getObjectiveLabel(goal.objective)}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600 ml-13">
                         {new Date(goal.start_date).toLocaleDateString('es-ES')} - 
                         {goal.end_date ? new Date(goal.end_date).toLocaleDateString('es-ES') : t("goals.noEndDate")}
                       </p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1 text-sm text-gray-600">
-                        <Zap className="w-4 h-4" />
-                        <span>{t("goals.activeGoal")}</span>
+                      <div className="flex items-center gap-2 px-3 py-1 bg-orange-200 rounded-full">
+                        <Zap className="w-4 h-4 text-orange-600" />
+                        <span className="text-sm font-medium text-orange-700">{t("goals.activeGoal")}</span>
                       </div>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => openDeleteDialog(goal.id)}
                         disabled={deleting === goal.id}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                       >
                         {deleting === goal.id ? (
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
@@ -365,21 +397,23 @@ export default function GoalsPage() {
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-      {/* Delete Confirmation Modal */}
-      <ConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        title={t("goals.deleteGoalTitle")}
-        description={t("goals.confirmDelete")}
-        confirmText={t("goals.deleteConfirm")}
-        cancelText={t("goals.cancel")}
-        onConfirm={() => deleteGoal(false)}
-        loading={deleting === goalToDelete}
-        variant="destructive"
-      />
+        {/* Delete Confirmation Modal */}
+        <ConfirmDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          title={t("goals.deleteGoalTitle")}
+          description={t("goals.confirmDelete")}
+          confirmText={t("goals.deleteConfirm")}
+          cancelText={t("goals.cancel")}
+          onConfirm={() => deleteGoal(false)}
+          loading={deleting === goalToDelete}
+          variant="destructive"
+        />
+      </div>
     </div>
   );
 }

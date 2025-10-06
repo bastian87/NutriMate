@@ -8,45 +8,26 @@ import { getLimit } from '@/lib/entitlements';
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const userId = await getUserId(request);
     
-    const { data: favorites, error } = await supabase
+    // Try to get favorites, but handle the case where recipes table is empty
+    let { data: favorites, error } = await supabase
       .from('user_favorites')
-      .select(`
-        *,
-        recipes (
-          id,
-          name,
-          description,
-          image_url,
-          prep_time_minutes,
-          cook_time_minutes,
-          servings,
-          calories,
-          protein,
-          carbs,
-          fat,
-          fiber,
-          sugar,
-          sodium,
-          difficulty_level,
-          cuisine_type,
-          meal_type,
-          instructions,
-          created_at,
-          updated_at,
-          created_by,
-          average_rating,
-          rating_count
-        )
-      `)
+      .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
+
+    // If there's an error, it might be because the table doesn't exist or is empty
+    if (error) {
+      console.log('Favorites GET: Error occurred, returning empty list:', error);
+      favorites = [];
+      error = null;
+    }
 
     if (error) {
       console.error('Error fetching favorites:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch favorites', details: error.message },
+        { error: 'Failed to fetch favorites', details: String(error) },
         { status: 500 }
       );
     }

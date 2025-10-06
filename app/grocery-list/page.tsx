@@ -34,6 +34,7 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/context"
 import { useMultipleGroceryLists } from "@/hooks/use-multiple-grocery-lists"
+import PremiumUpgradePrompt from "@/components/premium-upgrade-prompt"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider"
 import { useState, useEffect } from "react"
@@ -736,35 +737,11 @@ export default function GroceryListPage() {
             </Link>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl shadow-lg"
-          >
-            <div className="mx-auto w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center mb-8 shadow-lg">
-              <CrownIcon className="h-10 w-10 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Smart Grocery Lists
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto text-lg">
-              Upgrade to Premium to unlock advanced grocery list features like 
-              export/share functionality and enhanced categorization.
-            </p>
-            <div className="space-y-4">
-              <Button asChild className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
-                <Link href="/pricing">
-                  <CrownIcon className="h-5 w-5 mr-2" />
-                  Upgrade to Premium
-                </Link>
-              </Button>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Free users can still create basic grocery lists manually
-                </p>
-              </div>
-            </div>
-          </motion.div>
+          <PremiumUpgradePrompt
+            title="Smart Grocery Lists"
+            description="Upgrade to Premium to unlock advanced grocery list features like export/share functionality and enhanced categorization."
+            disclaimer="Free users can still create basic grocery lists manually"
+          />
         </div>
       </div>
     )

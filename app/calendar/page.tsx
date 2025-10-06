@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { CalendarView } from '@/components/calendar-view';
-import { DayDrawer } from '@/components/day-drawer';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +50,6 @@ export default function CalendarPage() {
   }, []);
 
   const [from, setFrom] = useState<string>(todayStr);
-  const [drawerDate, setDrawerDate] = useState<string>(todayStr);
 
   // Función para crear goal automáticamente
   const handleCreateGoal = async () => {

@@ -87,7 +87,7 @@ export default function CalendarView() {
    * Handle day click
    */
   const handleDayClick = (day: CalendarDayEntry) => {
-    // TODO: Open DayDrawer with the selected day
+    // TODO: Navigate to Food Diary for the selected day
     console.log('Day clicked:', day);
   };
 

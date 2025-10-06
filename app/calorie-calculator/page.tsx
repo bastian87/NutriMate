@@ -1,10 +1,14 @@
 'use client';
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Calculator, Target, Activity, TrendingUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/lib/i18n/context";
+import { motion } from "framer-motion";
 
 const nivelesActividad = [
   { value: "sedentario", labelKey: 0 },
@@ -48,59 +52,151 @@ export default function CalorieCalculatorPage() {
   };
 
   return (
-    <div className="max-w-xl mx-auto">
-      <div className="mb-4">
-        <Link href="/landing">
-          <Button variant="outline" className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" /> {t("calorieCalculator.back")}
-          </Button>
-        </Link>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="mb-4">
+            <Link href="/landing">
+              <Button variant="outline" className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" /> {t("calorieCalculator.back")}
+              </Button>
+            </Link>
+          </div>
+          <h1 className="text-4xl font-bold mb-2 text-gray-900">{t("calorieCalculator.title")}</h1>
+          <p className="text-xl text-gray-600">
+            Calculate your daily calorie needs based on your personal information
+          </p>
+        </motion.div>
+
+        {/* Calculator Form */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="bg-white shadow-lg border border-gray-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calculator className="w-5 h-5 text-orange-600" />
+                Personal Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="age">{t("calorieCalculator.age")}</Label>
+                  <Input 
+                    id="age"
+                    type="number" 
+                    value={edad} 
+                    min={10} 
+                    max={100} 
+                    onChange={e => setEdad(Number(e.target.value))} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gender">{t("calorieCalculator.gender")}</Label>
+                  <Select value={genero} onValueChange={setGenero}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">{t("calorieCalculator.male")}</SelectItem>
+                      <SelectItem value="female">{t("calorieCalculator.female")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="weight">{t("calorieCalculator.weight")} (kg)</Label>
+                  <Input 
+                    id="weight"
+                    type="number" 
+                    value={peso} 
+                    min={30} 
+                    max={200} 
+                    onChange={e => setPeso(Number(e.target.value))} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="height">{t("calorieCalculator.height")} (cm)</Label>
+                  <Input 
+                    id="height"
+                    type="number" 
+                    value={altura} 
+                    min={120} 
+                    max={230} 
+                    onChange={e => setAltura(Number(e.target.value))} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="activity">{t("calorieCalculator.activity")}</Label>
+                  <Select value={actividad} onValueChange={setActividad}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {nivelesActividad.map(n => (
+                        <SelectItem key={n.value} value={n.value}>
+                          {t(`calorieCalculator.activities.${n.labelKey}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="goal">{t("calorieCalculator.goal")}</Label>
+                  <Select value={objetivo} onValueChange={setObjetivo}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {objetivos.map(o => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {t(`calorieCalculator.goals.${o.labelKey}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <Button 
+                className="w-full bg-orange-600 hover:bg-orange-700" 
+                onClick={calcularCalorias}
+                size="lg"
+              >
+                <Calculator className="w-4 h-4 mr-2" />
+                {t("calorieCalculator.calculate")}
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Results */}
+        {resultado && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Target className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">{t("calorieCalculator.estimated")}</h3>
+                <div className="text-4xl font-bold text-orange-600 mb-2">{resultado}</div>
+                <div className="text-lg text-gray-600">{t("calorieCalculator.kcalPerDay")}</div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </div>
-      <h1 className="text-2xl font-bold mb-4 text-center">{t("calorieCalculator.title")}</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block mb-1 font-medium">{t("calorieCalculator.age")}</label>
-          <Input type="number" value={edad} min={10} max={100} onChange={e => setEdad(Number(e.target.value))} />
-        </div>
-        <div>
-          <label className="block mb-1 font-medium">{t("calorieCalculator.gender")}</label>
-          <select className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" value={genero} onChange={e => setGenero(e.target.value)}>
-            <option value="male">{t("calorieCalculator.male")}</option>
-            <option value="female">{t("calorieCalculator.female")}</option>
-          </select>
-        </div>
-        <div>
-          <label className="block mb-1 font-medium">{t("calorieCalculator.weight")}</label>
-          <Input type="number" value={peso} min={30} max={200} onChange={e => setPeso(Number(e.target.value))} />
-        </div>
-        <div>
-          <label className="block mb-1 font-medium">{t("calorieCalculator.height")}</label>
-          <Input type="number" value={altura} min={120} max={230} onChange={e => setAltura(Number(e.target.value))} />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block mb-1 font-medium">{t("calorieCalculator.activity")}</label>
-          <select className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" value={actividad} onChange={e => setActividad(e.target.value)}>
-            {nivelesActividad.map(n => (
-              <option key={n.value} value={n.value}>{t(`calorieCalculator.activities.${n.labelKey}`)}</option>
-            ))}
-          </select>
-        </div>
-        <div className="md:col-span-2">
-          <label className="block mb-1 font-medium">{t("calorieCalculator.goal")}</label>
-          <select className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" value={objetivo} onChange={e => setObjetivo(e.target.value)}>
-            {objetivos.map(o => (
-              <option key={o.value} value={o.value}>{t(`calorieCalculator.goals.${o.labelKey}`)}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <Button className="mt-6 w-full" onClick={calcularCalorias}>{t("calorieCalculator.calculate")}</Button>
-      {resultado && (
-        <div className="mt-6 text-center">
-          <div className="text-lg font-semibold">{t("calorieCalculator.estimated")}</div>
-          <div className="text-3xl font-bold text-orange-600">{resultado} {t("calorieCalculator.kcalPerDay")}</div>
-        </div>
-      )}
     </div>
   );
 } 

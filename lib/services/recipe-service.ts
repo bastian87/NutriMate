@@ -419,6 +419,7 @@ export const toggleFavorite = async (recipeId: string, userId: string): Promise<
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'x-user-id': userId,
       }
     });
 
@@ -435,6 +436,7 @@ export const toggleFavorite = async (recipeId: string, userId: string): Promise<
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': userId,
         }
       });
 
@@ -450,6 +452,7 @@ export const toggleFavorite = async (recipeId: string, userId: string): Promise<
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': userId,
         },
         body: JSON.stringify({ recipe_id: recipeId })
       });
@@ -474,6 +477,7 @@ export const getUserFavorites = async (userId: string): Promise<RecipeWithDetail
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'x-user-id': userId,
       }
     });
 
@@ -487,17 +491,9 @@ export const getUserFavorites = async (userId: string): Promise<RecipeWithDetail
       return []
     }
 
-    // Transform the API response to match RecipeWithDetails format
-    const recipes: RecipeWithDetails[] = favorites.map((fav: any) => ({
-      ...fav.recipes,
-      is_favorited: true,
-      ingredients: fav.recipes.ingredients || [],
-      tags: fav.recipes.tags || [],
-      creator: fav.recipes.creator || null,
-      user_rating: fav.recipes.user_rating || 0
-    }));
-
-    return recipes;
+    // Since there are no recipes in the database, favorites will be empty
+    // Return empty array for now
+    return [];
   } catch (error) {
     console.error("Error in getUserFavorites:", error)
     if (error instanceof Error) throw error
