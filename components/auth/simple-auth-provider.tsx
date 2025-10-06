@@ -139,7 +139,7 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
 
     let mounted = true
 
-    const subscription = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return
 

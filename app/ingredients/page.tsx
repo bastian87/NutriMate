@@ -12,7 +12,7 @@ import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/i18n/context";
 import { CustomIngredientsPreview } from "@/components/premium-preview";
-import { useIsAdmin } from "@/hooks/use-admin-status";
+import { useIsPremium } from "@/components/auth/user-profile-provider";
 import { motion } from "framer-motion";
 import { 
   SearchIcon, 
@@ -40,7 +40,7 @@ export default function IngredientsPage() {
   const { user } = useAuthContext();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { isAdmin } = useIsAdmin();
+  const isPremium = useIsPremium();
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -315,7 +315,7 @@ export default function IngredientsPage() {
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between mb-4">
                     <CardTitle className="text-xl text-gray-900">Ingredients Database</CardTitle>
-                    {isAdmin ? (
+                    {isPremium ? (
                       <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
                         <DialogTrigger asChild>
                           <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30">
@@ -385,7 +385,14 @@ export default function IngredientsPage() {
                       </DialogContent>
                     </Dialog>
                     ) : (
-                      null
+                      <CustomIngredientsPreview
+                        ctaText={t("premiumPreview.customIngredients.cta")}
+                      >
+                        <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30">
+                          <PlusIcon className="w-4 h-4 mr-2" />
+                          Add Ingredient
+                        </Button>
+                      </CustomIngredientsPreview>
                     )}
                   </div>
                   

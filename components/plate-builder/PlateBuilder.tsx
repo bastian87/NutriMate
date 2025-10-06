@@ -178,6 +178,42 @@ interface PlateBuilderProps {
   onSave: (items: DayEntryItem[]) => Promise<void>;
 }
 
+/**
+ * Mock ingredients data
+ */
+const mockIngredients: Ingredient[] = [
+  // Carbs
+  { id: '1', name: 'rice', locale: 'en', group: 'carb', kcalPer100g: 130 },
+  { id: '2', name: 'oats', locale: 'en', group: 'carb', kcalPer100g: 389 },
+  { id: '3', name: 'potato', locale: 'en', group: 'carb', kcalPer100g: 77 },
+  { id: '4', name: 'whole-wheat bread', locale: 'en', group: 'carb', kcalPer100g: 247 },
+  
+  // Protein
+  { id: '5', name: 'chicken breast', locale: 'en', group: 'protein', kcalPer100g: 165 },
+  { id: '6', name: 'egg', locale: 'en', group: 'protein', kcalPer100g: 155 },
+  { id: '7', name: 'tuna', locale: 'en', group: 'protein', kcalPer100g: 132 },
+  { id: '8', name: 'lentils', locale: 'en', group: 'protein', kcalPer100g: 116 },
+  { id: '9', name: 'tofu', locale: 'en', group: 'protein', kcalPer100g: 76 },
+  
+  // Fat
+  { id: '10', name: 'olive oil', locale: 'en', group: 'fat', kcalPer100g: 884 },
+  { id: '11', name: 'avocado', locale: 'en', group: 'fat', kcalPer100g: 160 },
+  { id: '12', name: 'almonds', locale: 'en', group: 'fat', kcalPer100g: 579 },
+  { id: '13', name: 'peanut butter', locale: 'en', group: 'fat', kcalPer100g: 588 },
+  
+  // Vegetables & Fruits
+  { id: '14', name: 'spinach', locale: 'en', group: 'vegfruit', kcalPer100g: 23 },
+  { id: '15', name: 'broccoli', locale: 'en', group: 'vegfruit', kcalPer100g: 34 },
+  { id: '16', name: 'tomato', locale: 'en', group: 'vegfruit', kcalPer100g: 18 },
+  { id: '17', name: 'apple', locale: 'en', group: 'vegfruit', kcalPer100g: 52 },
+  { id: '18', name: 'banana', locale: 'en', group: 'vegfruit', kcalPer100g: 89 },
+  
+  // Treats
+  { id: '19', name: 'ice cream', locale: 'en', group: 'treat', kcalPer100g: 207 },
+  { id: '20', name: 'soda', locale: 'en', group: 'treat', kcalPer100g: 42 },
+  { id: '21', name: 'donut', locale: 'en', group: 'treat', kcalPer100g: 452 },
+  { id: '22', name: 'chocolate bar', locale: 'en', group: 'treat', kcalPer100g: 546 }
+];
 
 /**
  * PlateBuilder component
@@ -218,13 +254,13 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
           console.error('PlateBuilder - Failed to load ingredients, status:', response.status);
           const errorText = await response.text();
           console.error('PlateBuilder - Error response:', errorText);
-          // No fallback to mock data - show empty state
-          setIngredients([]);
+          // Fallback to mock data
+          setIngredients(mockIngredients);
         }
       } catch (error) {
         console.error('PlateBuilder - Error loading ingredients:', error);
-        // No fallback to mock data - show empty state
-        setIngredients([]);
+        // Fallback to mock data
+        setIngredients(mockIngredients);
       } finally {
         setLoadingIngredients(false);
       }
@@ -562,20 +598,9 @@ export default function PlateBuilder({ date, goalId, targetKcal, onSave }: Plate
 
                 <TabsContent value={activeTab} className="mt-4">
                   <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {filteredIngredients.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        <p className="text-sm">
-                          {ingredients.length === 0 
-                            ? "No hay ingredientes disponibles. Contacta al administrador para agregar ingredientes."
-                            : "No se encontraron ingredientes para esta categoría."
-                          }
-                        </p>
-                      </div>
-                    ) : (
-                      filteredIngredients.map((ingredient) => (
-                        <DraggableIngredient key={ingredient.id} ingredient={ingredient} />
-                      ))
-                    )}
+                    {filteredIngredients.map((ingredient) => (
+                      <DraggableIngredient key={ingredient.id} ingredient={ingredient} />
+                    ))}
                   </div>
                 </TabsContent>
               </Tabs>
