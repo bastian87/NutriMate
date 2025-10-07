@@ -171,16 +171,16 @@ export default function GroceryListPage() {
         setNewListDescription('')
         setIsCreateDialogOpen(false)
         toast({
-          title: "Lista creada",
-          description: `La lista "${newListName}" ha sido creada exitosamente.`,
+          title: t("groceryList.listCreated"),
+          description: t("groceryList.listCreatedDesc", { name: newListName }),
           variant: "default"
         })
       } catch (error) {
         console.error("Error creating list:", error)
-        const errorMessage = error instanceof Error ? error.message : "Error desconocido"
+        const errorMessage = error instanceof Error ? error.message : t("common.unknownError")
         toast({
-          title: "Error",
-          description: `No se pudo crear la lista: ${errorMessage}`,
+          title: t("common.error"),
+          description: t("groceryList.listCreationFailed", { error: errorMessage }),
           variant: "destructive"
         })
       }
@@ -200,14 +200,14 @@ export default function GroceryListPage() {
         setNewItem({ name: '', category: '', quantity: '', cost: '' })
         setIsAddItemDialogOpen(false)
         toast({
-          title: "Item agregado",
-          description: `"${newItem.name}" ha sido agregado a la lista.`,
+          title: t("groceryList.itemAdded"),
+          description: t("groceryList.itemAddedDesc", { name: newItem.name }),
           variant: "default"
         })
       } catch (error) {
         toast({
-          title: "Error",
-          description: "No se pudo agregar el item. Inténtalo de nuevo.",
+          title: t("common.error"),
+          description: t("groceryList.itemAddFailed"),
           variant: "destructive"
         })
       }
@@ -219,14 +219,14 @@ export default function GroceryListPage() {
     try {
       await deleteGroceryList(listId)
       toast({
-        title: "Lista eliminada",
-        description: "La lista ha sido eliminada exitosamente.",
+        title: t("groceryList.listDeleted"),
+        description: t("groceryList.listDeletedDesc"),
         variant: "default"
       })
     } catch (error) {
       toast({
-        title: "Error",
-        description: "No se pudo eliminar la lista. Inténtalo de nuevo.",
+        title: t("common.error"),
+        description: t("groceryList.listDeleteFailed"),
         variant: "destructive"
       })
     }
@@ -591,11 +591,11 @@ export default function GroceryListPage() {
           <table class="items-table">
             <thead>
               <tr>
-                <th>Item</th>
-                <th>Categoría</th>
-                <th>Cantidad</th>
-                <th>Costo</th>
-                <th>Estado</th>
+                <th>{t("groceryList.item")}</th>
+                <th>{t("groceryList.category")}</th>
+                <th>{t("groceryList.quantity")}</th>
+                <th>{t("groceryList.cost")}</th>
+                <th>{t("groceryList.status")}</th>
               </tr>
             </thead>
             <tbody>
@@ -782,7 +782,7 @@ export default function GroceryListPage() {
                 {isPremium && (
                   <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-1 rounded-full shadow-md">
                     <CrownIcon className="h-3 w-3 mr-1" />
-                    Premium Feature
+{t("groceryList.premiumFeature")}
                   </Badge>
                 )}
               </div>
@@ -795,11 +795,11 @@ export default function GroceryListPage() {
           {/* Grocery Lists Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-semibold">Grocery Lists</h1>
+              <h1 className="text-2xl font-semibold">{t("groceryList.title")}</h1>
               <div className="flex items-center gap-2">
                 <Select value={selectedListId} onValueChange={setSelectedListId}>
                   <SelectTrigger className="w-64">
-                    <SelectValue placeholder="Select a list" />
+                    <SelectValue placeholder={t("groceryList.selectList")} />
                   </SelectTrigger>
                   <SelectContent>
                     {groceryLists.map((list) => (
@@ -823,18 +823,18 @@ export default function GroceryListPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>List Actions</DropdownMenuLabel>
+                    <DropdownMenuLabel>{t("groceryList.listActions")}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Edit List</DropdownMenuItem>
-                    <DropdownMenuItem>Duplicate List</DropdownMenuItem>
-                    <DropdownMenuItem>Export List</DropdownMenuItem>
+                    <DropdownMenuItem>{t("groceryList.editList")}</DropdownMenuItem>
+                    <DropdownMenuItem>{t("groceryList.duplicateList")}</DropdownMenuItem>
+                    <DropdownMenuItem>{t("groceryList.exportList")}</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       className="text-red-600"
                       onClick={() => handleDeleteList(selectedListId)}
                       disabled={groceryLists.length <= 1}
                     >
-                      Delete List
+{t("groceryList.deleteList")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -846,46 +846,46 @@ export default function GroceryListPage() {
                   <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                     <DialogTrigger asChild>
                       <Button className="bg-green-500 hover:bg-green-600 text-white">
-                        + Create New List
+{t("groceryList.createNewList")}
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[425px]">
                       <DialogHeader>
-                        <DialogTitle>Create New Grocery List</DialogTitle>
+                        <DialogTitle>{t("groceryList.createNewGroceryList")}</DialogTitle>
                         <DialogDescription>
-                          Create a custom grocery list with your own name and description.
+{t("groceryList.createCustomList")}
                         </DialogDescription>
                       </DialogHeader>
                       <div className="grid gap-4 py-4">
                         <div className="space-y-2">
-                          <Label htmlFor="listName">List Name</Label>
+                          <Label htmlFor="listName">{t("groceryList.listName")}</Label>
                           <Input
                             id="listName"
                             value={newListName}
                             onChange={(e) => setNewListName(e.target.value)}
-                            placeholder="e.g., Weekend BBQ, Healthy Snacks"
+placeholder={t("groceryList.listNamePlaceholder")}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="listDescription">Description (Optional)</Label>
+                          <Label htmlFor="listDescription">{t("groceryList.descriptionOptional")}</Label>
                           <Input
                             id="listDescription"
                             value={newListDescription}
                             onChange={(e) => setNewListDescription(e.target.value)}
-                            placeholder="Brief description of this grocery list"
+                            placeholder={t("groceryList.briefDescription")}
                           />
                         </div>
                       </div>
                       <DialogFooter>
                         <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                          Cancel
+{t("groceryList.cancel")}
                         </Button>
                         <Button 
                           onClick={handleCreateList}
                           className="bg-green-500 hover:bg-green-600"
                           disabled={!newListName.trim()}
                         >
-                          Create List
+{t("groceryList.createList")}
                         </Button>
                       </DialogFooter>
                     </DialogContent>
@@ -895,11 +895,11 @@ export default function GroceryListPage() {
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="sm" className="flex items-center gap-2">
                         <DownloadIcon className="w-4 h-4" />
-                        Export & Share
+{t("groceryList.exportShare")}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Download</DropdownMenuLabel>
+                      <DropdownMenuLabel>{t("groceryList.download")}</DropdownMenuLabel>
                       <DropdownMenuItem onClick={handleDownloadWord}>
                         📝 Download as Word
                       </DropdownMenuItem>
@@ -907,7 +907,7 @@ export default function GroceryListPage() {
                         🖨️ Print List
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuLabel>Share</DropdownMenuLabel>
+                      <DropdownMenuLabel>{t("groceryList.share")}</DropdownMenuLabel>
                       <DropdownMenuItem onClick={handleShareWhatsApp}>
                         💬 Share on WhatsApp
                       </DropdownMenuItem>
@@ -951,7 +951,7 @@ export default function GroceryListPage() {
                     <div className="text-2xl font-semibold">
                       {currentList.itemCount > 0 ? Math.round((currentList.completedItems / currentList.itemCount) * 100) : 0}%
                     </div>
-                    <div className="text-green-100 text-sm">Complete</div>
+                    <div className="text-green-100 text-sm">{t("groceryList.complete")}</div>
                     <Badge 
                       className={`mt-2 text-xs px-2 py-1 ${
                         currentList.status === 'Not Started' ? 'bg-gray-200 text-gray-700' :
@@ -970,8 +970,8 @@ export default function GroceryListPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-semibold mb-1">No Grocery List Yet</h2>
-                    <p className="text-gray-100 text-sm mb-2">Start by adding items from your recipes or manually</p>
+                    <h2 className="text-xl font-semibold mb-1">{t("groceryList.noListYet")}</h2>
+                    <p className="text-gray-100 text-sm mb-2">{t("groceryList.startAddingItems")}</p>
                     <div className="flex items-center gap-4 text-sm">
                       <span>0 items</span>
                       <span>•</span>
@@ -983,7 +983,7 @@ export default function GroceryListPage() {
                       onClick={() => setIsAddItemDialogOpen(true)}
                       className="bg-white text-gray-600 hover:bg-gray-100"
                     >
-                      + Add Items
+{t("groceryList.addItems")}
                     </Button>
                   </div>
                 </div>
@@ -997,7 +997,7 @@ export default function GroceryListPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 mb-1">Estimated Cost</p>
+                    <p className="text-sm text-gray-500 mb-1">{t("groceryList.estimatedCost")}</p>
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-semibold">
                         ${currentList?.estimatedCost.toFixed(2) || '0.00'}
@@ -1015,7 +1015,7 @@ export default function GroceryListPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 mb-1">Total Items</p>
+                    <p className="text-sm text-gray-500 mb-1">{t("groceryList.totalItems")}</p>
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-semibold">{currentList?.itemCount || 0}</span>
                     </div>
@@ -1031,11 +1031,11 @@ export default function GroceryListPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 mb-1">Completed Items</p>
+                    <p className="text-sm text-gray-500 mb-1">{t("groceryList.completedItems")}</p>
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-semibold">{currentList?.completedItems || 0}</span>
                       <span className="text-sm text-gray-500">
-                        of {currentList?.itemCount || 0}
+{t("groceryList.of")} {currentList?.itemCount || 0}
                       </span>
                     </div>
                   </div>
@@ -1054,7 +1054,7 @@ export default function GroceryListPage() {
               <Card className="bg-white shadow-sm">
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">Expense Breakdown</CardTitle>
+                    <CardTitle className="text-lg">{t("groceryList.expenseBreakdown")}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -1085,7 +1085,7 @@ export default function GroceryListPage() {
                             <div className="text-xl font-semibold">
                               ${currentList?.estimatedCost.toFixed(2) || '0.00'}
                             </div>
-                            <div className="text-xs text-gray-500">Total Expenses</div>
+                            <div className="text-xs text-gray-500">{t("groceryList.totalExpenses")}</div>
                           </div>
                         </div>
                       </div>
@@ -1112,8 +1112,8 @@ export default function GroceryListPage() {
                       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <span className="text-2xl">📊</span>
                       </div>
-                      <p className="text-gray-500">No data available</p>
-                      <p className="text-sm text-gray-400">Add items to see expense breakdown</p>
+                      <p className="text-gray-500">{t("groceryList.noDataAvailable")}</p>
+                      <p className="text-sm text-gray-400">{t("groceryList.addItemsToSeeExpense")}</p>
                     </div>
                   )}
                 </CardContent>
@@ -1124,11 +1124,11 @@ export default function GroceryListPage() {
             <Card className="bg-white shadow-sm">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Grocery Category</CardTitle>
+                  <CardTitle className="text-lg">{t("groceryList.groceryCategory")}</CardTitle>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-semibold">{currentList?.itemCount || 0}</div>
-                  <div className="text-sm text-gray-500">Items</div>
+                  <div className="text-sm text-gray-500">{t("groceryList.items")}</div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -1144,7 +1144,7 @@ export default function GroceryListPage() {
                           <span className="text-sm">{category.name}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm">{category.items} Items</span>
+                          <span className="text-sm">{category.items} {t("groceryList.items")}</span>
                           <span className="text-sm font-medium">{category.percentage}%</span>
                         </div>
                       </div>
@@ -1156,8 +1156,8 @@ export default function GroceryListPage() {
                     <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                       <span className="text-xl">📦</span>
                     </div>
-                    <p className="text-gray-500 text-sm">No categories yet</p>
-                    <p className="text-xs text-gray-400">Add items to see categories</p>
+                    <p className="text-gray-500 text-sm">{t("groceryList.noCategoriesYet")}</p>
+                    <p className="text-xs text-gray-400">{t("groceryList.addItemsToSeeCategories")}</p>
                   </div>
                 )}
               </CardContent>
@@ -1168,83 +1168,83 @@ export default function GroceryListPage() {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between mb-4">
                 <CardTitle className="text-lg">
-                  {currentList?.name || 'Grocery List'} - Items
+{currentList?.name || t("groceryList.title")} - {t("groceryList.items")}
                 </CardTitle>
                 <Dialog open={isAddItemDialogOpen} onOpenChange={setIsAddItemDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="bg-green-500 hover:bg-green-600 text-white">
-                      + Add Item
+{t("groceryList.addItem")}
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                      <DialogTitle>Add Item to Grocery List</DialogTitle>
+                      <DialogTitle>{t("groceryList.addItemToGroceryList")}</DialogTitle>
                       <DialogDescription>
-                        Add a new item to your grocery list with details.
+{t("groceryList.addNewItemDetails")}
                       </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="itemName">Item Name</Label>
+                          <Label htmlFor="itemName">{t("groceryList.itemName")}</Label>
                           <Input
                             id="itemName"
                             value={newItem.name}
                             onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-                            placeholder="e.g., Banana, Milk"
+placeholder={t("groceryList.itemNamePlaceholder")}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="itemCategory">Category</Label>
+                          <Label htmlFor="itemCategory">{t("groceryList.category")}</Label>
                           <Select 
                             value={newItem.category} 
                             onValueChange={(value) => setNewItem({...newItem, category: value})}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Select category" />
+                              <SelectValue placeholder={t("groceryList.selectCategory")} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="fruits">🍎 Fruits</SelectItem>
-                              <SelectItem value="vegetables">🥬 Vegetables</SelectItem>
-                              <SelectItem value="protein">🥩 Protein</SelectItem>
-                              <SelectItem value="dairy">🥛 Dairy</SelectItem>
-                              <SelectItem value="grains">🌾 Grains</SelectItem>
-                              <SelectItem value="other">📦 Other</SelectItem>
+                              <SelectItem value="fruits">🍎 {t("groceryList.fruits")}</SelectItem>
+                              <SelectItem value="vegetables">🥬 {t("groceryList.vegetables")}</SelectItem>
+                              <SelectItem value="protein">🥩 {t("groceryList.protein")}</SelectItem>
+                              <SelectItem value="dairy">🥛 {t("groceryList.dairy")}</SelectItem>
+                              <SelectItem value="grains">🌾 {t("groceryList.grains")}</SelectItem>
+                              <SelectItem value="other">📦 {t("groceryList.other")}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="itemQuantity">Quantity</Label>
+                          <Label htmlFor="itemQuantity">{t("groceryList.quantity")}</Label>
                           <Input
                             id="itemQuantity"
                             value={newItem.quantity}
                             onChange={(e) => setNewItem({...newItem, quantity: e.target.value})}
-                            placeholder="e.g., 2 kg, 1 bottle"
+placeholder={t("groceryList.quantityPlaceholder")}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="itemCost">Estimated Cost</Label>
+                          <Label htmlFor="itemCost">{t("groceryList.estimatedCost")}</Label>
                           <Input
                             id="itemCost"
                             value={newItem.cost}
                             onChange={(e) => setNewItem({...newItem, cost: e.target.value})}
-                            placeholder="e.g., $5.99"
+placeholder={t("groceryList.costPlaceholder")}
                           />
                         </div>
                       </div>
                     </div>
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setIsAddItemDialogOpen(false)}>
-                        Cancel
+{t("groceryList.cancel")}
                       </Button>
                       <Button 
                         onClick={handleAddItemToList}
                         className="bg-green-500 hover:bg-green-600"
                         disabled={!newItem.name || !newItem.category}
                       >
-                        Add Item
+{t("groceryList.addItem")}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -1254,9 +1254,9 @@ export default function GroceryListPage() {
               {/* Filters */}
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex gap-2">
-                  {['All Categories', 'Fruits', 'Vegetables', 'Protein', 'Dairy', 'Grains', 'Other'].map((category) => (
+                  {[t("groceryList.allCategories"), t("groceryList.fruits"), t("groceryList.vegetables"), t("groceryList.protein"), t("groceryList.dairy"), t("groceryList.grains"), t("groceryList.other")].map((category, idx) => (
                     <Button
-                      key={category}
+key={idx}
                       variant={selectedCategory === category ? "default" : "outline"}
                       size="sm"
                       onClick={() => setSelectedCategory(category)}
@@ -1272,22 +1272,22 @@ export default function GroceryListPage() {
                 <div className="relative">
                   <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
-                    placeholder="Search Item"
+placeholder={t("groceryList.searchItem")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 w-64"
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">Sort by:</span>
+                  <span className="text-sm text-gray-500">{t("groceryList.sortBy")}</span>
                   <Select value={sortBy} onValueChange={setSortBy}>
                     <SelectTrigger className="w-24">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Newest">Newest</SelectItem>
-                      <SelectItem value="Name">Name</SelectItem>
-                      <SelectItem value="Price">Price</SelectItem>
+                      <SelectItem value="Newest">{t("groceryList.newest")}</SelectItem>
+                      <SelectItem value="Name">{t("groceryList.name")}</SelectItem>
+                      <SelectItem value="Price">{t("groceryList.price")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1299,12 +1299,12 @@ export default function GroceryListPage() {
                 <>
                   {/* Table Header */}
                   <div className="grid grid-cols-6 gap-4 pb-3 mb-4 border-b text-sm font-medium text-gray-500">
-                    <div>Item Name</div>
-                    <div>Category</div>
-                    <div>Quantity</div>
-                    <div>Cost</div>
-                    <div>Status</div>
-                    <div>Actions</div>
+                    <div>{t("groceryList.itemName")}</div>
+                    <div>{t("groceryList.category")}</div>
+                    <div>{t("groceryList.quantity")}</div>
+                    <div>{t("groceryList.cost")}</div>
+                    <div>{t("groceryList.status")}</div>
+                    <div>{t("groceryList.actions")}</div>
                   </div>
                   
                   {/* Table Body */}
@@ -1371,13 +1371,13 @@ export default function GroceryListPage() {
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <ShoppingBagIcon className="w-8 h-8 text-gray-400" />
                   </div>
-                  <p className="text-gray-500 mb-2">No items in your grocery list</p>
-                  <p className="text-sm text-gray-400 mb-4">Add items from your recipes or manually</p>
+                  <p className="text-gray-500 mb-2">{t("groceryList.noItemsInList")}</p>
+                  <p className="text-sm text-gray-400 mb-4">{t("groceryList.addItemsFromRecipes")}</p>
                   <Button 
                     onClick={() => setIsAddItemDialogOpen(true)}
                     className="bg-green-500 hover:bg-green-600 text-white"
                   >
-                    + Add First Item
+{t("groceryList.addFirstItem")}
                   </Button>
                 </div>
               )}
@@ -1388,9 +1388,9 @@ export default function GroceryListPage() {
           <Card className="bg-white shadow-sm">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">My Grocery Lists</CardTitle>
+                <CardTitle className="text-lg">{t("groceryList.myGroceryLists")}</CardTitle>
                 <Badge className="bg-blue-100 text-blue-700 text-xs px-2 py-1">
-                  {groceryLists.length} Lists
+{groceryLists.length} {t("groceryList.lists")}
                 </Badge>
               </div>
             </CardHeader>
@@ -1408,20 +1408,20 @@ export default function GroceryListPage() {
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="font-medium text-sm truncate">{list.name}</h3>
                       </div>
-                      <p className="text-xs text-gray-500 mb-3 line-clamp-2">{list.description || 'No description'}</p>
+                      <p className="text-xs text-gray-500 mb-3 line-clamp-2">{list.description || t("groceryList.noDescription")}</p>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-500">Items:</span>
+                          <span className="text-gray-500">{t("groceryList.items")}:</span>
                           <span className="font-medium">{list.items?.length || 0}</span>
                         </div>
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-500">Cost:</span>
+                          <span className="text-gray-500">{t("groceryList.cost")}:</span>
                           <span className="font-medium">
                             ${list.items?.reduce((total, item) => total + (item.estimated_cost || 0), 0).toFixed(2) || '0.00'}
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-500">Progress:</span>
+                          <span className="text-gray-500">{t("groceryList.progress")}:</span>
                           <span className="font-medium">
                             {list.items && list.items.length > 0 
                               ? Math.round((list.items.filter(item => item.is_checked).length / list.items.length) * 100) 
@@ -1443,9 +1443,9 @@ export default function GroceryListPage() {
                             'bg-blue-100 text-blue-700'
                           }`}
                         >
-                          {(list.items?.length || 0) === 0 ? 'Not Started' :
-                           list.items?.every(item => item.is_checked) ? 'Completed' :
-                           'In Progress'}
+                          {(list.items?.length || 0) === 0 ? t("groceryList.notStarted") :
+                           list.items?.every(item => item.is_checked) ? t("groceryList.completed") :
+                           t("groceryList.inProgress")}
                         </Badge>
                       </div>
                     </CardContent>

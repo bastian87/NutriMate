@@ -252,7 +252,7 @@ export default function FoodDiaryPage() {
       } else {
         toast({
           title: t("common.error"),
-          description: "Error loading food entries",
+          description: t("foodDiary.errorLoadingEntries"),
           variant: "destructive"
         });
       }
@@ -260,7 +260,7 @@ export default function FoodDiaryPage() {
       console.error('Error fetching food entries:', error);
       toast({
         title: t("common.error"),
-        description: "Connection error",
+        description: t("common.connectionError"),
         variant: "destructive"
       });
     } finally {
@@ -273,7 +273,7 @@ export default function FoodDiaryPage() {
     if (!user?.id) {
       toast({
         title: t("common.error"),
-        description: "Please log in to add food entries",
+        description: t("foodDiary.pleaseLogInToAdd"),
         variant: "destructive"
       });
       return;
@@ -284,7 +284,7 @@ export default function FoodDiaryPage() {
       if (!newEntry.menu) {
         toast({
           title: t("common.error"),
-          description: "Please enter a menu item",
+          description: t("foodDiary.pleaseEnterMenuItem"),
           variant: "destructive"
         });
         return;
@@ -293,7 +293,7 @@ export default function FoodDiaryPage() {
       if (ingredients.length === 0 || ingredients.some(ing => !ing.name.trim())) {
         toast({
           title: t("common.error"),
-          description: "Please add at least one ingredient with a name",
+          description: t("foodDiary.pleaseAddIngredient"),
           variant: "destructive"
         });
         return;
@@ -329,8 +329,8 @@ export default function FoodDiaryPage() {
 
       if (response.ok) {
         toast({
-          title: "Success!",
-          description: "Food entry added successfully"
+          title: t("common.success"),
+          description: t("foodDiary.entryAddedSuccessfully")
         });
         fetchFoodEntries();
         // Reset form
@@ -352,14 +352,14 @@ export default function FoodDiaryPage() {
         const data = await response.json();
         toast({
           title: t("common.error"),
-          description: data.error || "Error adding food entry",
+          description: data.error || t("foodDiary.errorAddingEntry"),
           variant: "destructive"
         });
       }
     } catch (error) {
       toast({
         title: t("common.error"),
-        description: "Connection error",
+        description: t("common.connectionError"),
         variant: "destructive"
       });
     }
@@ -370,7 +370,7 @@ export default function FoodDiaryPage() {
     if (!user?.id || !editingEntry) {
       toast({
         title: t("common.error"),
-        description: "Please log in to edit food entries",
+        description: t("foodDiary.pleaseLogInToEdit"),
         variant: "destructive"
       });
       return;
@@ -379,7 +379,7 @@ export default function FoodDiaryPage() {
     if (!editingEntry.menu) {
       toast({
         title: t("common.error"),
-        description: "Please enter a menu item",
+        description: t("foodDiary.pleaseEnterMenuItem"),
         variant: "destructive"
       });
       return;
@@ -397,8 +397,8 @@ export default function FoodDiaryPage() {
 
       if (response.ok) {
         toast({
-          title: "Success!",
-          description: "Food entry updated successfully"
+          title: t("common.success"),
+          description: t("foodDiary.entryUpdatedSuccessfully")
         });
         fetchFoodEntries();
         setEditingEntry(null);
@@ -407,14 +407,14 @@ export default function FoodDiaryPage() {
         const data = await response.json();
         toast({
           title: t("common.error"),
-          description: data.error || "Error updating food entry",
+          description: data.error || t("foodDiary.errorUpdatingEntry"),
           variant: "destructive"
         });
       }
     } catch (error) {
       toast({
         title: t("common.error"),
-        description: "Connection error",
+        description: t("common.connectionError"),
         variant: "destructive"
       });
     }
@@ -425,7 +425,7 @@ export default function FoodDiaryPage() {
     if (!user?.id) {
       toast({
         title: t("common.error"),
-        description: "Please log in to delete food entries",
+        description: t("foodDiary.pleaseLogInToDelete"),
         variant: "destructive"
       });
       return;
@@ -441,22 +441,22 @@ export default function FoodDiaryPage() {
 
       if (response.ok) {
         toast({
-          title: "Success!",
-          description: "Food entry deleted successfully"
+          title: t("common.success"),
+          description: t("foodDiary.entryDeletedSuccessfully")
         });
         fetchFoodEntries();
       } else {
         const data = await response.json();
         toast({
           title: t("common.error"),
-          description: data.error || "Error deleting food entry",
+          description: data.error || t("foodDiary.errorDeletingEntry"),
           variant: "destructive"
         });
       }
     } catch (error) {
       toast({
         title: t("common.error"),
-        description: "Connection error",
+        description: t("common.connectionError"),
         variant: "destructive"
       });
     }
@@ -671,7 +671,7 @@ export default function FoodDiaryPage() {
                   <div className="relative">
                     <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
-                      placeholder="Search menu"
+                      placeholder={t("foodDiary.searchMenu")}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10 w-64"
@@ -679,14 +679,14 @@ export default function FoodDiaryPage() {
                   </div>
                   <Select value={filterBy} onValueChange={setFilterBy}>
                     <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Filter" />
+                      <SelectValue placeholder={t("foodDiary.filter")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="All">All</SelectItem>
-                      <SelectItem value="breakfast">Breakfast</SelectItem>
-                      <SelectItem value="lunch">Lunch</SelectItem>
-                      <SelectItem value="snack">Snacks</SelectItem>
-                      <SelectItem value="dinner">Dinner</SelectItem>
+                      <SelectItem value="All">{t("foodDiary.all")}</SelectItem>
+                      <SelectItem value="breakfast">{t("foodDiary.breakfast")}</SelectItem>
+                      <SelectItem value="lunch">{t("foodDiary.lunch")}</SelectItem>
+                      <SelectItem value="snack">{t("foodDiary.snack")}</SelectItem>
+                      <SelectItem value="dinner">{t("foodDiary.dinner")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1470,14 +1470,14 @@ export default function FoodDiaryPage() {
                             onValueChange={(value) => setNewEntry({...newEntry, thoughts: value})}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Select your mood" />
+                              <SelectValue placeholder={t("foodDiary.selectMood")} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Energized">😊 Energized</SelectItem>
-                              <SelectItem value="Quite Satisfied">😌 Quite Satisfied</SelectItem>
-                              <SelectItem value="Satisfied">😊 Satisfied</SelectItem>
-                              <SelectItem value="Guilty">😔 Guilty</SelectItem>
-                              <SelectItem value="Uncomfortable">😰 Uncomfortable</SelectItem>
+                              <SelectItem value="Energized">{t("foodDiary.energized")}</SelectItem>
+                              <SelectItem value="Quite Satisfied">{t("foodDiary.quiteSatisfied")}</SelectItem>
+                              <SelectItem value="Satisfied">{t("foodDiary.satisfied")}</SelectItem>
+                              <SelectItem value="Guilty">{t("foodDiary.guilty")}</SelectItem>
+                              <SelectItem value="Uncomfortable">{t("foodDiary.uncomfortable")}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -1525,8 +1525,8 @@ export default function FoodDiaryPage() {
                   <CaloriesIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600 dark:text-gray-400">
                     {searchTerm || filterBy !== 'All' 
-                      ? "No food entries found matching your criteria"
-                      : "No food entries yet. Start tracking your meals!"
+                      ? t("foodDiary.noEntriesFound")
+                      : t("foodDiary.noEntriesYet")
                     }
                   </p>
                 </div>
@@ -1743,11 +1743,11 @@ export default function FoodDiaryPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Energized">Energized</SelectItem>
-                    <SelectItem value="Quite Satisfied">Quite Satisfied</SelectItem>
-                    <SelectItem value="Satisfied">Satisfied</SelectItem>
-                    <SelectItem value="Neutral">Neutral</SelectItem>
-                    <SelectItem value="Unsatisfied">Unsatisfied</SelectItem>
+                    <SelectItem value="Energized">{t("foodDiary.energized")}</SelectItem>
+                    <SelectItem value="Quite Satisfied">{t("foodDiary.quiteSatisfied")}</SelectItem>
+                    <SelectItem value="Satisfied">{t("foodDiary.satisfied")}</SelectItem>
+                    <SelectItem value="Neutral">{t("foodDiary.neutral")}</SelectItem>
+                    <SelectItem value="Unsatisfied">{t("foodDiary.unsatisfied")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

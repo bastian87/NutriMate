@@ -56,7 +56,7 @@ export function Navigation() {
             <div className="flex items-center gap-2">
               {isLoggedIn ? (
                 <Link href="/dashboard">
-                  <Button className="bg-orange-600 hover:bg-orange-700">Dashboard</Button>
+                  <Button className="bg-orange-600 hover:bg-orange-700">{t("navigation.dashboard")}</Button>
                 </Link>
               ) : (
                 <>
@@ -107,7 +107,7 @@ export function Navigation() {
           <div className="pt-4 border-t border-gray-200">
             {isLoggedIn ? (
               <Link href="/dashboard">
-                <Button className="w-full bg-orange-600 hover:bg-orange-700">Dashboard</Button>
+                <Button className="w-full bg-orange-600 hover:bg-orange-700">{t("navigation.dashboard")}</Button>
               </Link>
             ) : (
               <div className="space-y-2">

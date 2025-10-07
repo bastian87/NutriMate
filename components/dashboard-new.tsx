@@ -53,8 +53,11 @@ export const DashboardNew = ({
   const isPremium = useIsPremium()
 
   const currentDate = new Date()
-  const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+  const monthNames = [
+    t("calendar.january"), t("calendar.february"), t("calendar.march"), t("calendar.april"),
+    t("calendar.may"), t("calendar.june"), t("calendar.july"), t("calendar.august"),
+    t("calendar.september"), t("calendar.october"), t("calendar.november"), t("calendar.december")
+  ]
 
   const todaysMeals = currentMealPlan?.meals?.filter((meal: any) => meal.day === 1) || []
 
@@ -65,9 +68,9 @@ export const DashboardNew = ({
         {/* Top Stats Row */}
         <div className="col-span-3">
           <MetricCard
-            title="Calorías"
+            title={t("recipes.calories")}
             value={`${todaysNutrition.calories.toFixed(0)} kcal`}
-            subtitle="Objetivo: 2000 kcal"
+            subtitle={t("dashboard.calorieTarget", { target: 2000 })}
             icon={<CaloriesIcon className="w-4 h-4 text-primary" />}
             color="text-primary"
             chart={<CaloriesChart />}
@@ -77,9 +80,9 @@ export const DashboardNew = ({
 
         <div className="col-span-3">
           <MetricCard
-            title="Proteína"
+            title={t("recipes.protein")}
             value={`${todaysNutrition.protein.toFixed(1)}g`}
-            subtitle="Objetivo: 150g"
+            subtitle={t("dashboard.proteinTarget", { target: 150 })}
             icon={<WeightIcon className="w-4 h-4 text-pastel-blue-500" />}
             color="text-pastel-blue-500"
             chart={<WeightChart />}
@@ -89,9 +92,9 @@ export const DashboardNew = ({
 
         <div className="col-span-3">
           <MetricCard
-            title="Carbohidratos"
+            title={t("recipes.carbs")}
             value={`${todaysNutrition.carbs.toFixed(1)}g`}
-            subtitle="Objetivo: 250g"
+            subtitle={t("dashboard.carbsTarget", { target: 250 })}
             icon={<div className="w-4 h-4 bg-pastel-green-500 rounded-full" />}
             color="text-pastel-green-500"
             delay={0.3}
@@ -100,9 +103,9 @@ export const DashboardNew = ({
 
         <div className="col-span-3">
           <MetricCard
-            title="Grasas"
+            title={t("recipes.fat")}
             value={`${todaysNutrition.fat.toFixed(1)}g`}
-            subtitle="Objetivo: 65g"
+            subtitle={t("dashboard.fatTarget", { target: 65 })}
             icon={<WaterIcon className="w-4 h-4 text-purple-500" />}
             color="text-purple-500"
             chart={<WaterProgress percentage={Math.min((todaysNutrition.fat / 65) * 100, 100)} />}

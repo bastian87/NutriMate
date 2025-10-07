@@ -49,8 +49,11 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const currentDate = new Date();
-  const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+  const monthNames = [
+    t("calendar.january"), t("calendar.february"), t("calendar.march"), t("calendar.april"),
+    t("calendar.may"), t("calendar.june"), t("calendar.july"), t("calendar.august"),
+    t("calendar.september"), t("calendar.october"), t("calendar.november"), t("calendar.december")
+  ];
 
   const targetCalories = activeGoal?.targetKcalDay || 2000;
   const calorieProgress = Math.min((todayNutrition.calories / targetCalories) * 100, 100);
@@ -158,7 +161,7 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Cargando datos del día...</p>
+            <p className="text-gray-600 dark:text-gray-400">{t("common.loading")}</p>
           </div>
         </div>
       </div>
@@ -169,10 +172,10 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
     return (
       <div className="flex-1 p-6 bg-gray-50 dark:bg-gray-900">
         <div className="text-center py-8">
-          <p className="text-red-600 mb-4">Error al cargar los datos: {error}</p>
+          <p className="text-red-600 mb-4">{t("common.error")}: {error}</p>
           <Button onClick={onRefresh} className="bg-orange-600 hover:bg-orange-700">
             <RefreshCw className="w-4 h-4 mr-2" />
-            Reintentar
+            {t("common.tryAgain")}
           </Button>
         </div>
       </div>
@@ -186,7 +189,7 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
         {/* Top Stats Row */}
         <div className="col-span-3">
           <MetricCard
-            title="Calorías Hoy"
+            title={t("dashboard.caloriesToday")}
             value={`${todayNutrition.calories.toFixed(0)} kcal`}
             subtitle=""
             icon={<CaloriesIcon className="w-4 h-4 text-orange-600" />}
@@ -202,7 +205,7 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
 
         <div className="col-span-3">
           <MetricCard
-            title="Proteína"
+            title={t("recipes.protein")}
             value={`${todayNutrition.protein.toFixed(1)}g`}
             subtitle=""
             icon={<WeightIcon className="w-4 h-4 text-blue-600" />}
@@ -218,7 +221,7 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
 
         <div className="col-span-3">
           <MetricCard
-            title="Carbohidratos"
+            title={t("recipes.carbs")}
             value={`${todayNutrition.carbs.toFixed(1)}g`}
             subtitle=""
             icon={<div className="w-4 h-4 bg-green-600 rounded-full" />}
@@ -234,7 +237,7 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
 
         <div className="col-span-3">
           <MetricCard
-            title="Grasas"
+            title={t("recipes.fat")}
             value={`${todayNutrition.fats.toFixed(1)}g`}
             subtitle=""
             icon={<WaterIcon className="w-4 h-4 text-purple-600" />}
@@ -347,9 +350,9 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
           <AnimatedCard delay={0.6}>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Progreso de Hoy</CardTitle>
+                <CardTitle>{t("dashboard.todayProgress")}</CardTitle>
                 <Badge variant={isOnTrack ? "default" : "destructive"} className={isOnTrack ? "bg-green-100 text-green-800" : ""}>
-                  {isOnTrack ? "✓ En camino" : "⚠ Necesita atención"}
+                  {isOnTrack ? t("dashboard.onTrack") : t("dashboard.needsAttention")}
                 </Badge>
               </div>
             </CardHeader>
@@ -358,7 +361,7 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
                 {/* Calorie Progress Bar */}
                 <div>
                   <div className="flex justify-between text-sm mb-2">
-                    <span>Calorías</span>
+                    <span>{t("recipes.calories")}</span>
                     <span>{todayNutrition.calories.toFixed(0)} / {targetCalories}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
@@ -375,15 +378,15 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <div className="text-lg font-medium">{todayEntries.length}</div>
-                    <div className="text-xs text-gray-500">Comidas registradas</div>
+                    <div className="text-xs text-gray-500">{t("dashboard.mealsRegistered")}</div>
                   </div>
                   <div>
                     <div className="text-lg font-medium">{todayNutrition.protein.toFixed(1)}g</div>
-                    <div className="text-xs text-gray-500">Proteína</div>
+                    <div className="text-xs text-gray-500">{t("recipes.protein")}</div>
                   </div>
                   <div>
                     <div className="text-lg font-medium">{todayNutrition.carbs.toFixed(1)}g</div>
-                    <div className="text-xs text-gray-500">Carbohidratos</div>
+                    <div className="text-xs text-gray-500">{t("recipes.carbs")}</div>
                   </div>
                 </div>
 
@@ -394,8 +397,8 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
                     : 'bg-orange-50 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300'
                 }`}>
                   {isOnTrack 
-                    ? "¡Excelente! Estás manteniendo un balance nutricional saludable."
-                    : "Registra más comidas para alcanzar tu objetivo diario."
+                    ? t("dashboard.excellentBalance")
+                    : t("dashboard.registerMoreMeals")
                   }
                 </div>
               </div>
@@ -408,7 +411,7 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
           <AnimatedCard delay={0.7}>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">Entradas Recientes</CardTitle>
+                <CardTitle className="text-sm">{t("dashboard.recentEntries")}</CardTitle>
                 <Link href="/food-diary">
                   <Button variant="ghost" size="sm">
                     <ArrowRight className="w-4 h-4" />
@@ -419,18 +422,18 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
             <CardContent>
               {recentEntries.length === 0 ? (
                 <div className="text-center py-4 text-gray-500">
-                  <p className="text-sm mb-3">No hay entradas recientes</p>
+                  <p className="text-sm mb-3">{t("dashboard.noRecentEntries")}</p>
                   <div className="space-y-2">
                     <Link href="/food-diary">
                       <Button size="sm" className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30">
                         <PlusIcon className="w-4 h-4 mr-2" />
-                        Registrar Comida
+{t("dashboard.registerFood")}
                       </Button>
                     </Link>
                     <Link href="/calendar">
                       <Button variant="outline" size="sm" className="w-full">
                         <Calendar className="w-4 h-4 mr-2" />
-                        Ver Calendario
+{t("dashboard.viewCalendar")}
                       </Button>
                     </Link>
                   </div>
@@ -446,7 +449,7 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate">
-                          {entry.menu || (entry.ingredients ? entry.ingredients.map(ing => ing.name).join(', ') : 'Sin nombre')}
+                          {entry.menu || (entry.ingredients ? entry.ingredients.map(ing => ing.name).join(', ') : t("dashboard.noName"))}
                         </div>
                         <div className="text-xs text-gray-500">
                           {entry.calories || 0} kcal • {entry.time}
@@ -465,7 +468,7 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
         <div className="col-span-12">
           <AnimatedCard delay={0.8}>
             <CardHeader>
-              <CardTitle>Resumen de la Semana</CardTitle>
+              <CardTitle>{t("dashboard.weekSummary")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-4 gap-6">

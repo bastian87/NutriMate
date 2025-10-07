@@ -81,6 +81,33 @@ export function useActiveGoal() {
     if (!user?.id) return null;
 
     try {
+      // First, check if there's already an active goal
+      const existingGoalsResponse = await fetch('/api/goals', {
+        headers: { 'x-user-id': user.id }
+      });
+
+      if (existingGoalsResponse.ok) {
+        const existingData = await existingGoalsResponse.json();
+        const goals = existingData.goals || [];
+        
+        // Check if there's already an active goal
+        const hasActiveGoal = goals.some((goal: any) => {
+          const now = new Date();
+          const startDate = new Date(goal.start_date);
+          const endDate = goal.end_date ? new Date(goal.end_date) : null;
+          
+          return startDate <= now && (!endDate || endDate >= now);
+        });
+
+        if (hasActiveGoal) {
+          console.log('Active goal already exists, skipping default goal creation');
+          // Refresh the active goal data
+          await fetchActiveGoal();
+          return null;
+        }
+      }
+
+      // Only create default goal if no active goal exists
       const todayStr = new Date().toISOString().slice(0, 10);
       const response = await fetch('/api/goals', {
         method: 'POST',
@@ -105,6 +132,24 @@ export function useActiveGoal() {
             description: "Se ha creado un objetivo por defecto para ti"
           });
           return data.goal;
+        }
+      } else {
+        // Handle specific error responses
+        const errorData = await response.json();
+        console.error('Error creating default goal:', errorData);
+        
+        if (response.status === 400 && errorData.error) {
+          toast({
+            title: "No se puede crear objetivo",
+            description: errorData.error,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "No se pudo crear el objetivo por defecto",
+            variant: "destructive"
+          });
         }
       }
     } catch (error) {

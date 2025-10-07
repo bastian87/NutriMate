@@ -195,7 +195,7 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
-              <Button autoFocus>Aceptar</Button>
+              <Button autoFocus>{t("common.accept")}</Button>
             </DialogClose>
             <Link href="/pricing">
               <Button variant="outline">Hazte Premium</Button>

@@ -83,7 +83,7 @@ export function SidebarNew() {
   // Navigation categories
   const navigationCategories: NavigationCategory[] = [
           {
-            name: "Principal",
+            name: t("navigation.main"),
             icon: DashboardIcon,
             items: [
               { name: t("navigation.dashboard"), href: "/dashboard", icon: DashboardIcon },
@@ -93,29 +93,29 @@ export function SidebarNew() {
             isCollapsible: false
           },
     {
-      name: "Nutrición & Salud",
+      name: t("navigation.nutritionHealth"),
       icon: TargetIcon,
       items: [
         { name: t("navigation.nutritionTracking"), href: "/calendar", icon: CalendarIcon },
-        { name: "Food Diary", href: "/food-diary", icon: FoodDiaryIcon },
-        { name: "Ingredientes", href: "/ingredients", icon: IngredientsIcon },
-        { name: "Objetivos", href: "/goals", icon: TargetIcon },
+        { name: t("navigation.foodDiary"), href: "/food-diary", icon: FoodDiaryIcon },
+        { name: t("navigation.ingredients"), href: "/ingredients", icon: IngredientsIcon },
+        { name: t("navigation.goals"), href: "/goals", icon: TargetIcon },
         { name: t("navigation.calorieCalculator"), href: "/calorie-calculator", icon: CalculatorIcon },
       ],
       isCollapsible: true
     },
     {
-      name: "Análisis & Progreso",
+      name: t("navigation.analysisProgress"),
       icon: BarChartIcon,
       items: [
-        { name: "Resumen Semanal", href: "/weekly-summary", icon: BarChartIcon },
-        { name: "Resumen Mensual", href: "/monthly-summary", icon: BarChartIcon },
-        { name: "Gamificación", href: "/gamification", icon: FlameIcon },
+        { name: t("navigation.weeklySummary"), href: "/weekly-summary", icon: BarChartIcon },
+        { name: t("navigation.monthlySummary"), href: "/monthly-summary", icon: BarChartIcon },
+        { name: t("navigation.gamification"), href: "/gamification", icon: FlameIcon },
       ],
       isCollapsible: true
     },
     {
-      name: "Guardado",
+      name: t("navigation.saved"),
       icon: HeartIcon,
       items: [
         { name: t("navigation.savedRecipes"), href: "/saved-recipes", icon: HeartIcon },

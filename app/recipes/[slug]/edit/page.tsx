@@ -588,7 +588,7 @@ export default function EditRecipePage() {
         {/* Submit Button */}
         <div className="flex justify-end gap-4 mt-6">
           <Link href={`/recipes/${recipeSlug}`}>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">{t("common.cancel")}</Button>
           </Link>
           <Button type="submit" disabled={saving} onClick={handleSubmit}>
             {saving ? (

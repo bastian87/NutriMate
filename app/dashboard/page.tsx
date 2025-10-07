@@ -72,17 +72,17 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-bold mb-2">{t("dashboard.welcome")}</h1>
               <p className="text-gray-600 dark:text-gray-400 mb-2">{t("dashboard.subtitle")}</p>
               {userData?.profile?.full_name && (
-                <p className="text-sm text-gray-500">¡Bienvenido de vuelta, {userData.profile.full_name}!</p>
+                <p className="text-sm text-gray-500">{t("dashboard.welcomeBack", { name: userData.profile.full_name })}</p>
               )}
               <div className="flex items-center gap-2 mt-2">
                 <Badge variant={isPremium ? "default" : "secondary"} className={isPremium ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300" : ""}>
                   {isPremium ? (
                     <>
                       <Crown className="h-3 w-3 mr-1" />
-                      Cuenta Premium
+                      {t("subscriptionStatus.premiumAccount")}
                     </>
                   ) : (
-                    "Cuenta Gratuita"
+                    t("subscriptionStatus.freeAccount")
                   )}
                 </Badge>
               </div>
@@ -91,13 +91,13 @@ export default function DashboardPage() {
                     <Link href="/food-diary?openAddDialog=true">
                       <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30 px-6 py-3 text-base font-semibold">
                         <PlusIcon className="h-5 w-5 mr-2" />
-                        Registrar Comida
+{t("dashboard.registerFood")}
                       </Button>
                     </Link>
                     <Link href="/calendar">
                       <Button variant="outline" className="px-6 py-3 text-base font-semibold border-2 border-orange-200 hover:border-orange-300 hover:bg-orange-50">
                         <Calendar className="h-5 w-5 mr-2" />
-                        Ver Calendario
+{t("dashboard.viewCalendar")}
                       </Button>
                     </Link>
                   </div>

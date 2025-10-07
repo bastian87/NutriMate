@@ -341,7 +341,7 @@ export default function RecipesPage() {
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Cerrar</Button>
+              <Button variant="outline">{t("common.close")}</Button>
             </DialogClose>
             <Link href="/pricing">
               <Button className="bg-orange-600 hover:bg-orange-700">

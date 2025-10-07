@@ -33,7 +33,6 @@ export function LanguageSelector({ isCompact = false }: LanguageSelectorProps) {
   const languages = [
     { code: "en", name: t("language.english"), flag: "us" },
     { code: "es", name: t("language.spanish"), flag: "ar" },
-    { code: "fr", name: t("language.french"), flag: "fr" },
   ]
 
   const currentLanguage = languages.find(lang => lang.code === language)
@@ -57,7 +56,7 @@ export function LanguageSelector({ isCompact = false }: LanguageSelectorProps) {
           <DropdownMenuItem
             key={lang.code}
             onClick={() => {
-              setLanguage(lang.code as "en" | "es" | "fr")
+              setLanguage(lang.code as "en" | "es")
               setOpen(false)
             }}
             className="flex items-center gap-3"

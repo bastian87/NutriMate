@@ -4,7 +4,7 @@ import type React from "react"
 import { createContext, useContext, useState, useEffect, useCallback } from "react"
 import { translations } from "./translations"
 
-const availableLanguages = ["en", "es", "fr"] as const
+const availableLanguages = ["en", "es"] as const
 
 type Language = typeof availableLanguages[number]
 
@@ -27,7 +27,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setIsMounted(true)
     // Load saved language from localStorage only on the client-side after mount
     const savedLanguage = localStorage.getItem("nutrimate-language") as Language
-    if (savedLanguage && (savedLanguage === "en" || savedLanguage === "es" || savedLanguage === "fr")) {
+    if (savedLanguage && (savedLanguage === "en" || savedLanguage === "es")) {
       setLanguageState(savedLanguage)
     }
   }, [])

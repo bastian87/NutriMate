@@ -28,7 +28,7 @@ export default function Header() {
           <ThemeToggle />
           {isLoggedIn ? (
             <Link href="/dashboard">
-              <Button className="bg-orange-600 hover:bg-orange-700">Dashboard</Button>
+              <Button className="bg-orange-600 hover:bg-orange-700">{t("navigation.dashboard")}</Button>
             </Link>
           ) : (
             <div className="flex items-center gap-2">
