@@ -24,9 +24,7 @@ export function useActiveGoal() {
     }
 
     try {
-      const response = await fetch('/api/goals', {
-        headers: { 'x-user-id': user.id }
-      });
+      const response = await fetch('/api/goals');
 
       if (response.ok) {
         const data = await response.json();
@@ -82,9 +80,7 @@ export function useActiveGoal() {
 
     try {
       // First, check if there's already an active goal
-      const existingGoalsResponse = await fetch('/api/goals', {
-        headers: { 'x-user-id': user.id }
-      });
+      const existingGoalsResponse = await fetch('/api/goals');
 
       if (existingGoalsResponse.ok) {
         const existingData = await existingGoalsResponse.json();
@@ -112,8 +108,7 @@ export function useActiveGoal() {
       const response = await fetch('/api/goals', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': user.id
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           targetKcalDay: 2000,

@@ -33,12 +33,11 @@ import Link from "next/link";
 export default function CalendarPage() {
   const { user } = useAuthContext();
   const { toast } = useToast();
-  const { activeGoal, loading: goalLoading, createDefaultGoal } = useActiveGoal();
+  const { activeGoal, loading: goalLoading } = useActiveGoal();
   const { userData } = useUserProfile();
   const isPremium = useIsPremium();
   const { t } = useLanguage();
   const [range, setRange] = useState<"week" | "month">("month");
-  const [isCreatingGoal, setIsCreatingGoal] = useState(false);
 
   // default "from" = today (YYYY-MM-DD)
   const todayStr = useMemo(() => {
@@ -51,15 +50,6 @@ export default function CalendarPage() {
 
   const [from, setFrom] = useState<string>(todayStr);
 
-  // Función para crear goal automáticamente
-  const handleCreateGoal = async () => {
-    setIsCreatingGoal(true);
-    try {
-      await createDefaultGoal();
-    } finally {
-      setIsCreatingGoal(false);
-    }
-  };
 
   if (!user) {
     return (
@@ -158,13 +148,11 @@ export default function CalendarPage() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   {t("calendar.createFirstGoal")}
                 </p>
-                <Button 
-                  onClick={handleCreateGoal}
-                  disabled={isCreatingGoal}
-                  className="bg-orange-600 hover:bg-orange-700"
-                >
-                  {isCreatingGoal ? t("calendar.creating") : t("calendar.createGoal")}
-                </Button>
+                <Link href="/goals">
+                  <Button className="bg-orange-600 hover:bg-orange-700">
+                    {t("calendar.createGoal")}
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </motion.div>

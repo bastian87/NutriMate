@@ -46,9 +46,7 @@ export default function GoalsPage() {
     if (!user?.id) return;
     
     try {
-      const response = await fetch('/api/goals', {
-        headers: { 'x-user-id': user.id }
-      });
+      const response = await fetch('/api/goals');
       
       if (response.ok) {
         const data = await response.json();
@@ -77,8 +75,7 @@ export default function GoalsPage() {
       const response = await fetch('/api/goals', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': user.id
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           targetKcalDay,
@@ -139,10 +136,7 @@ export default function GoalsPage() {
     try {
       const endpoint = forceDelete ? `/api/goals/force-delete?id=${goalToDelete}` : `/api/goals?id=${goalToDelete}`;
       const response = await fetch(endpoint, {
-        method: 'DELETE',
-        headers: {
-          'x-user-id': user.id
-        }
+        method: 'DELETE'
       });
 
       const data = await response.json();
