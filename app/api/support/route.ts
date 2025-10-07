@@ -1,13 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createServerClient } from "@/lib/supabase/server" // Import fixed to use the correct function name
+import { createServerClientWithCookies } from "@/lib/supabase/server"
+import type { Database } from '@/lib/types/database'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    const response = NextResponse.next()
+    const supabase = createServerClientWithCookies(request, response)
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+    
+    const { user } = session
 
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -20,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's subscription status to determine priority
-    const { data: subscription } = await supabase.from("subscriptions").select("plan").eq("user_id", user.id).single()
+    const { data: subscription } = await supabase.from("subscriptions").select("plan").eq("user_id", user.id as Database['public']['Tables']['subscriptions']['Row']['user_id']).single()
 
     const isPremium = subscription?.plan === "premium"
     const ticketPriority = isPremium ? "high" : priority || "normal"
@@ -29,7 +34,7 @@ export async function POST(request: NextRequest) {
     const { data: ticket, error: ticketError } = await supabase
       .from("support_tickets")
       .insert({
-        user_id: user.id,
+        user_id: user.id as Database['public']['Tables']['support_tickets']['Row']['user_id'],
         subject,
         message,
         priority: ticketPriority,

@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoalUpsertSchema } from '@/lib/validation/zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { getUserId } from '@/lib/auth/getUserId';
+import { createServerClientWithCookies } from '@/lib/supabase/server';
+import type { Database } from '@/lib/types/database';
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = await getUserId(req as unknown as Request);
-    const supa = createServerClient();
+    const response = NextResponse.next();
+    const supa = createServerClientWithCookies(req, response);
+    
+    const { data: { session }, error: authError } = await supa.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
 
     const { data: goals, error } = await supa
       .from('goals')
@@ -23,13 +30,19 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const userId = await getUserId(req as unknown as Request);
+    const response = NextResponse.next();
+    const supa = createServerClientWithCookies(req, response);
+    
+    const { data: { session }, error: authError } = await supa.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const data = GoalUpsertSchema.parse(await req.json());
 
     const targetKcalWeek = data.targetKcalWeek ?? data.targetKcalDay * 7;
     const targetKcalMonth = data.targetKcalMonth ?? data.targetKcalDay * 30;
-
-    const supa = createServerClient();
 
     // Validar que no exista un goal activo en la misma semana
     const startDate = new Date(data.startDate);
@@ -79,15 +92,28 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const userId = await getUserId(req as unknown as Request);
+    const response = NextResponse.next();
+    const supa = createServerClientWithCookies(req, response);
+    
+    const { data: { session }, error: authError } = await supa.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const url = new URL(req.url);
-    const goalId = url.searchParams.get('id');
+    const rawGoalId = url.searchParams.get('id');
+    
+    if (!rawGoalId?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+      return NextResponse.json({ error: 'Invalid goal ID format' }, { status: 400 });
+    }
+    
+    const goalId = rawGoalId as Database['public']['Tables']['goals']['Row']['id'];
 
     if (!goalId) {
       return NextResponse.json({ error: 'Goal ID is required' }, { status: 400 });
     }
 
-    const supa = createServerClient();
 
     // Verificar que el goal pertenece al usuario
     const { data: goal, error: fetchError } = await supa

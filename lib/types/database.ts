@@ -233,6 +233,44 @@ export interface Database {
           updated_at?: string
         }
       }
+      goals: {
+        Row: {
+          id: string
+          user_id: string
+          start_date: string
+          end_date: string | null
+          target_kcal_day: number
+          target_kcal_week: number
+          target_kcal_month: number
+          objective: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          start_date: string
+          end_date?: string | null
+          target_kcal_day: number
+          target_kcal_week: number
+          target_kcal_month: number
+          objective: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          start_date?: string
+          end_date?: string | null
+          target_kcal_day?: number
+          target_kcal_week?: number
+          target_kcal_month?: number
+          objective?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
       user_preferences: {
         Row: {
           id: string
@@ -291,6 +329,96 @@ export interface Database {
           macro_priority?: string | null
           allergies?: string[] | null
           intolerances?: string[] | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          plan: string
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          plan: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          plan?: string
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      support_tickets: {
+        Row: {
+          id: string
+          user_id: string
+          subject: string
+          message: string
+          priority: string
+          status: string
+          is_premium: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          subject: string
+          message: string
+          priority?: string
+          status?: string
+          is_premium?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          subject?: string
+          message?: string
+          priority?: string
+          status?: string
+          is_premium?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      user_subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          subscription_id: string
+          status: string
+          customer_id: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          subscription_id: string
+          status: string
+          customer_id: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          subscription_id?: string
+          status?: string
+          customer_id?: string
           created_at?: string
           updated_at?: string
         }

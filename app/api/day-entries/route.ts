@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DayEntryUpsertSchema } from '@/lib/validation/zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { getUserId } from '@/lib/auth/getUserId';
+import { createServerClientWithCookies } from '@/lib/supabase/server';
 import { evaluateDay } from '@/lib/nutri/evaluateDay';
 import type { MacroGroup } from '@/types/nutri';
 
 export async function GET(req: NextRequest) {
-  const supa = createServerClient();
+  const response = NextResponse.next();
+  const supa = createServerClientWithCookies(req, response);
+  
   try {
-    const userId = await getUserId(req as unknown as Request);
+    const { data: { session }, error: authError } = await supa.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const url = new URL(req.url);
     const date = url.searchParams.get('date');
     const goalId = url.searchParams.get('goalId');
@@ -84,9 +90,16 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const supa = createServerClient();
+  const response = NextResponse.next();
+  const supa = createServerClientWithCookies(req, response);
+  
   try {
-    const userId = await getUserId(req as unknown as Request);
+    const { data: { session }, error: authError } = await supa.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const rawBody = await req.json();
     console.log('Day Entries API - Raw body received:', rawBody);
     

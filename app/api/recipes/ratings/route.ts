@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
-import { getUserId } from '@/lib/auth/getUserId';
+import { createServerClientWithCookies } from '@/lib/supabase/server';
+import type { Database } from '@/lib/types/database';
 
 // Rate limiting storage (in production, use Redis or similar)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -37,9 +37,17 @@ function checkRateLimit(userId: string, recipeId: string): { allowed: boolean; r
 // GET - Get recipe ratings (Free)
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
     const { searchParams } = new URL(request.url);
-    const recipe_id = searchParams.get('recipe_id');
+    const rawRecipeId = searchParams.get('recipe_id');
+    
+    if (!rawRecipeId?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+      return NextResponse.json({ error: 'Invalid recipe ID format' }, { status: 400 });
+    }
+    
+    const recipe_id = rawRecipeId as Database['public']['Tables']['recipes']['Row']['id'];
     
     if (!recipe_id) {
       return NextResponse.json(
@@ -97,13 +105,33 @@ export async function GET(request: NextRequest) {
 // POST - Add/update recipe rating (Free with rate limit)
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const body = await request.json();
     
     const { recipe_id, rating, review } = body;
     
     if (!recipe_id || !rating) {
+      return NextResponse.json(
+        { error: 'Recipe ID and rating are required' },
+        { status: 400 }
+      );
+    }
+    
+    if (!recipe_id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+      return NextResponse.json({ error: 'Invalid recipe ID format' }, { status: 400 });
+    }
+    
+    const typedRecipeId = recipe_id as Database['public']['Tables']['recipes']['Row']['id'];
+    
+    if (!typedRecipeId || !rating) {
       return NextResponse.json(
         { error: 'Recipe ID and rating are required' },
         { status: 400 }
@@ -252,10 +280,23 @@ export async function POST(request: NextRequest) {
 // DELETE - Remove recipe rating (Free)
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const { searchParams } = new URL(request.url);
-    const recipe_id = searchParams.get('recipe_id');
+    const rawRecipeId = searchParams.get('recipe_id');
+    
+    if (!rawRecipeId?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+      return NextResponse.json({ error: 'Invalid recipe ID format' }, { status: 400 });
+    }
+    
+    const recipe_id = rawRecipeId as Database['public']['Tables']['recipes']['Row']['id'];
     
     if (!recipe_id) {
       return NextResponse.json(

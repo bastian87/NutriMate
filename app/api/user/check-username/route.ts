@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createServerClient } from "@/lib/supabase/server"
+import { createServerClientWithCookies } from "@/lib/supabase/server"
+import type { Database } from '@/lib/types/database'
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,11 +19,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check username availability directly with server-side Supabase client
-    const supabase = createServerClient()
+    const response = NextResponse.next()
+    const supabase = createServerClientWithCookies(request, response)
     const { data, error } = await supabase
       .from("users")
       .select("username")
-      .eq("username", username)
+      .eq("username", username as Database['public']['Tables']['users']['Row']['username'])
       .maybeSingle()
 
     if (error) {

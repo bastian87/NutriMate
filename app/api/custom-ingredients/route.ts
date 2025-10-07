@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
-import { getUserId } from '@/lib/auth/getUserId';
+import { createServerClientWithCookies } from '@/lib/supabase/server';
 import { requirePremiumFeature } from '@/lib/api-guards';
 
 // GET - List custom ingredients (Free)
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     
     const { data: ingredients, error } = await supabase
       .from('ingredients')
@@ -46,8 +52,15 @@ export async function POST(request: NextRequest) {
       return guardResult.response;
     }
 
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const body = await request.json();
     
     const { name, nutrition_data } = body;
@@ -101,8 +114,15 @@ export async function PUT(request: NextRequest) {
       return guardResult.response;
     }
 
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const body = await request.json();
     
     const { id, name, nutrition_data } = body;
@@ -178,8 +198,15 @@ export async function DELETE(request: NextRequest) {
       return guardResult.response;
     }
 
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     

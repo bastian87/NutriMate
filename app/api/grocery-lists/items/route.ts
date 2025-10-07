@@ -1,14 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
-import { getUserId } from '@/lib/auth/getUserId';
+import { createServerClientWithCookies } from '@/lib/supabase/server';
+import type { Database } from '@/lib/types/database';
 
 // GET - List items in a grocery list (Free if owned)
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const { searchParams } = new URL(request.url);
-    const listId = searchParams.get('listId');
+    const rawListId = searchParams.get('listId');
+    
+    if (!rawListId?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+      return NextResponse.json({ error: 'Invalid list ID format' }, { status: 400 });
+    }
+    
+    const listId = rawListId as Database['public']['Tables']['grocery_lists']['Row']['id'];
     
     if (!listId) {
       return NextResponse.json(
@@ -69,13 +82,33 @@ export async function GET(request: NextRequest) {
 // POST - Add item to grocery list (Free if owned)
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const body = await request.json();
     
     const { grocery_list_id, name, quantity, unit, category, recipe_id } = body;
     
     if (!grocery_list_id || !name) {
+      return NextResponse.json(
+        { error: 'List ID and item name are required' },
+        { status: 400 }
+      );
+    }
+    
+    if (!grocery_list_id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+      return NextResponse.json({ error: 'Invalid list ID format' }, { status: 400 });
+    }
+    
+    const typedListId = grocery_list_id as Database['public']['Tables']['grocery_lists']['Row']['id'];
+    
+    if (!typedListId) {
       return NextResponse.json(
         { error: 'List ID and item name are required' },
         { status: 400 }
@@ -142,13 +175,33 @@ export async function POST(request: NextRequest) {
 // PUT - Update grocery list item (Free if owned)
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const body = await request.json();
     
     const { id, name, quantity, unit, category, is_checked } = body;
     
     if (!id) {
+      return NextResponse.json(
+        { error: 'Item ID is required' },
+        { status: 400 }
+      );
+    }
+    
+    if (!id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+      return NextResponse.json({ error: 'Invalid item ID format' }, { status: 400 });
+    }
+    
+    const typedId = id as Database['public']['Tables']['grocery_list_items']['Row']['id'];
+    
+    if (!typedId) {
       return NextResponse.json(
         { error: 'Item ID is required' },
         { status: 400 }
@@ -221,10 +274,23 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete grocery list item (Free if owned)
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const rawId = searchParams.get('id');
+    
+    if (!rawId?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+      return NextResponse.json({ error: 'Invalid item ID format' }, { status: 400 });
+    }
+    
+    const id = rawId as Database['public']['Tables']['grocery_list_items']['Row']['id'];
     
     if (!id) {
       return NextResponse.json(

@@ -1,15 +1,20 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createServerClient } from "@/lib/supabase/server"
+import { createServerClientWithCookies } from "@/lib/supabase/server"
 import { cancelSubscription, resumeSubscription, getCustomerPortalUrl, getSubscription, getDirectBillingPortalUrl } from "@/lib/lemonsqueezy-service"
+import type { Database } from '@/lib/types/database'
 
 export async function POST(request: NextRequest) {
   // Cancelar suscripción
   try {
-    const supabase = createServerClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    const response = NextResponse.next()
+    const supabase = createServerClientWithCookies(request, response)
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+    
+    const { user } = session
 
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -19,7 +24,7 @@ export async function POST(request: NextRequest) {
     const { data: subData, error: subError } = await supabase
       .from("user_subscriptions")
       .select("subscription_id")
-      .eq("user_id", user.id)
+      .eq("user_id", user.id as Database['public']['Tables']['user_subscriptions']['Row']['user_id'])
       .single()
 
     if (subError || !subData?.subscription_id) {
@@ -36,7 +41,7 @@ export async function POST(request: NextRequest) {
     await supabase
       .from("user_subscriptions")
       .update({ status: "cancelled", updated_at: new Date().toISOString() })
-      .eq("user_id", user.id)
+      .eq("user_id", user.id as Database['public']['Tables']['user_subscriptions']['Row']['user_id'])
 
     return NextResponse.json({ success: true })
   } catch (error) {
@@ -48,11 +53,15 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   // Reactivar suscripción
   try {
-    const supabase = createServerClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    const response = NextResponse.next()
+    const supabase = createServerClientWithCookies(request, response)
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+    
+    const { user } = session
 
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -62,7 +71,7 @@ export async function PATCH(request: NextRequest) {
     const { data: subData, error: subError } = await supabase
       .from("user_subscriptions")
       .select("subscription_id")
-      .eq("user_id", user.id)
+      .eq("user_id", user.id as Database['public']['Tables']['user_subscriptions']['Row']['user_id'])
       .single()
 
     if (subError || !subData?.subscription_id) {
@@ -79,7 +88,7 @@ export async function PATCH(request: NextRequest) {
     await supabase
       .from("user_subscriptions")
       .update({ status: "active", updated_at: new Date().toISOString() })
-      .eq("user_id", user.id)
+      .eq("user_id", user.id as Database['public']['Tables']['user_subscriptions']['Row']['user_id'])
 
     return NextResponse.json({ success: true })
   } catch (error) {
@@ -93,16 +102,16 @@ export async function GET(request: NextRequest) {
   try {
     console.log("GET /api/user/subscription - Iniciando solicitud de portal de facturación")
     
-    const supabase = createServerClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    const response = NextResponse.next()
+    const supabase = createServerClientWithCookies(request, response)
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    if (authError || !session) {
       console.error("Error de autenticación:", authError)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+    
+    const { user } = session
 
     console.log("Usuario autenticado:", user.id)
 
@@ -110,7 +119,7 @@ export async function GET(request: NextRequest) {
     const { data: subData, error: subError } = await supabase
       .from("user_subscriptions")
       .select("subscription_id, status, customer_id")
-      .eq("user_id", user.id)
+      .eq("user_id", user.id as Database['public']['Tables']['user_subscriptions']['Row']['user_id'])
       .single()
 
     if (subError || !subData?.subscription_id) {
@@ -153,14 +162,15 @@ export async function GET(request: NextRequest) {
     
     // Como último recurso, intentar generar la URL directa
     try {
-      const supabase = createServerClient()
-      const { data: { user } } = await supabase.auth.getUser()
+      const response = NextResponse.next()
+      const supabase = createServerClientWithCookies(request, response)
+      const { data: { session } } = await supabase.auth.getSession()
       
-      if (user) {
+      if (session?.user) {
         const { data: subData } = await supabase
           .from("user_subscriptions")
           .select("customer_id")
-          .eq("user_id", user.id)
+          .eq("user_id", session.user.id as Database['public']['Tables']['user_subscriptions']['Row']['user_id'])
           .single()
         
         if (subData?.customer_id) {

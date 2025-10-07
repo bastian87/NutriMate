@@ -1,16 +1,21 @@
-import { NextResponse } from "next/server"
-import { createServerClient } from "@/lib/supabase/server"
+import { NextRequest, NextResponse } from "next/server"
+import { createServerClientWithCookies } from "@/lib/supabase/server"
 import { LEMONSQUEEZY_BASE_URL, LEMONSQUEEZY_CONFIG } from "@/lib/stripe"
+import type { Database } from '@/lib/types/database'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     console.log("Probando diferentes métodos de generación de portal...")
     
-    const supabase = createServerClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    const response = NextResponse.next()
+    const supabase = createServerClientWithCookies(request, response)
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+    
+    const { user } = session
 
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -20,7 +25,7 @@ export async function GET() {
     const { data: subData, error: subError } = await supabase
       .from("user_subscriptions")
       .select("subscription_id, status, customer_id")
-      .eq("user_id", user.id)
+      .eq("user_id", user.id as Database['public']['Tables']['user_subscriptions']['Row']['user_id'])
       .single()
 
     if (subError || !subData?.subscription_id) {

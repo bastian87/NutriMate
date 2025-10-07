@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
-import { getUserId } from '@/lib/auth/getUserId';
+import { createServerClientWithCookies } from '@/lib/supabase/server';
 import { getUserSubscription } from '@/lib/subscription-service';
 import { getLimit } from '@/lib/entitlements';
 
 // GET - List user's favorite recipes (Free)
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const userId = await getUserId(request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     
     // Try to get favorites, but handle the case where recipes table is empty
     let { data: favorites, error } = await supabase
@@ -49,8 +55,15 @@ export async function GET(request: NextRequest) {
 // POST - Add recipe to favorites (with limit check)
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const body = await request.json();
     
     const { recipe_id } = body;
@@ -181,8 +194,15 @@ export async function POST(request: NextRequest) {
 // DELETE - Remove recipe from favorites (Free)
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const { searchParams } = new URL(request.url);
     const recipe_id = searchParams.get('recipe_id');
     

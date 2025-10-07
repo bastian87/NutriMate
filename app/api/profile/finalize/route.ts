@@ -1,23 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createServerClient } from "@/lib/supabase/server"
+import { createServerClientWithCookies } from "@/lib/supabase/server"
+import type { Database } from '@/lib/types/database'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const response = NextResponse.next()
+    const supabase = createServerClientWithCookies(request, response)
     
-    // 1. Obtener token de autorización
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: "Unauthorized", message: "Missing or invalid authorization header" },
-        { status: 401 }
-      )
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
-
-    const token = authHeader.substring(7) // Remove 'Bearer ' prefix
-
-    // 2. Validar token con Supabase
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    
+    const { user } = session
     
     if (authError || !user) {
       return NextResponse.json(
@@ -67,7 +62,7 @@ export async function POST(request: NextRequest) {
         .from("users")
         .select("id")
         .eq("username", finalUsername)
-        .neq("id", user.id) // Excluir el usuario actual
+        .neq("id", user.id as Database['public']['Tables']['users']['Row']['id']) // Excluir el usuario actual
         .maybeSingle()
 
       if (usernameError) {

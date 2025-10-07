@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createServerClient } from "@/lib/supabase/server"
+import { createServerClientWithCookies } from "@/lib/supabase/server"
+import type { Database } from '@/lib/types/database'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const response = NextResponse.next()
+    const supabase = createServerClientWithCookies(request, response)
     
-    // 1. Autenticar via JWT/session
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+    
+    const { user } = session
     
     if (authError || !user) {
       return NextResponse.json(
@@ -29,7 +35,7 @@ export async function POST(request: NextRequest) {
     const { data: existingUser, error: checkError } = await supabase
       .from("users")
       .select("id")
-      .eq("id", user.id)
+      .eq("id", user.id as Database['public']['Tables']['users']['Row']['id'])
       .maybeSingle()
 
     if (checkError) {
@@ -51,7 +57,7 @@ export async function POST(request: NextRequest) {
     const { data: existingPreferences, error: prefsError } = await supabase
       .from("user_preferences")
       .select("id")
-      .eq("user_id", user.id)
+      .eq("user_id", user.id as Database['public']['Tables']['user_preferences']['Row']['user_id'])
       .maybeSingle()
 
     if (prefsError) {

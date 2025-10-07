@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CalendarQuerySchema } from '@/lib/validation/zod';
-import { createServerClient } from '@/lib/supabase/server';
-import { getUserId } from '@/lib/auth/getUserId';
+import { createServerClientWithCookies } from '@/lib/supabase/server';
 
 export async function GET(req: NextRequest) {
-  const supa = createServerClient();
+  const res = NextResponse.next();
+  const supabase = createServerClientWithCookies(req, res);
+  
   try {
-    const userId = await getUserId(req as unknown as Request);
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = session.user.id;
     const { searchParams } = new URL(req.url);
     const input = CalendarQuerySchema.parse({
       range: searchParams.get('range'),
@@ -22,7 +28,7 @@ export async function GET(req: NextRequest) {
     to.setDate(from.getDate() + (input.range === 'week' ? 6 : (days - 1)));
     const toStr = to.toISOString().slice(0, 10);
 
-    const { data, error } = await supa
+    const { data, error } = await supabase
       .from('day_entries')
       .select('date,total_kcal,is_success,has_carb,has_protein,has_fat,has_vegfruit,extras_count,goal_id')
       .eq('user_id', userId)
@@ -30,7 +36,7 @@ export async function GET(req: NextRequest) {
       .lte('date', toStr);
     if (error) throw error;
 
-    const { data: goal, error: gErr } = await supa
+    const { data: goal, error: gErr } = await supabase
       .from('goals')
       .select('id,target_kcal_day,start_date,end_date')
       .eq('user_id', userId)

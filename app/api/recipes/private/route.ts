@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
-import { getUserId } from '@/lib/auth/getUserId';
+import { createServerClientWithCookies } from '@/lib/supabase/server';
 import { requirePremiumFeature } from '@/lib/api-guards';
+import type { Database } from '@/lib/types/database';
 
 // GET - List user's private recipes (Premium)
 export async function GET(request: NextRequest) {
@@ -12,8 +12,15 @@ export async function GET(request: NextRequest) {
       return guardResult.response;
     }
 
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     
     const { data: recipes, error } = await supabase
       .from('recipes')
@@ -64,8 +71,15 @@ export async function POST(request: NextRequest) {
       return guardResult.response;
     }
 
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const body = await request.json();
     
     const { name, description, instructions, ingredients, tags, ...recipeData } = body;
@@ -157,13 +171,33 @@ export async function PUT(request: NextRequest) {
       return guardResult.response;
     }
 
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const body = await request.json();
     
     const { id, name, description, instructions, ingredients, tags, ...recipeData } = body;
     
     if (!id) {
+      return NextResponse.json(
+        { error: 'Recipe ID is required' },
+        { status: 400 }
+      );
+    }
+    
+    if (!id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+      return NextResponse.json({ error: 'Invalid recipe ID format' }, { status: 400 });
+    }
+    
+    const typedId = id as Database['public']['Tables']['recipes']['Row']['id'];
+    
+    if (!typedId) {
       return NextResponse.json(
         { error: 'Recipe ID is required' },
         { status: 400 }
@@ -280,10 +314,23 @@ export async function DELETE(request: NextRequest) {
       return guardResult.response;
     }
 
-    const supabase = createServerClient();
-    const userId = await getUserId(request as unknown as Request);
+    const response = NextResponse.next();
+    const supabase = createServerClientWithCookies(request, response);
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const rawId = searchParams.get('id');
+    
+    if (!rawId?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+      return NextResponse.json({ error: 'Invalid recipe ID format' }, { status: 400 });
+    }
+    
+    const id = rawId as Database['public']['Tables']['recipes']['Row']['id'];
     
     if (!id) {
       return NextResponse.json(

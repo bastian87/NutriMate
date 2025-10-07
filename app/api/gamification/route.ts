@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
-import { getUserId } from '@/lib/auth/getUserId';
+import { createServerClientWithCookies } from '@/lib/supabase/server';
 
 export async function GET(req: NextRequest) {
-  const supa = createServerClient();
+  const response = NextResponse.next();
+  const supa = createServerClientWithCookies(req, response);
+  
   try {
-    const userId = await getUserId(req as unknown as Request);
+    const { data: { session }, error: authError } = await supa.auth.getSession();
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    const userId = session.user.id;
 
     const [{ data: s, error: sErr }, { data: xpRows, error: xErr }] = await Promise.all([
       supa.from('streaks').select('current,best').eq('user_id', userId).maybeSingle(),

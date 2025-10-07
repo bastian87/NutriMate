@@ -31,8 +31,10 @@ export async function requirePremiumFeature(
 ): Promise<ApiGuardResult> {
   try {
     // Get user ID from request
-    const supabase = createServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const response = NextResponse.next()
+    const supabase = createServerClientWithCookies(request, response)
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    const user = session?.user
     
     if (authError || !user) {
       return {
@@ -112,8 +114,10 @@ export async function requireUsageLimit(
 ): Promise<ApiGuardResult> {
   try {
     // Get user ID from request
-    const supabase = createServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const response = NextResponse.next()
+    const supabase = createServerClientWithCookies(request, response)
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    const user = session?.user
     
     if (authError || !user) {
       return {
