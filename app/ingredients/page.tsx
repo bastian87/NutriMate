@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/i18n/context";
-import { CustomIngredientsPreview } from "@/components/premium-preview";
+import Link from "next/link";
+import { CrownIcon } from "@/components/icons-new";
 import { useIsPremium } from "@/components/auth/user-profile-provider";
 import { motion } from "framer-motion";
 import { 
@@ -385,14 +386,12 @@ export default function IngredientsPage() {
                       </DialogContent>
                     </Dialog>
                     ) : (
-                      <CustomIngredientsPreview
-                        ctaText={t("premiumPreview.customIngredients.cta")}
-                      >
-                        <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30">
-                          <PlusIcon className="w-4 h-4 mr-2" />
-                          Add Ingredient
+                      <Link href="/pricing">
+                        <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2">
+                          <CrownIcon className="h-5 w-5" />
+                          Upgrade to Premium
                         </Button>
-                      </CustomIngredientsPreview>
+                      </Link>
                     )}
                   </div>
                   

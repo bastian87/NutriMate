@@ -16,7 +16,6 @@ import { getRecipeById, updateRecipe } from "@/lib/services/recipe-service"
 import type { RecipeWithDetails } from "@/lib/services/recipe-service"
 import Link from "next/link"
 import { IngredientSelector } from "@/components/ingredient-selector"
-import { FeatureGate } from "@/components/feature-gate"
 
 interface Ingredient {
   name: string
@@ -291,8 +290,7 @@ export default function EditRecipePage() {
   }
 
   return (
-    <FeatureGate feature="recipes.private_edit">
-      <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -608,6 +606,5 @@ export default function EditRecipePage() {
         </div>
       </div>
     </div>
-    </FeatureGate>
   )
 }

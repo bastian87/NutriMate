@@ -34,14 +34,12 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/context"
 import { useMultipleGroceryLists } from "@/hooks/use-multiple-grocery-lists"
-import PremiumUpgradePrompt from "@/components/premium-upgrade-prompt"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { getRecipeById } from "@/lib/services/recipe-service"
 import type { GroceryListItem } from "@/hooks/use-grocery-list"
-import { FeatureGate } from "@/components/feature-gate"
 import { PremiumPreview } from "@/components/premium-preview"
 import { motion } from "framer-motion"
 import { 
@@ -725,27 +723,6 @@ export default function GroceryListPage() {
     )
   }
 
-  // Mostrar información de cuenta inmediatamente si no es premium
-  if (!profileLoading && !isPremium) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4 py-8">
-          <div className="mb-6">
-            <Link href="/dashboard" className="inline-flex items-center text-orange-600 hover:text-orange-700 transition-colors duration-200 font-medium">
-              <ArrowLeftIcon className="mr-2 h-5 w-5" />
-              {t("groceryList.backToDashboard")}
-            </Link>
-          </div>
-
-          <PremiumUpgradePrompt
-            title="Smart Grocery Lists"
-            description="Upgrade to Premium to unlock advanced grocery list features like export/share functionality and enhanced categorization."
-            disclaimer="Free users can still create basic grocery lists manually"
-          />
-        </div>
-      </div>
-    )
-  }
 
   if (loading || profileLoading) {
     return (
@@ -783,8 +760,7 @@ export default function GroceryListPage() {
   }
 
   return (
-    <FeatureGate feature="grocery_lists">
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 shadow-sm border-b">
           <div className="container mx-auto px-4 py-6">
@@ -865,96 +841,92 @@ export default function GroceryListPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-green-500 hover:bg-green-600 text-white">
-                    + Create New List
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Create New Grocery List</DialogTitle>
-                    <DialogDescription>
-                      Create a custom grocery list with your own name and description.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="listName">List Name</Label>
-                      <Input
-                        id="listName"
-                        value={newListName}
-                        onChange={(e) => setNewListName(e.target.value)}
-                        placeholder="e.g., Weekend BBQ, Healthy Snacks"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="listDescription">Description (Optional)</Label>
-                      <Input
-                        id="listDescription"
-                        value={newListDescription}
-                        onChange={(e) => setNewListDescription(e.target.value)}
-                        placeholder="Brief description of this grocery list"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button 
-                      onClick={handleCreateList}
-                      className="bg-green-500 hover:bg-green-600"
-                      disabled={!newListName.trim()}
-                    >
-                      Create List
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              
-              {/* Download and Share Dropdown */}
               {isPremium ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="flex items-center gap-2">
-                      <DownloadIcon className="w-4 h-4" />
-                      Export & Share
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Download</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={handleDownloadWord}>
-                      📝 Download as Word
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handlePrint}>
-                      🖨️ Print List
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Share</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={handleShareWhatsApp}>
-                      💬 Share on WhatsApp
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleShareSocial('facebook')}>
-                      📘 Share on Facebook
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleShareSocial('twitter')}>
-                      🐦 Share on Twitter
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <>
+                  <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-green-500 hover:bg-green-600 text-white">
+                        + Create New List
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Create New Grocery List</DialogTitle>
+                        <DialogDescription>
+                          Create a custom grocery list with your own name and description.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="listName">List Name</Label>
+                          <Input
+                            id="listName"
+                            value={newListName}
+                            onChange={(e) => setNewListName(e.target.value)}
+                            placeholder="e.g., Weekend BBQ, Healthy Snacks"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="listDescription">Description (Optional)</Label>
+                          <Input
+                            id="listDescription"
+                            value={newListDescription}
+                            onChange={(e) => setNewListDescription(e.target.value)}
+                            placeholder="Brief description of this grocery list"
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={handleCreateList}
+                          className="bg-green-500 hover:bg-green-600"
+                          disabled={!newListName.trim()}
+                        >
+                          Create List
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="flex items-center gap-2">
+                        <DownloadIcon className="w-4 h-4" />
+                        Export & Share
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Download</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={handleDownloadWord}>
+                        📝 Download as Word
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handlePrint}>
+                        🖨️ Print List
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>Share</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={handleShareWhatsApp}>
+                        💬 Share on WhatsApp
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShareSocial('facebook')}>
+                        📘 Share on Facebook
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShareSocial('twitter')}>
+                        🐦 Share on Twitter
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
               ) : (
-                <PremiumPreview
-                  feature="exports"
-                  title={t("premiumPreview.exports.title")}
-                  description={t("premiumPreview.exports.description")}
-                  ctaText={t("premiumPreview.exports.cta")}
-                >
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
-                    <DownloadIcon className="w-4 h-4" />
-                    Export & Share
+                <Link href="/pricing">
+                  <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2">
+                    <CrownIcon className="h-5 w-5" />
+                    Upgrade to Premium
                   </Button>
-                </PremiumPreview>
+                </Link>
               )}
             </div>
           </div>
@@ -1513,6 +1485,5 @@ export default function GroceryListPage() {
           </DialogContent>
         </Dialog>
       </div>
-    </FeatureGate>
   )
 }

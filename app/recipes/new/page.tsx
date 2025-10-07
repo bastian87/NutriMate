@@ -15,7 +15,6 @@ import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useLanguage } from "@/lib/i18n/context"
 import Link from "next/link"
 import { IngredientSelector } from "@/components/ingredient-selector"
-import { FeatureGate } from "@/components/feature-gate"
 
 interface Ingredient {
   name: string
@@ -144,8 +143,7 @@ export default function NewRecipePage() {
   }
 
   return (
-    <FeatureGate feature="recipes.private_edit">
-      <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
         <Link href="/recipes" className="inline-flex items-center text-gray-600 hover:text-orange-600">
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -445,6 +443,5 @@ export default function NewRecipePage() {
         </Card>
       </div>
     </div>
-    </FeatureGate>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 
@@ -34,18 +34,9 @@ export function useMultipleGroceryLists() {
   const [selectedListId, setSelectedListId] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [hasInitialized, setHasInitialized] = useState(false)
 
-  useEffect(() => {
-    if (user) {
-      fetchAllGroceryLists()
-    } else {
-      setGroceryLists([])
-      setSelectedListId('')
-      setLoading(false)
-    }
-  }, [user])
-
-  const fetchAllGroceryLists = async () => {
+  const fetchAllGroceryLists = useCallback(async () => {
     if (!user) return
 
     try {
@@ -62,6 +53,7 @@ export function useMultipleGroceryLists() {
       if (listsError) throw listsError
 
       if (!lists || lists.length === 0) {
+        console.log('🛒 fetchAllGroceryLists: No lists found, creating default list for user:', user.id)
         // Create a default list if none exist
         const { data: newList, error: createError } = await supabase
           .from("grocery_lists")
@@ -73,11 +65,16 @@ export function useMultipleGroceryLists() {
           .select()
           .single()
 
-        if (createError) throw createError
+        if (createError) {
+          console.error('🛒 fetchAllGroceryLists: Error creating default list:', createError)
+          throw createError
+        }
 
+        console.log('🛒 fetchAllGroceryLists: Default list created successfully:', newList.id)
         setGroceryLists([{ ...newList, items: [] }])
         setSelectedListId(newList.id)
       } else {
+        console.log('🛒 fetchAllGroceryLists: Found existing lists:', lists.length)
         // Fetch items for each list
         const listsWithItems = await Promise.all(
           lists.map(async (list) => {
@@ -96,6 +93,7 @@ export function useMultipleGroceryLists() {
           })
         )
 
+        console.log('🛒 fetchAllGroceryLists: Lists with items loaded:', listsWithItems.length)
         setGroceryLists(listsWithItems)
         if (listsWithItems.length > 0) {
           setSelectedListId(listsWithItems[0].id)
@@ -107,7 +105,21 @@ export function useMultipleGroceryLists() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    if (user && !hasInitialized) {
+      console.log('🛒 useMultipleGroceryLists: User found, fetching lists for user:', user.id)
+      setHasInitialized(true)
+      fetchAllGroceryLists()
+    } else if (!user) {
+      console.log('🛒 useMultipleGroceryLists: No user, clearing lists')
+      setGroceryLists([])
+      setSelectedListId('')
+      setLoading(false)
+      setHasInitialized(false)
+    }
+  }, [user, hasInitialized, fetchAllGroceryLists])
 
   const createGroceryList = async (name: string, description?: string) => {
     if (!user) {

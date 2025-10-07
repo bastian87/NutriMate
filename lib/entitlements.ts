@@ -9,6 +9,7 @@ export type FeatureKey =
   | 'monthly_analytics'
   | 'analytics.trends'
   | 'grocery_lists'
+  | 'grocery_lists.multiple'
   | 'exports'
   | 'favorites'
   | 'custom_ingredients'
@@ -70,10 +71,9 @@ export const USAGE_LIMITS: UsageLimits = {
 export const PREMIUM_FEATURES: FeatureKey[] = [
   'monthly_analytics',
   'analytics.trends',
-  'grocery_lists',
+  'grocery_lists.multiple',
   'exports',
   'custom_ingredients',
-  'recipes.private_edit',
   'recipes.bulk_import',
   'themes.extras',
   'ads'
@@ -84,7 +84,9 @@ export const PREMIUM_FEATURES: FeatureKey[] = [
  * These features are available to all users
  */
 export const FREE_FEATURES: FeatureKey[] = [
-  'favorites'
+  'favorites',
+  'recipes.private_edit',
+  'grocery_lists'
 ]
 
 /**
