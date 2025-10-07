@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServerClientWithCookies } from '@/lib/supabase/server'
 import { getUserSubscription } from '@/lib/subscription-service'
 import { FeatureKey, normalizeFeatureKey, isPremiumFeature, getFeatureAccess } from '@/lib/entitlements'
 
@@ -189,7 +189,9 @@ export async function requireUsageLimit(
  */
 export async function requireAuth(request: NextRequest): Promise<ApiGuardResult> {
   try {
-    const supabase = createServerClient()
+    const response = NextResponse.next()
+    const supabase = createServerClientWithCookies(request, response)
+    
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {

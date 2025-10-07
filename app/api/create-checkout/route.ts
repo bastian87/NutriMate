@@ -1,15 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createCheckout } from "@/lib/lemonsqueezy"
-import { createServerClient } from "@/lib/supabase/server"
-import { getUserId } from "@/lib/auth/getUserId"
+import { createServerClientWithCookies } from "@/lib/supabase/server"
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🔍 Create Checkout: Starting request')
-    console.log('🔍 Create Checkout: Headers:', Object.fromEntries(request.headers.entries()))
-    
     const { variantId, plan } = await request.json()
-    console.log('🔍 Create Checkout: Request body:', { variantId, plan })
 
     if (!variantId) {
       return NextResponse.json({ error: "Variant ID is required" }, { status: 400 })
@@ -22,37 +17,34 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
 
-    const supabase = createServerClient()
-    console.log('🔍 Create Checkout: Attempting to get user ID')
+    const response = NextResponse.next()
+    const supabase = createServerClientWithCookies(request, response)
     
-    let userId: string
-    try {
-      userId = await getUserId(request)
-      console.log('🔍 Create Checkout: User ID obtained:', userId)
-    } catch (error) {
-      console.error('🔍 Create Checkout: Error getting user ID:', error)
-      return NextResponse.json({ error: "No se pudo obtener el ID del usuario." }, { status: 401 })
+    console.log("🔍 Supabase session check")
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    console.log("Session:", session)
+    console.log("Session error:", sessionError)
+
+    if (sessionError) {
+      console.error("Error getting session:", sessionError)
+      return NextResponse.json({ error: "Error de autenticación" }, { status: 401 })
     }
-    
-    // Get user email from the user_id
-    console.log('🔍 Create Checkout: Querying user_profiles for userId:', userId)
-    const { data: userData, error: userError } = await supabase
-      .from('user_profiles')
-      .select('email')
-      .eq('id', userId)
-      .single()
 
-    console.log('🔍 Create Checkout: User data query result:', { userData, userError })
+    if (!session) {
+      console.log("No session found")
+      return NextResponse.json({ error: "Debes iniciar sesión para suscribirte." }, { status: 401 })
+    }
 
-    if (userError || !userData) {
-      console.error('🔍 Create Checkout: Error getting user data:', userError)
-      return NextResponse.json({ error: "No se pudo obtener la información del usuario." }, { status: 401 })
+    const { user } = session
+
+    if (!user) {
+      return NextResponse.json({ error: "Debes iniciar sesión para suscribirte." }, { status: 401 })
     }
 
     const checkoutData = {
       variantId,
-      userId: userId,
-      userEmail: userData.email,
+      userId: user.id,
+      userEmail: user.email,
       redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success`,
     }
 

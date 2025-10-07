@@ -22,16 +22,6 @@ export default function PricingPage() {
       return
     }
 
-    console.log('🔍 Pricing: User ID for checkout:', user.id)
-    console.log('🔍 Pricing: Variant ID:', variantId)
-    console.log('🔍 Pricing: Plan:', plan)
-
-    if (!user.id) {
-      console.error('🔍 Pricing: User ID is not available')
-      alert("Error: No se pudo obtener el ID del usuario. Por favor, inicia sesión nuevamente.")
-      return
-    }
-
     try {
       setLoading(plan)
 
@@ -39,7 +29,6 @@ export default function PricingPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": user.id,
         },
         body: JSON.stringify({
           variantId,
