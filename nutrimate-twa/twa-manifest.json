@@ -1,0 +1,78 @@
+{
+  "packageId": "app.nutrimate.twa",
+  "host": "nutrimate.app",
+  "name": "NutriMate",
+  "launcherName": "NutriMate",
+  "display": "standalone",
+  "themeColor": "#16a34a",
+  "navigationColor": "#16a34a",
+  "backgroundColor": "#ffffff",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://nutrimate.app/icons/icon-512x512.png",
+  "maskableIconUrl": "https://nutrimate.app/icons/icon-512x512-maskable.png",
+  "monochromeIconUrl": "https://nutrimate.app/icons/icon-512x512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./nutrimate-release-key.keystore",
+    "alias": "nutrimate-release"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "https://nutrimate.app/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Recipes",
+      "short_name": "Recipes", 
+      "url": "/recipes",
+      "icons": [
+        {
+          "src": "https://nutrimate.app/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Grocery List",
+      "short_name": "Grocery",
+      "url": "/grocery-list",
+      "icons": [
+        {
+          "src": "https://nutrimate.app/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://nutrimate.app/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "minSdkVersion": 19,
+  "orientation": "portrait",
+  "twaVersion": "1.0.0",
+  "useBrowserOnChromeOS": false
+}

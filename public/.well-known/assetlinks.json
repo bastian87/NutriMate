@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.nutrimate.twa",
+      "sha256_cert_fingerprints": [
+        "9A:73:46:8B:84:98:A0:C3:92:E5:F0:CB:9E:8F:39:B5:28:B2:DB:15:99:5A:69:28:06:DA:97:04:40:16:B9:2B"
+      ]
+    }
+  }
+]
