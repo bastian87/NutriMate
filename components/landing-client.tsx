@@ -216,8 +216,8 @@ export default function LandingClient({ }: LandingClientProps) {
               </h1>
               
               <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-xl">
-                Registra tu comida en solo 10 segundos. NutriMate hace el seguimiento nutricional súper fácil y rápido. 
-                Sin complicaciones, solo resultados.
+                Log your food in just 10 seconds. NutriMate makes nutritional tracking super easy and fast. 
+                No complications, just results.
               </p>
               
               <div className="flex flex-col gap-4 sm:flex-row sm:justify-start">
