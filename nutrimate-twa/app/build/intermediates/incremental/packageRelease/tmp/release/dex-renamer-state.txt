@@ -1,0 +1,4 @@
+#Wed Oct 08 01:20:56 ART 2025
+base.0=C\:\\Proyectos\\Nutrimate\\NutriMate\\nutrimate-twa\\app\\build\\intermediates\\dex\\release\\minifyReleaseWithR8\\classes.dex
+renamed.0=classes.dex
+path.0=classes.dex
