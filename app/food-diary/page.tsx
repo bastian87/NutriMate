@@ -620,36 +620,34 @@ export default function FoodDiaryPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-6"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
         >
           {metricsData.map((metric, index) => (
             <Card key={index} className="bg-white shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500 mb-2">{metric.title}</p>
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <span className="text-2xl font-semibold">{metric.value}</span>
-                      <span className="text-sm text-gray-500">{metric.unit}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge 
-                        className={`text-xs px-2 py-1 ${
-                          metric.changeType === 'positive' 
-                            ? 'bg-pastel-green-100 text-pastel-green-700' 
-                            : 'bg-pastel-pink-100 text-pastel-pink-700'
-                        }`}
-                      >
-                        {metric.change}
-                      </Badge>
-                      <span className="text-xs text-gray-500">{metric.description}</span>
-                    </div>
-                  </div>
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 ${
                     metric.color === 'green' ? 'bg-green-100' :
                     metric.color === 'orange' ? 'bg-orange-100' : 'bg-gray-100'
                   }`}>
                     <span className="text-xl">{metric.icon}</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-2">{metric.title}</p>
+                  <div className="flex items-center justify-center gap-1 mb-2">
+                    <span className="text-xl font-semibold">{metric.value}</span>
+                    <span className="text-xs text-gray-500">{metric.unit}</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <Badge 
+                      className={`text-xs px-2 py-1 ${
+                        metric.changeType === 'positive' 
+                          ? 'bg-pastel-green-100 text-pastel-green-700' 
+                          : 'bg-pastel-pink-100 text-pastel-pink-700'
+                      }`}
+                    >
+                      {metric.change}
+                    </Badge>
+                    <span className="text-xs text-gray-500 text-center">{metric.description}</span>
                   </div>
                 </div>
               </CardContent>

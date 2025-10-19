@@ -1252,15 +1252,19 @@ placeholder={t("groceryList.costPlaceholder")}
               </div>
               
               {/* Filters */}
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex gap-2">
+              <div className="mb-6">
+                <div className="flex flex-wrap gap-2">
                   {[t("groceryList.allCategories"), t("groceryList.fruits"), t("groceryList.vegetables"), t("groceryList.protein"), t("groceryList.dairy"), t("groceryList.grains"), t("groceryList.other")].map((category, idx) => (
                     <Button
-key={idx}
+                      key={idx}
                       variant={selectedCategory === category ? "default" : "outline"}
                       size="sm"
                       onClick={() => setSelectedCategory(category)}
-                      className={selectedCategory === category ? "bg-green-500 hover:bg-green-600" : ""}
+                      className={`text-xs px-3 py-2 ${
+                        selectedCategory === category 
+                          ? "bg-green-500 hover:bg-green-600 text-white" 
+                          : "text-gray-600 hover:bg-gray-100"
+                      }`}
                     >
                       {category}
                     </Button>
@@ -1268,20 +1272,20 @@ key={idx}
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="relative">
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                <div className="relative w-full sm:w-64">
                   <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
-placeholder={t("groceryList.searchItem")}
+                    placeholder={t("groceryList.searchItem")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64"
+                    className="pl-10 w-full"
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">{t("groceryList.sortBy")}</span>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <span className="text-sm text-gray-500 whitespace-nowrap">{t("groceryList.sortBy")}</span>
                   <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-24">
+                    <SelectTrigger className="w-32">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1297,73 +1301,143 @@ placeholder={t("groceryList.searchItem")}
             <CardContent>
               {filteredItems.length > 0 ? (
                 <>
-                  {/* Table Header */}
-                  <div className="grid grid-cols-6 gap-4 pb-3 mb-4 border-b text-sm font-medium text-gray-500">
-                    <div>{t("groceryList.itemName")}</div>
-                    <div>{t("groceryList.category")}</div>
-                    <div>{t("groceryList.quantity")}</div>
-                    <div>{t("groceryList.cost")}</div>
-                    <div>{t("groceryList.status")}</div>
-                    <div>{t("groceryList.actions")}</div>
-                  </div>
-                  
-                  {/* Table Body */}
-                  <div className="space-y-3">
+                  {/* Mobile Card Layout */}
+                  <div className="block lg:hidden space-y-4">
                     {filteredItems.map((item) => (
-                      <div key={item.id} className="grid grid-cols-6 gap-4 items-center py-3 hover:bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <span className="text-xs font-medium">{item.name.charAt(0).toUpperCase()}</span>
+                      <Card key={item.id} className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                              <span className="text-sm font-medium">{item.name.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-base truncate">{item.name}</h4>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge 
+                                  className="text-xs px-2 py-1"
+                                  style={{ 
+                                    backgroundColor: getCategoryColor(item.category || 'other') + '20',
+                                    color: getCategoryColor(item.category || 'other'),
+                                    border: `1px solid ${getCategoryColor(item.category || 'other')}`
+                                  }}
+                                >
+                                  {item.category ? (item.category.charAt(0).toUpperCase() + item.category.slice(1)) : 'Other'}
+                                </Badge>
+                                <Badge 
+                                  className={`text-xs px-2 py-1 ${
+                                    item.is_checked 
+                                      ? 'bg-green-100 text-green-700' 
+                                      : 'bg-gray-100 text-gray-700'
+                                  }`}
+                                >
+                                  {item.is_checked ? 'Comprado' : 'Pendiente'}
+                                </Badge>
+                              </div>
+                            </div>
                           </div>
-                          <span className="text-sm font-medium">{item.name}</span>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleToggleItem(item.id, !item.is_checked)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <CheckIcon className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteItem(item.id)}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div>
-                          <Badge 
-                            className="text-xs px-2 py-1"
-                            style={{ 
-                              backgroundColor: getCategoryColor(item.category || 'other') + '20',
-                              color: getCategoryColor(item.category || 'other'),
-                              border: `1px solid ${getCategoryColor(item.category || 'other')}`
-                            }}
-                          >
-                            {item.category ? (item.category.charAt(0).toUpperCase() + item.category.slice(1)) : 'Other'}
-                          </Badge>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-500">Cantidad:</span>
+                            <span className="ml-2 font-medium">{item.quantity || '-'}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Costo:</span>
+                            <span className="ml-2 font-medium">${item.estimated_cost?.toFixed(2) || '0.00'}</span>
+                          </div>
                         </div>
-                        <div className="text-sm">{item.quantity || '-'}</div>
-                        <div className="text-sm font-medium">
-                          ${item.estimated_cost?.toFixed(2) || '0.00'}
-                        </div>
-                        <div>
-                          <Badge 
-                            className={`text-xs px-2 py-1 ${
-                              item.is_checked 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-gray-100 text-gray-700'
-                            }`}
-                          >
-                            {item.is_checked ? 'Purchased' : 'Pending'}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleToggleItem(item.id, !item.is_checked)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <CheckIcon className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteItem(item.id)}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                          >
-                            <TrashIcon className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
+                      </Card>
                     ))}
+                  </div>
+
+                  {/* Desktop Table Layout */}
+                  <div className="hidden lg:block">
+                    {/* Table Header */}
+                    <div className="grid grid-cols-6 gap-4 pb-3 mb-4 border-b text-sm font-medium text-gray-500">
+                      <div>{t("groceryList.itemName")}</div>
+                      <div>{t("groceryList.category")}</div>
+                      <div>{t("groceryList.quantity")}</div>
+                      <div>{t("groceryList.cost")}</div>
+                      <div>{t("groceryList.status")}</div>
+                      <div>{t("groceryList.actions")}</div>
+                    </div>
+                    
+                    {/* Table Body */}
+                    <div className="space-y-3">
+                      {filteredItems.map((item) => (
+                        <div key={item.id} className="grid grid-cols-6 gap-4 items-center py-3 hover:bg-gray-50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                              <span className="text-xs font-medium">{item.name.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <span className="text-sm font-medium">{item.name}</span>
+                          </div>
+                          <div>
+                            <Badge 
+                              className="text-xs px-2 py-1"
+                              style={{ 
+                                backgroundColor: getCategoryColor(item.category || 'other') + '20',
+                                color: getCategoryColor(item.category || 'other'),
+                                border: `1px solid ${getCategoryColor(item.category || 'other')}`
+                              }}
+                            >
+                              {item.category ? (item.category.charAt(0).toUpperCase() + item.category.slice(1)) : 'Other'}
+                            </Badge>
+                          </div>
+                          <div className="text-sm">{item.quantity || '-'}</div>
+                          <div className="text-sm font-medium">
+                            ${item.estimated_cost?.toFixed(2) || '0.00'}
+                          </div>
+                          <div>
+                            <Badge 
+                              className={`text-xs px-2 py-1 ${
+                                item.is_checked 
+                                  ? 'bg-green-100 text-green-700' 
+                                  : 'bg-gray-100 text-gray-700'
+                              }`}
+                            >
+                              {item.is_checked ? 'Purchased' : 'Pending'}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleToggleItem(item.id, !item.is_checked)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <CheckIcon className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteItem(item.id)}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </>
               ) : (
