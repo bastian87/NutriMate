@@ -2,98 +2,164 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Search, Bookmark, ChevronRight } from "lucide-react"
+import { Search, Bookmark, ChevronRight, TrendingUp, Clock, Users, Star, ChefHat, ShoppingCart, Calendar, Target } from "lucide-react"
 import { mockRecipes } from "@/lib/mock-data"
 import { useLanguage } from "@/lib/i18n/context"
+import { useAuthContext } from "@/components/auth/simple-auth-provider"
 
 export default function MobileHomePage() {
   const { t } = useLanguage()
+  const { user } = useAuthContext()
+
+  // Obtener nombre del usuario
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
+
+  // Obtener recetas destacadas
+  const featuredRecipes = mockRecipes.slice(0, 3)
 
   return (
-    <div className="bg-white min-h-screen pb-20">
-      {/* Header */}
-      <header className="px-4 py-4 border-b border-gray-200 flex items-center justify-between">
-        <div className="flex items-center">
-          <span className="text-orange-600 font-serif text-2xl font-bold">{t("mobile.nutriMate")}</span>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-green-500 to-green-600 px-6 py-8 text-white">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold mb-2">
+            ¡Hola, {userName}! 👋
+          </h1>
+          <p className="text-green-100 text-sm">
+            ¿Qué vas a cocinar hoy?
+          </p>
         </div>
-        <div className="flex items-center space-x-4">
-          <button>
-            <Search className="h-6 w-6 text-gray-700" />
-          </button>
-          <button>
-            <Bookmark className="h-6 w-6 text-gray-700" />
-          </button>
+        
+        {/* Barra de búsqueda */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Buscar recetas..."
+            className="w-full pl-10 pr-4 py-3 bg-white rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-300"
+          />
         </div>
-      </header>
-
-      {/* Featured Recipe */}
-      <div className="px-4 py-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-serif font-bold">{t("mobile.recipeOfTheDay")}</h2>
-          <Link href="/mobile/recipes" className="text-orange-600">
-            <ChevronRight className="h-5 w-5" />
-          </Link>
-        </div>
-
-        <Link href="/mobile/recipes/grilled-salmon-with-roasted-vegetables">
-          <div className="relative rounded-lg overflow-hidden mb-3">
-            <div className="aspect-w-16 aspect-h-9 w-full">
-              <Image
-                src="/placeholder.svg?height=300&width=500"
-                alt="Featured Recipe"
-                width={500}
-                height={300}
-                className="object-cover w-full"
-              />
-            </div>
-            <div className="absolute top-3 left-3 bg-orange-600 text-white text-xs font-bold uppercase tracking-wide px-2 py-1 rounded-full">
-              {t("mobile.featured")}
-            </div>
-          </div>
-          <h3 className="font-serif font-bold text-xl">Grilled Salmon with Roasted Vegetables</h3>
-          <div className="flex items-center text-sm text-gray-500 mt-1">
-            <span>40 minutes</span>
-            <span className="mx-2">•</span>
-            <div className="flex">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <svg key={star} className="h-4 w-4 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24">
-                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                </svg>
-              ))}
-            </div>
-            <span className="ml-1">(42)</span>
-          </div>
-        </Link>
       </div>
 
-      {/* Collections */}
-      <div className="px-4 py-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-serif font-bold">{t("mobile.collections")}</h2>
-          <Link href="/mobile/collections" className="text-orange-600">
-            <ChevronRight className="h-5 w-5" />
+      {/* Stats Cards */}
+      <div className="px-6 -mt-4 mb-6">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-lg mb-2">
+              <TrendingUp className="h-4 w-4 text-blue-600" />
+            </div>
+            <p className="text-xs text-gray-500">Calorías</p>
+            <p className="text-lg font-bold text-gray-900">1,850</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-lg mb-2">
+              <Clock className="h-4 w-4 text-green-600" />
+            </div>
+            <p className="text-xs text-gray-500">Tiempo</p>
+            <p className="text-lg font-bold text-gray-900">45m</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <div className="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-lg mb-2">
+              <Users className="h-4 w-4 text-purple-600" />
+            </div>
+            <p className="text-xs text-gray-500">Porciones</p>
+            <p className="text-lg font-bold text-gray-900">4</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="px-6 mb-6">
+        <h2 className="text-lg font-bold text-gray-900 mb-4">Acciones rápidas</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <Link href="/mobile/recipes" className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                <ChefHat className="h-5 w-5 text-orange-600" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">Recetas</p>
+                <p className="text-sm text-gray-500">Explorar platos</p>
+              </div>
+            </div>
+          </Link>
+          <Link href="/mobile/grocery-list" className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <ShoppingCart className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">Lista de compras</p>
+                <p className="text-sm text-gray-500">Organizar compras</p>
+              </div>
+            </div>
+          </Link>
+          <Link href="/mobile/calendar" className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Calendar className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">Planificación</p>
+                <p className="text-sm text-gray-500">Organizar comidas</p>
+              </div>
+            </div>
+          </Link>
+          <Link href="/mobile/goals" className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Target className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">Metas</p>
+                <p className="text-sm text-gray-500">Seguir objetivos</p>
+              </div>
+            </div>
           </Link>
         </div>
+      </div>
 
-        <div className="flex overflow-x-auto space-x-4 pb-4 -mx-4 px-4 hide-scrollbar">
-          {[
-            { title: t("mobile.healthyWeeknightDinners"), image: "/placeholder.svg?height=200&width=300" },
-            { title: t("mobile.highProteinMeals"), image: "/placeholder.svg?height=200&width=300" },
-            { title: t("mobile.mediterraneanDiet"), image: "/placeholder.svg?height=200&width=300" },
-          ].map((collection, index) => (
-            <Link href={`/mobile/collections/${index}`} key={index} className="flex-shrink-0 w-64">
-              <div className="relative rounded-lg overflow-hidden">
-                <div className="aspect-w-16 aspect-h-9 w-full">
-                  <Image
-                    src={collection.image || "/placeholder.svg"}
-                    alt={collection.title}
-                    width={300}
-                    height={200}
-                    className="object-cover w-full"
-                  />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-4">
-                  <h3 className="text-white font-medium text-sm">{collection.title}</h3>
+      {/* Featured Recipes */}
+      <div className="px-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-gray-900">Recetas destacadas</h2>
+          <Link href="/mobile/recipes" className="text-green-600 text-sm font-medium flex items-center">
+            Ver todas <ChevronRight className="ml-1 h-4 w-4" />
+          </Link>
+        </div>
+        
+        <div className="space-y-4">
+          {featuredRecipes.map((recipe, index) => (
+            <Link key={recipe.id} href={`/mobile/recipes/${recipe.slug}`}>
+              <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex">
+                  <div className="w-24 h-24 relative">
+                    <Image
+                      src={recipe.image || "/placeholder.svg?height=96&width=96"}
+                      alt={recipe.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 p-4">
+                    <h3 className="font-medium text-gray-900 mb-1 line-clamp-2">
+                      {recipe.title}
+                    </h3>
+                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <div className="flex items-center">
+                        <Clock className="h-4 w-4 mr-1" />
+                        {recipe.prepTime}
+                      </div>
+                      <div className="flex items-center">
+                        <Users className="h-4 w-4 mr-1" />
+                        {recipe.servings}
+                      </div>
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 mr-1 text-yellow-500" />
+                        {recipe.rating}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </Link>
@@ -101,46 +167,39 @@ export default function MobileHomePage() {
         </div>
       </div>
 
-      {/* Recent Recipes */}
-      <div className="px-4 py-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-serif font-bold">{t("mobile.recentRecipes")}</h2>
-          <Link href="/mobile/recipes" className="text-orange-600">
-            <ChevronRight className="h-5 w-5" />
-          </Link>
-        </div>
-
-        <div className="space-y-6">
-          {mockRecipes.slice(0, 4).map((recipe) => (
-            <Link
-              href={`/mobile/recipes/${encodeURIComponent(recipe.name.toLowerCase().replace(/\s+/g, "-"))}`}
-              key={recipe.id}
-              className="flex items-center"
-            >
-              <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                <Image
-                  src={`/placeholder.svg?height=100&width=100&query=${recipe.name}`}
-                  alt={recipe.name}
-                  fill
-                  className="object-cover"
-                />
+      {/* Recent Activity */}
+      <div className="px-6 mb-6">
+        <h2 className="text-lg font-bold text-gray-900 mb-4">Actividad reciente</h2>
+        <div className="bg-white rounded-xl p-4 shadow-sm">
+          <div className="space-y-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <ChefHat className="h-4 w-4 text-green-600" />
               </div>
-              <div className="ml-4 flex-1">
-                <h3 className="font-medium">{recipe.name}</h3>
-                <div className="flex items-center text-sm text-gray-500 mt-1">
-                  <span>{recipe.prep_time_minutes + recipe.cook_time_minutes} {t("mobile.minutes")}</span>
-                </div>
-                <div className="flex mt-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <svg key={star} className="h-3 w-3 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24">
-                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                    </svg>
-                  ))}
-                </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">Receta guardada</p>
+                <p className="text-xs text-gray-500">Pollo al curry hace 2 horas</p>
               </div>
-              <ChevronRight className="h-5 w-5 text-gray-400" />
-            </Link>
-          ))}
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <ShoppingCart className="h-4 w-4 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">Lista actualizada</p>
+                <p className="text-xs text-gray-500">Agregaste 3 ingredientes</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <Target className="h-4 w-4 text-purple-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">Meta alcanzada</p>
+                <p className="text-xs text-gray-500">Consumiste 5 vegetales hoy</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

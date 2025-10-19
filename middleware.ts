@@ -2,9 +2,36 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// Función para detectar si es un dispositivo móvil
+function isMobileDevice(userAgent: string): boolean {
+  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+  return mobileRegex.test(userAgent)
+}
+
+// Función para obtener la ruta móvil correspondiente
+function getMobileRoute(pathname: string): string | null {
+  const mobileRoutes: { [key: string]: string } = {
+    '/dashboard': '/mobile',
+    '/recipes': '/mobile/recipes',
+    '/grocery-list': '/mobile/grocery-list',
+    '/account': '/mobile/account',
+    '/calendar': '/mobile/calendar',
+    '/goals': '/mobile/goals',
+    '/ingredients': '/mobile/ingredients',
+    '/saved-recipes': '/mobile/saved-recipes',
+    '/monthly-summary': '/mobile/monthly-summary',
+    '/weekly-summary': '/mobile/weekly-summary',
+    '/gamification': '/mobile/gamification',
+    '/food-diary': '/mobile/food-diary'
+  }
+  
+  return mobileRoutes[pathname] || null
+}
+
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const pathname = req.nextUrl.pathname
+  const userAgent = req.headers.get('user-agent') || ''
 
   // Rutas estáticas que no necesitan verificación de auth
   const staticRoutes = [
@@ -76,6 +103,16 @@ export async function middleware(req: NextRequest) {
   // Si es una ruta pública, permitir acceso
   if (isPublicRoute) {
     return res
+  }
+
+  // Detectar dispositivo móvil y redirigir a rutas móviles
+  if (isMobileDevice(userAgent)) {
+    const mobileRoute = getMobileRoute(pathname)
+    
+    // Si hay una ruta móvil correspondiente y no estamos ya en una ruta móvil
+    if (mobileRoute && !pathname.startsWith('/mobile')) {
+      return NextResponse.redirect(new URL(mobileRoute, req.url))
+    }
   }
 
   // Si es una ruta protegida y no hay sesión, redirigir a login

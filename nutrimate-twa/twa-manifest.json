@@ -10,9 +10,9 @@
   "navigationColorDark": "#000000",
   "navigationDividerColor": "#000000",
   "navigationDividerColorDark": "#000000",
-  "backgroundColor": "#FFFFFF",
+  "backgroundColor": "#F9FAFB",
   "enableNotifications": true,
-  "startUrl": "/",
+  "startUrl": "/mobile",
   "iconUrl": "https://nutrimate.net/icons/icon-512x512.png",
   "maskableIconUrl": "https://nutrimate.net/icons/icon-512x512-maskable.png",
   "monochromeIconUrl": "https://nutrimate.net/icons/icon-512x512.png",
@@ -23,7 +23,56 @@
   },
   "appVersionName": "1.0.0",
   "appVersionCode": 4,
-  "shortcuts": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Ver tu dashboard nutricional",
+      "url": "/mobile",
+      "icons": [
+        {
+          "src": "https://nutrimate.net/icons/shortcut-dashboard.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Recetas",
+      "short_name": "Recetas",
+      "description": "Explorar recetas",
+      "url": "/mobile/recipes",
+      "icons": [
+        {
+          "src": "https://nutrimate.net/icons/shortcut-recipes.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Lista de compras",
+      "short_name": "Compras",
+      "description": "Gestionar lista de compras",
+      "url": "/mobile/grocery-list",
+      "icons": [
+        {
+          "src": "https://nutrimate.net/icons/shortcut-grocery.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Planificación",
+      "short_name": "Planificar",
+      "description": "Planificar comidas",
+      "url": "/mobile/calendar",
+      "icons": [
+        {
+          "src": "https://nutrimate.net/icons/shortcut-calendar.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://nutrimate.net/manifest.webmanifest",
   "fallbackType": "customtabs",

@@ -1,11 +1,17 @@
 import type React from "react"
 import type { Metadata } from "next"
-import AuthLayout from "@/components/auth-layout"
-
+import MobileLayoutClient from "./MobileLayoutClient"
 
 export const metadata: Metadata = {
-  title: "Mobile - NutriMate",
-  description: "Mobile app interface",
+  title: "NutriMate Mobile",
+  description: "NutriMate mobile app - Your nutrition companion on the go",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
+  themeColor: '#16a34a',
 }
 
 export default function MobileLayout({
@@ -14,8 +20,8 @@ export default function MobileLayout({
   children: React.ReactNode
 }) {
   return (
-    <AuthLayout title="Mobile - NutriMate" description="Mobile app interface">
+    <MobileLayoutClient>
       {children}
-    </AuthLayout>
+    </MobileLayoutClient>
   )
 }
