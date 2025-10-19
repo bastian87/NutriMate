@@ -10,6 +10,7 @@ import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider"
 import { Badge } from "@/components/ui/badge"
 import { DashboardSkeleton } from "@/components/loading-skeleton"
+import { NutrigoLogo, CaloriesIcon, WeightIcon, CarbsIcon, FatsIcon } from "@/components/icons-new"
 
 export default function DashboardPage() {
   const { t } = useLanguage()
@@ -63,14 +64,19 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col gap-6"
           >
-            {/* Welcome Section */}
-            <div className="text-center sm:text-left">
-              <h1 className="text-2xl sm:text-3xl font-bold mb-3">{t("dashboard.welcome")}</h1>
-              <p className="text-gray-600 dark:text-gray-400 mb-3 text-base">{t("dashboard.subtitle")}</p>
-              {userData?.profile?.full_name && (
-                <p className="text-sm text-gray-500 mb-4">{t("dashboard.welcomeBack", { name: userData.profile.full_name })}</p>
-              )}
-              <div className="flex justify-center sm:justify-start">
+            {/* Logo and Welcome Section */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <NutrigoLogo className="text-2xl" />
+                <div className="text-center sm:text-left">
+                  <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("dashboard.welcome")}</h1>
+                  <p className="text-gray-600 dark:text-gray-400 text-base">{t("dashboard.subtitle")}</p>
+                  {userData?.profile?.full_name && (
+                    <p className="text-sm text-gray-500 mt-1">{t("dashboard.welcomeBack", { name: userData.profile.full_name })}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex justify-center sm:justify-end">
                 <Badge className={isPremium ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 px-3 py-1" : "px-3 py-1"}>
                   {isPremium ? (
                     <>
@@ -108,28 +114,64 @@ export default function DashboardPage() {
         <div className="space-y-8">
           {/* Quick Stats Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="bg-white shadow-sm">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-orange-600 mb-1">0</div>
-                <div className="text-sm text-gray-600">Calorías Hoy</div>
+            <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <CaloriesIcon className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-orange-600">0</div>
+                    <div className="text-xs text-gray-500">kcal</div>
+                  </div>
+                </div>
+                <div className="text-sm font-medium text-gray-700">Calorías Hoy</div>
+                <div className="text-xs text-gray-500 mt-1">Meta: 2000 kcal</div>
               </CardContent>
             </Card>
-            <Card className="bg-white shadow-sm">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-blue-600 mb-1">0.0g</div>
-                <div className="text-sm text-gray-600">Proteína</div>
+            <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <WeightIcon className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-blue-600">0.0g</div>
+                    <div className="text-xs text-gray-500">proteína</div>
+                  </div>
+                </div>
+                <div className="text-sm font-medium text-gray-700">Proteína</div>
+                <div className="text-xs text-gray-500 mt-1">Meta: 150g</div>
               </CardContent>
             </Card>
-            <Card className="bg-white shadow-sm">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-green-600 mb-1">0.0g</div>
-                <div className="text-sm text-gray-600">Carbohidratos</div>
+            <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <CarbsIcon className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-green-600">0.0g</div>
+                    <div className="text-xs text-gray-500">carbohidratos</div>
+                  </div>
+                </div>
+                <div className="text-sm font-medium text-gray-700">Carbohidratos</div>
+                <div className="text-xs text-gray-500 mt-1">Meta: 250g</div>
               </CardContent>
             </Card>
-            <Card className="bg-white shadow-sm">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-purple-600 mb-1">0.0g</div>
-                <div className="text-sm text-gray-600">Grasas</div>
+            <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <FatsIcon className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-purple-600">0.0g</div>
+                    <div className="text-xs text-gray-500">grasas</div>
+                  </div>
+                </div>
+                <div className="text-sm font-medium text-gray-700">Grasas</div>
+                <div className="text-xs text-gray-500 mt-1">Meta: 65g</div>
               </CardContent>
             </Card>
           </div>
