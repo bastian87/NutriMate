@@ -12,7 +12,7 @@
   "navigationDividerColorDark": "#000000",
   "backgroundColor": "#F9FAFB",
   "enableNotifications": true,
-  "startUrl": "/mobile",
+  "startUrl": "/",
   "iconUrl": "https://nutrimate.net/icons/icon-512x512.png",
   "maskableIconUrl": "https://nutrimate.net/icons/icon-512x512-maskable.png",
   "monochromeIconUrl": "https://nutrimate.net/icons/icon-512x512.png",
@@ -28,7 +28,7 @@
       "name": "Dashboard",
       "short_name": "Dashboard",
       "description": "Ver tu dashboard nutricional",
-      "url": "/mobile",
+      "url": "/",
       "icons": [
         {
           "src": "https://nutrimate.net/icons/shortcut-dashboard.png",
@@ -40,7 +40,7 @@
       "name": "Recetas",
       "short_name": "Recetas",
       "description": "Explorar recetas",
-      "url": "/mobile/recipes",
+      "url": "/recipes",
       "icons": [
         {
           "src": "https://nutrimate.net/icons/shortcut-recipes.png",
@@ -52,7 +52,7 @@
       "name": "Lista de compras",
       "short_name": "Compras",
       "description": "Gestionar lista de compras",
-      "url": "/mobile/grocery-list",
+      "url": "/grocery-list",
       "icons": [
         {
           "src": "https://nutrimate.net/icons/shortcut-grocery.png",
@@ -64,7 +64,7 @@
       "name": "Planificación",
       "short_name": "Planificar",
       "description": "Planificar comidas",
-      "url": "/mobile/calendar",
+      "url": "/calendar",
       "icons": [
         {
           "src": "https://nutrimate.net/icons/shortcut-calendar.png",

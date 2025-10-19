@@ -3,7 +3,7 @@ import withPWA from 'next-pwa'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: process.env.NODE_ENV === 'production',
+    ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: false,

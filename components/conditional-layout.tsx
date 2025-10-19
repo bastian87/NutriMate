@@ -33,6 +33,24 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false)
   const [onboardingChecked, setOnboardingChecked] = useState(false)
   const [hasRedirected, setHasRedirected] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Cerrar menú móvil cuando cambie la ruta
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [pathname])
 
   // Memoizar si es una ruta pública para evitar recálculos
   const isPublicRoute = useMemo(() => PUBLIC_ROUTES.includes(pathname), [pathname])
@@ -183,6 +201,63 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   }
 
   if (shouldShowSidebar) {
+    // Layout responsive
+    if (isMobile) {
+      return (
+        <div className="min-h-screen bg-background">
+          {/* Header móvil */}
+          <header className="bg-white shadow-sm px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">N</span>
+              </div>
+              <h1 className="text-lg font-bold text-gray-900">NutriMate</h1>
+            </div>
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </header>
+
+          {/* Contenido principal */}
+          <main className="pb-20">
+            {children}
+          </main>
+
+          {/* Menú móvil lateral */}
+          {isMobileMenuOpen && (
+            <div className="fixed inset-0 z-50">
+              <div
+                className="absolute inset-0 bg-black/50"
+                onClick={() => setIsMobileMenuOpen(false)}
+              />
+              <div className="absolute top-0 right-0 w-80 h-full bg-white shadow-2xl">
+                <div className="p-4 flex items-center justify-between border-b">
+                  <h2 className="text-lg font-bold text-gray-900">Menú</h2>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <svg className="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="p-4">
+                  <SidebarNew />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    // Layout desktop
     return (
       <div className="min-h-screen bg-background flex">
         <SidebarNew />

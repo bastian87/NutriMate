@@ -204,22 +204,23 @@ export default function RecipesPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
       >
         <div>
-              <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">{t("recipes.title")}</h1>
-              <p className="text-gray-600 dark:text-gray-400 text-lg">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-gray-900 dark:text-white">{t("recipes.title")}</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base lg:text-lg">
             {recipes.length > 0
               ? t("recipes.subtitle", { count: recipes.length })
               : t("recipes.subtitle", { count: "" })}
           </p>
         </div>
-            <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {user && (
             <Link href="/recipes/new">
-                  <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
-                    <Plus className="h-5 w-5 mr-2" />
-                {t("recipes.addRecipe")}
+              <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base">
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">{t("recipes.addRecipe")}</span>
+                <span className="sm:hidden">Agregar</span>
               </Button>
             </Link>
           )}

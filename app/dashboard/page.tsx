@@ -10,10 +10,6 @@ import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider"
 import { Badge } from "@/components/ui/badge"
 import { DashboardSkeleton } from "@/components/loading-skeleton"
-import { Suspense, lazy } from "react"
-
-// Lazy load del componente pesado
-const DashboardFoodDiary = lazy(() => import("@/components/dashboard-food-diary").then(module => ({ default: module.DashboardFoodDiary })))
 
 export default function DashboardPage() {
   const { t } = useLanguage()
@@ -57,58 +53,64 @@ export default function DashboardPage() {
     )
   }
 
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
-      {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b">
         <div className="container mx-auto px-4 py-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+            className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
           >
             <div>
-              <h1 className="text-3xl font-bold mb-2">{t("dashboard.welcome")}</h1>
-              <p className="text-gray-600 dark:text-gray-400 mb-2">{t("dashboard.subtitle")}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("dashboard.welcome")}</h1>
+              <p className="text-gray-600 dark:text-gray-400 mb-2 text-sm sm:text-base">{t("dashboard.subtitle")}</p>
               {userData?.profile?.full_name && (
-                <p className="text-sm text-gray-500">{t("dashboard.welcomeBack", { name: userData.profile.full_name })}</p>
+                <p className="text-xs sm:text-sm text-gray-500">{t("dashboard.welcomeBack", { name: userData.profile.full_name })}</p>
               )}
               <div className="flex items-center gap-2 mt-2">
-                <Badge variant={isPremium ? "default" : "secondary"} className={isPremium ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300" : ""}>
+                <Badge className={isPremium ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300" : ""}>
                   {isPremium ? (
                     <>
                       <Crown className="h-3 w-3 mr-1" />
-                      {t("subscriptionStatus.premiumAccount")}
+                      <span className="hidden sm:inline">{t("subscriptionStatus.premiumAccount")}</span>
+                      <span className="sm:hidden">Premium</span>
                     </>
                   ) : (
-                    t("subscriptionStatus.freeAccount")
+                    <>
+                      <span className="hidden sm:inline">{t("subscriptionStatus.freeAccount")}</span>
+                      <span className="sm:hidden">Gratis</span>
+                    </>
                   )}
                 </Badge>
               </div>
             </div>
-                  <div className="flex gap-3">
-                    <Link href="/food-diary?openAddDialog=true">
-                      <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30 px-6 py-3 text-base font-semibold">
-                        <PlusIcon className="h-5 w-5 mr-2" />
-{t("dashboard.registerFood")}
-                      </Button>
-                    </Link>
-                    <Link href="/calendar">
-                      <Button variant="outline" className="px-6 py-3 text-base font-semibold border-2 border-orange-200 hover:border-orange-300 hover:bg-orange-50">
-                        <Calendar className="h-5 w-5 mr-2" />
-{t("dashboard.viewCalendar")}
-                      </Button>
-                    </Link>
-                  </div>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+              <Link href="/food-diary?openAddDialog=true" className="w-full sm:w-auto">
+                <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-semibold w-full">
+                  <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">{t("dashboard.registerFood")}</span>
+                  <span className="sm:hidden">Registrar comida</span>
+                </Button>
+              </Link>
+              <Link href="/calendar" className="w-full sm:w-auto">
+                <Button variant="outline" className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-semibold border-2 border-orange-200 hover:border-orange-300 hover:bg-orange-50 w-full">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">{t("dashboard.viewCalendar")}</span>
+                  <span className="sm:hidden">Calendario</span>
+                </Button>
+              </Link>
+            </div>
           </motion.div>
         </div>
       </div>
 
-      {/* Food Diary Dashboard Content */}
-      <Suspense fallback={<DashboardSkeleton />}>
-        <DashboardFoodDiary />
-      </Suspense>
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-4">Dashboard Content</h2>
+          <p className="text-gray-600">Contenido del dashboard aquí</p>
+        </div>
+      </div>
     </div>
   )
 }
