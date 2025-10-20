@@ -202,13 +202,15 @@ export function CalendarView({ range, from }: Props) {
           <ChevronLeftIcon className="h-4 w-4" />
         </Button>
         
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          {/* Debug info */}
-          <span className="text-xs text-gray-500 ml-2">
+        <div className="text-center">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">
+            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          </h3>
+          {/* Debug info - hidden on mobile */}
+          <span className="hidden sm:inline text-xs text-gray-500 ml-2">
             (Mes: {currentDate.getMonth()}, Día: {currentDate.getDate()})
           </span>
-        </h3>
+        </div>
         
         <Button
           variant="outline"
@@ -221,25 +223,23 @@ export function CalendarView({ range, from }: Props) {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center">
-                <CheckIcon className="w-5 h-5 text-green-600" />
+          <Card className="p-2 sm:p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+            <div className="flex flex-col items-center text-center">
+              <h4 className="text-xs sm:text-sm font-medium text-green-800 dark:text-green-200 mb-2">Días Exitosos</h4>
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center mb-2">
+                <CheckIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               </div>
-              <div>
-                <h4 className="text-sm font-medium text-green-800 dark:text-green-200">Días Exitosos</h4>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-green-600">
-                    {days.filter(d => d.status === 'positive').length}
-                  </span>
-                  <span className="text-sm text-green-600">días</span>
-                </div>
+              <div className="flex flex-col items-center">
+                <span className="text-lg sm:text-2xl font-bold text-green-600">
+                  {days.filter(d => d.status === 'positive').length}
+                </span>
+                <span className="text-xs sm:text-sm text-green-600">días</span>
               </div>
             </div>
           </Card>
@@ -250,19 +250,17 @@ export function CalendarView({ range, from }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="p-4 bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/40 rounded-lg flex items-center justify-center">
-                <CaloriesIcon className="w-5 h-5 text-orange-600" />
+          <Card className="p-2 sm:p-4 bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
+            <div className="flex flex-col items-center text-center">
+              <h4 className="text-xs sm:text-sm font-medium text-orange-800 dark:text-orange-200 mb-2">Calorías Objetivo</h4>
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 dark:bg-orange-900/40 rounded-lg flex items-center justify-center mb-2">
+                <CaloriesIcon className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
               </div>
-              <div>
-                <h4 className="text-sm font-medium text-orange-800 dark:text-orange-200">Calorías Objetivo</h4>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-orange-600">
-                    {activeGoal?.targetKcalDay || 2000}
-                  </span>
-                  <span className="text-sm text-orange-600">kcal</span>
-                </div>
+              <div className="flex flex-col items-center">
+                <span className="text-lg sm:text-2xl font-bold text-orange-600">
+                  {activeGoal?.targetKcalDay || 2000}
+                </span>
+                <span className="text-xs sm:text-sm text-orange-600">kcal</span>
               </div>
             </div>
           </Card>
@@ -273,19 +271,17 @@ export function CalendarView({ range, from }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
-                <WeightIcon className="w-5 h-5 text-blue-600" />
+          <Card className="p-2 sm:p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <div className="flex flex-col items-center text-center">
+              <h4 className="text-xs sm:text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">Progreso</h4>
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center mb-2">
+                <WeightIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
               </div>
-              <div>
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">Progreso</h4>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-blue-600">
-                    {Math.round((days.filter(d => d.status === 'positive').length / Math.max(days.length, 1)) * 100)}%
-                  </span>
-                  <span className="text-sm text-blue-600">completado</span>
-                </div>
+              <div className="flex flex-col items-center">
+                <span className="text-lg sm:text-2xl font-bold text-blue-600">
+                  {Math.round((days.filter(d => d.status === 'positive').length / Math.max(days.length, 1)) * 100)}%
+                </span>
+                <span className="text-xs sm:text-sm text-blue-600">completado</span>
               </div>
             </div>
           </Card>
@@ -293,19 +289,19 @@ export function CalendarView({ range, from }: Props) {
       </div>
 
       {/* Week Days Header */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
         {weekDays.map((day) => (
-          <div key={day} className="p-3 text-center text-sm font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-lg">
+          <div key={day} className="p-2 sm:p-3 text-center text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-lg">
             {day}
           </div>
         ))}
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
         {calendarDays.map((dateStr, index) => {
           if (!dateStr) {
-            return <div key={index} className="h-20" />;
+            return <div key={index} className="h-16 sm:h-20" />;
           }
           
           const dayStatus = getDayStatus(dateStr);
@@ -321,7 +317,7 @@ export function CalendarView({ range, from }: Props) {
             >
               <Card
                 className={cn(
-                  "h-20 p-2 cursor-pointer transition-all hover:shadow-lg hover:scale-105",
+                  "h-16 sm:h-20 p-1 sm:p-2 cursor-pointer transition-all hover:shadow-lg hover:scale-105",
                   "flex flex-col items-center justify-center relative",
                   dayStatus?.status === 'positive'
                     ? "bg-pastel-green-100 border-pastel-green-300 hover:bg-pastel-green-200 dark:bg-green-900/30 dark:border-green-700" 
@@ -333,7 +329,7 @@ export function CalendarView({ range, from }: Props) {
                 onClick={() => setSelectedDate(dateStr)}
               >
                 <div className={cn(
-                  "text-sm font-semibold",
+                  "text-xs sm:text-sm font-semibold",
                   isToday && "text-primary font-bold",
                   dayStatus?.status === 'positive' && "text-pastel-green-700 dark:text-green-300",
                   dayStatus?.status === 'negative' && "text-pastel-pink-700 dark:text-red-300"
@@ -343,14 +339,14 @@ export function CalendarView({ range, from }: Props) {
                 {dayStatus && dayStatus.entries.length > 0 && (
                   <div className="mt-1">
                     {dayStatus.status === 'positive' ? (
-                      <CheckIcon className="w-4 h-4 text-green-600" />
+                      <CheckIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                     ) : (
-                      <XIcon className="w-4 h-4 text-red-600" />
+                      <XIcon className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
                     )}
                   </div>
                 )}
                 {dayStatus && dayStatus.entries.length > 0 && (
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500 mt-1 hidden sm:block">
                     {dayStatus.totalCalories} kcal
                   </div>
                 )}

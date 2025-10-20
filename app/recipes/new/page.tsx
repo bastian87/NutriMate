@@ -50,7 +50,7 @@ export default function NewRecipePage() {
     meal_type: "Desayuno"
   })
 
-  const [ingredients, setIngredients] = useState<Ingredient[]>([{ name: "", amount: "" }])
+  const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [instructionSteps, setInstructionSteps] = useState<InstructionStep[]>([{ title: "", description: "" }])
 
 

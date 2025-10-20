@@ -167,15 +167,10 @@ export default function CalendarPage() {
           >
             <Card className="bg-[rgba(255,241,215,1)] dark:bg-gray-800 border-orange-200 dark:border-gray-700">
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <CalendarIcon className="h-5 w-5 text-orange-600" />
-                    {t("calendar.progressCalendar")}
-                  </CardTitle>
-                  <Button variant="ghost" size="sm">
-                    <MoreIcon className="h-4 w-4" />
-                  </Button>
-                </div>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarIcon className="h-5 w-5 text-orange-600" />
+                  {t("calendar.progressCalendar")}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <CalendarView range={range} from={from} />

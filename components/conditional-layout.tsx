@@ -3,8 +3,10 @@
 import { usePathname, useRouter } from "next/navigation"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { SidebarNew } from "@/components/sidebar-new"
+import { MobileNavigationMenu } from "@/components/mobile-navigation"
 import { useEffect, useState, useMemo, useCallback } from "react"
 import { supabase } from "@/lib/supabase/client"
+import Image from "next/image"
 
 interface ConditionalLayoutProps {
   children: React.ReactNode
@@ -208,19 +210,18 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
           {/* Header móvil */}
           <header className="bg-white shadow-sm px-4 py-3 flex items-center justify-between sticky top-0 z-50">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">N</span>
-              </div>
-              <h1 className="text-lg font-bold text-gray-900">NutriMate</h1>
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <Image src="/logo-new.png" alt="NutriMate Logo" width={32} height={32} className="rounded-lg" />
+              <h1 className="text-lg font-bold text-orange-600">NutriMate</h1>
             </div>
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+            <div></div>
           </header>
 
           {/* Contenido principal */}
@@ -235,7 +236,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
                 className="absolute inset-0 bg-black/50"
                 onClick={() => setIsMobileMenuOpen(false)}
               />
-              <div className="absolute top-0 right-0 w-80 h-full bg-white shadow-2xl">
+              <div className="absolute top-0 left-0 w-80 h-full bg-white shadow-2xl">
                 <div className="p-4 flex items-center justify-between border-b">
                   <h2 className="text-lg font-bold text-gray-900">Menú</h2>
                   <button
@@ -248,7 +249,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
                   </button>
                 </div>
                 <div className="p-4">
-                  <SidebarNew />
+                  <MobileNavigationMenu onClose={() => setIsMobileMenuOpen(false)} />
                 </div>
               </div>
             </div>

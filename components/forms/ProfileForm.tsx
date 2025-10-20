@@ -166,7 +166,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="full_name">{t("account.name")}</Label>
               <Input
@@ -186,6 +186,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder={t("profileForm.emailPlaceholder")}
+                className="w-full"
               />
             </div>
           </div>

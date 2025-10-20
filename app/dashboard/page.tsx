@@ -10,7 +10,7 @@ import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider"
 import { Badge } from "@/components/ui/badge"
 import { DashboardSkeleton } from "@/components/loading-skeleton"
-import { NutrigoLogo, CaloriesIcon, WeightIcon, CarbsIcon, FatsIcon } from "@/components/icons-new"
+import { CaloriesIcon, WeightIcon, CarbsIcon, FatsIcon } from "@/components/icons-new"
 
 export default function DashboardPage() {
   const { t } = useLanguage()
@@ -64,19 +64,14 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col gap-6"
           >
-            {/* Logo and Welcome Section */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <NutrigoLogo className="text-2xl" />
-                <div className="text-center sm:text-left">
-                  <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("dashboard.welcome")}</h1>
-                  <p className="text-gray-600 dark:text-gray-400 text-base">{t("dashboard.subtitle")}</p>
-                  {userData?.profile?.full_name && (
-                    <p className="text-sm text-gray-500 mt-1">{t("dashboard.welcomeBack", { name: userData.profile.full_name })}</p>
-                  )}
-                </div>
-              </div>
-              <div className="flex justify-center sm:justify-end">
+            {/* Welcome Section */}
+            <div className="text-center sm:text-left">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("dashboard.welcome")}</h1>
+              <p className="text-gray-600 dark:text-gray-400 text-base mb-3">{t("dashboard.subtitle")}</p>
+              {userData?.profile?.full_name && (
+                <p className="text-sm text-gray-500 mb-4">{t("dashboard.welcomeBack", { name: userData.profile.full_name })}</p>
+              )}
+              <div className="flex justify-center sm:justify-start">
                 <Badge className={isPremium ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 px-3 py-1" : "px-3 py-1"}>
                   {isPremium ? (
                     <>

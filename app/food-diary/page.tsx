@@ -664,44 +664,47 @@ export default function FoodDiaryPage() {
           <Card className="bg-white shadow-sm">
             <CardHeader className="pb-4">
               {/* Search and Filters */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="relative">
-                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      placeholder={t("foodDiary.searchMenu")}
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 w-64"
-                    />
-                  </div>
-                  <Select value={filterBy} onValueChange={setFilterBy}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder={t("foodDiary.filter")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="All">{t("foodDiary.all")}</SelectItem>
-                      <SelectItem value="breakfast">{t("foodDiary.breakfast")}</SelectItem>
-                      <SelectItem value="lunch">{t("foodDiary.lunch")}</SelectItem>
-                      <SelectItem value="snack">{t("foodDiary.snack")}</SelectItem>
-                      <SelectItem value="dinner">{t("foodDiary.dinner")}</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-4 mb-6">
+                {/* Search Bar - Full Width */}
+                <div className="relative">
+                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    placeholder={t("foodDiary.searchMenu")}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 w-full"
+                  />
                 </div>
-                <div className="flex items-center gap-4">
-                  <Select value={timeFrame} onValueChange={setTimeFrame}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="This Week">This Week</SelectItem>
-                      <SelectItem value="Last Week">Last Week</SelectItem>
-                      <SelectItem value="This Month">This Month</SelectItem>
-                    </SelectContent>
-                  </Select>
+                
+                {/* Filters and Actions - Responsive Row */}
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <div className="flex gap-3 flex-1">
+                    <Select value={filterBy} onValueChange={setFilterBy}>
+                      <SelectTrigger className="w-full sm:w-32">
+                        <SelectValue placeholder={t("foodDiary.filter")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="All">{t("foodDiary.all")}</SelectItem>
+                        <SelectItem value="breakfast">{t("foodDiary.breakfast")}</SelectItem>
+                        <SelectItem value="lunch">{t("foodDiary.lunch")}</SelectItem>
+                        <SelectItem value="snack">{t("foodDiary.snack")}</SelectItem>
+                        <SelectItem value="dinner">{t("foodDiary.dinner")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={timeFrame} onValueChange={setTimeFrame}>
+                      <SelectTrigger className="w-full sm:w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="This Week">This Week</SelectItem>
+                        <SelectItem value="Last Week">Last Week</SelectItem>
+                        <SelectItem value="This Month">This Month</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
                     <DialogTrigger asChild>
-                      <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30">
+                      <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30 w-full sm:w-auto">
                         <PlusIcon className="w-4 h-4 mr-2" />
                         Add Entry
                       </Button>
@@ -1496,23 +1499,9 @@ export default function FoodDiaryPage() {
                 </div>
               </div>
 
-              {/* Table Header */}
-              <div className="grid grid-cols-10 gap-4 py-3 border-b text-sm font-medium text-gray-500">
-                <div>Date & Time</div>
-                <div>Category</div>
-                <div>Menu</div>
-                <div>Amount</div>
-                <div className="text-center">Carbs</div>
-                <div className="text-center">Protein</div>
-                <div className="text-center">Fats</div>
-                <div className="text-center">Calories</div>
-                <div>Mood</div>
-                <div className="text-center">Actions</div>
-              </div>
             </CardHeader>
             
-            <CardContent className="px-6 pb-6">
-              {/* Table Body */}
+            <CardContent className="p-0">
               {loading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
@@ -1529,60 +1518,165 @@ export default function FoodDiaryPage() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-1">
-                  {paginatedEntries.map((entry) => (
-                    <div key={entry.id} className="grid grid-cols-10 gap-4 items-center py-3 hover:bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-pastel-green-500 rounded-full"></div>
-                        <div>
-                          <div className="text-sm">{new Date(entry.date).toLocaleDateString()}</div>
-                          <div className="text-xs text-gray-500">{entry.time}</div>
+                <>
+                  {/* Mobile Card Layout */}
+                  <div className="block lg:hidden space-y-4 p-4">
+                    {paginatedEntries.map((entry) => (
+                      <Card key={entry.id} className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                              <CaloriesIcon className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-base truncate">{entry.menu}</h4>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge 
+                                  className="text-xs px-2 py-1"
+                                  style={{ 
+                                    backgroundColor: getCategoryColor(entry.category) + '20',
+                                    color: getCategoryColor(entry.category),
+                                    border: `1px solid ${getCategoryColor(entry.category)}`
+                                  }}
+                                >
+                                  {getCategoryLabel(entry.category)}
+                                </Badge>
+                                <Badge className={`text-xs px-2 py-1 ${getMoodColor(entry.thoughts)}`}>
+                                  {entry.thoughts}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditClick(entry)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <EditIcon className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteFoodEntry(entry.id)}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <Badge 
-                          className="text-xs px-2 py-1"
-                          style={{ 
-                            backgroundColor: getCategoryColor(entry.category) + '20',
-                            color: getCategoryColor(entry.category),
-                            border: `1px solid ${getCategoryColor(entry.category)}`
-                          }}
-                        >
-                          {getCategoryLabel(entry.category)}
-                        </Badge>
-                      </div>
-                      <div className="text-sm">{entry.menu}</div>
-                      <div className="text-sm">{entry.amount}</div>
-                      <div className="text-sm text-center">{entry.carb}g</div>
-                      <div className="text-sm text-center">{entry.protein}g</div>
-                      <div className="text-sm text-center">{entry.fats}g</div>
-                      <div className="text-sm text-center font-medium">{entry.calories} kcal</div>
-                      <div>
-                        <Badge className={`text-xs px-2 py-1 ${getMoodColor(entry.thoughts)}`}>
-                          {entry.thoughts}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditClick(entry)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <EditIcon className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteFoodEntry(entry.id)}
-                          className="h-8 w-8 p-0 text-pastel-pink-600 hover:text-pastel-pink-700"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </Button>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-500">Fecha:</span>
+                            <span className="ml-2 font-medium">{new Date(entry.date).toLocaleDateString()}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Hora:</span>
+                            <span className="ml-2 font-medium">{entry.time}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Cantidad:</span>
+                            <span className="ml-2 font-medium">{entry.amount}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Calorías:</span>
+                            <span className="ml-2 font-medium">{entry.calories} kcal</span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4 text-sm mt-3 pt-3 border-t">
+                          <div className="text-center">
+                            <div className="text-gray-500">Carbohidratos</div>
+                            <div className="font-medium">{entry.carb}g</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-gray-500">Proteína</div>
+                            <div className="font-medium">{entry.protein}g</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-gray-500">Grasas</div>
+                            <div className="font-medium">{entry.fats}g</div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {/* Desktop Table Layout */}
+                  <div className="hidden lg:block">
+                    <div className="px-6 py-4 border-b">
+                      <div className="grid grid-cols-10 gap-4 py-3 text-sm font-medium text-gray-500">
+                        <div>Date & Time</div>
+                        <div>Category</div>
+                        <div>Menu</div>
+                        <div>Amount</div>
+                        <div className="text-center">Carbs</div>
+                        <div className="text-center">Protein</div>
+                        <div className="text-center">Fats</div>
+                        <div className="text-center">Calories</div>
+                        <div>Mood</div>
+                        <div className="text-center">Actions</div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                    
+                    <div className="px-6 pb-6">
+                      <div className="space-y-1">
+                        {paginatedEntries.map((entry) => (
+                          <div key={entry.id} className="grid grid-cols-10 gap-4 items-center py-3 hover:bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-pastel-green-500 rounded-full"></div>
+                              <div>
+                                <div className="text-sm">{new Date(entry.date).toLocaleDateString()}</div>
+                                <div className="text-xs text-gray-500">{entry.time}</div>
+                              </div>
+                            </div>
+                            <div>
+                              <Badge 
+                                className="text-xs px-2 py-1"
+                                style={{ 
+                                  backgroundColor: getCategoryColor(entry.category) + '20',
+                                  color: getCategoryColor(entry.category),
+                                  border: `1px solid ${getCategoryColor(entry.category)}`
+                                }}
+                              >
+                                {getCategoryLabel(entry.category)}
+                              </Badge>
+                            </div>
+                            <div className="text-sm">{entry.menu}</div>
+                            <div className="text-sm">{entry.amount}</div>
+                            <div className="text-sm text-center">{entry.carb}g</div>
+                            <div className="text-sm text-center">{entry.protein}g</div>
+                            <div className="text-sm text-center">{entry.fats}g</div>
+                            <div className="text-sm text-center font-medium">{entry.calories} kcal</div>
+                            <div>
+                              <Badge className={`text-xs px-2 py-1 ${getMoodColor(entry.thoughts)}`}>
+                                {entry.thoughts}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditClick(entry)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <EditIcon className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteFoodEntry(entry.id)}
+                                className="h-8 w-8 p-0 text-pastel-pink-600 hover:text-pastel-pink-700"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
               )}
 
               {/* Pagination */}
