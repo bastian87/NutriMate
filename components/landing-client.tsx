@@ -390,7 +390,8 @@ export default function LandingClient({ }: LandingClientProps) {
                 Get Started
               </Button>
             </div>
-
+            <br />
+            
             {/* Premium Plan */}
             <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-8 relative shadow-2xl transform scale-105 border-2 border-orange-600">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-pink-500 to-orange-400 text-white px-6 py-2 rounded-full shadow-lg">
@@ -462,6 +463,7 @@ export default function LandingClient({ }: LandingClientProps) {
                 )}
               </Button>
             </div>
+            <br />
 
             {/* Premium Annual Plan - Optional variant */}
             <div className="md:col-span-2 bg-white rounded-3xl p-6 border-2 border-gray-200">
