@@ -28,6 +28,7 @@ import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-pro
 import { DashboardSkeleton } from "@/components/loading-skeleton"
 import { useActiveGoal } from "@/hooks/useActiveGoal"
 import { Plus, Zap, Flame, Clock } from "lucide-react"
+import { ImageWithFallback } from "@/components/image-with-fallback"
 import Link from "next/link"
 import { motion } from "framer-motion"
 
@@ -45,7 +46,9 @@ interface TodayData {
     menu?: string
     calories?: number
     time: string
+    image_url?: string | null
   }>
+  mealsWithoutCalories: number
 }
 
 export default function DashboardPage() {
@@ -62,7 +65,8 @@ export default function DashboardPage() {
     xpToday: 0,
     streak: 0,
     mealsCount: 0,
-    meals: []
+    meals: [],
+    mealsWithoutCalories: 0
   })
   const [loading, setLoading] = useState(true)
 
@@ -102,8 +106,14 @@ export default function DashboardPage() {
           category: entry.category,
           menu: entry.menu,
           calories: entry.calories,
-          time: entry.time
+          time: entry.time,
+          image_url: entry.image_url || null
         }))
+
+        // Count meals without calories
+        const mealsWithoutCalories = entries.filter((entry: any) => 
+          !entry.calories || entry.calories === null
+        ).length
 
         setTodayData({
           calories: nutrition.calories,
@@ -113,7 +123,8 @@ export default function DashboardPage() {
           xpToday: xpToday,
           streak: streak,
           mealsCount: entries.length,
-          meals: meals
+          meals: meals,
+          mealsWithoutCalories: mealsWithoutCalories
         })
       } catch (error) {
         console.error('Error fetching today data:', error)
@@ -295,9 +306,16 @@ export default function DashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Meals Today</h3>
-                <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300">
-                  {todayData.mealsCount}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  {todayData.mealsWithoutCalories > 0 && (
+                    <Badge variant="outline" className="text-xs text-gray-500 dark:text-gray-400">
+                      {todayData.mealsWithoutCalories} without calories
+                    </Badge>
+                  )}
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300">
+                    {todayData.mealsCount}
+                  </Badge>
+                </div>
               </div>
               {todayData.meals.length === 0 ? (
                 <div className="text-center py-8 text-gray-400 dark:text-gray-500">
@@ -312,9 +330,21 @@ export default function DashboardPage() {
                       className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Clock className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                        </div>
+                        {/* Thumbnail or Icon */}
+                        {meal.image_url ? (
+                          <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200 dark:border-gray-700">
+                            <ImageWithFallback
+                              src={meal.image_url}
+                              alt={meal.menu || meal.category}
+                              className="w-full h-full object-cover"
+                              style={{ width: '100%', height: '100%' }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Clock className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                          </div>
+                        )}
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm capitalize text-gray-900 dark:text-gray-100 truncate">
                             {meal.menu || meal.category}

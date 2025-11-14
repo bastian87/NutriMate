@@ -325,6 +325,62 @@ export interface Database {
           updated_at?: string
         }
       }
+      food_diary_entries: {
+        Row: {
+          id: string
+          user_id: string
+          date: string
+          time: string
+          category: string
+          menu: string
+          amount: string | null
+          carb: number
+          protein: number
+          fats: number
+          sugar: number
+          calories: number | null
+          thoughts: string | null
+          image_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          date: string
+          time: string
+          category: string
+          menu: string
+          amount?: string | null
+          carb?: number
+          protein?: number
+          fats?: number
+          sugar?: number
+          calories?: number | null
+          thoughts?: string | null
+          image_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          date?: string
+          time?: string
+          category?: string
+          menu?: string
+          amount?: string | null
+          carb?: number
+          protein?: number
+          fats?: number
+          sugar?: number
+          calories?: number | null
+          thoughts?: string | null
+          image_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

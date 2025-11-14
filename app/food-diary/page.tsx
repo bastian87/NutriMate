@@ -167,7 +167,7 @@ export default function FoodDiaryPage() {
   const handleEditSubmit = async () => {
     if (!user?.id || !editingEntry) return;
 
-    if (!editForm.menu.trim() || !editForm.calories || parseFloat(editForm.calories) <= 0) {
+    if (!editForm.menu.trim()) {
       toast({
         title: t("common.error"),
         description: "Please fill in all required fields",

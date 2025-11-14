@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       protein: parseFloat(protein) || 0,
       fats: parseFloat(fats) || 0,
       sugar: parseFloat(sugar) || 0,
-      calories: parseFloat(calories),
+      calories: calories !== undefined && calories !== null ? parseFloat(calories) : null,
       thoughts: thoughts || null,
       image_url: image_url || null
     };
@@ -193,7 +193,7 @@ export async function PUT(req: NextRequest) {
       protein: parseFloat(protein) || 0,
       fats: parseFloat(fats) || 0,
       sugar: parseFloat(sugar) || 0,
-      calories: parseFloat(calories),
+      calories: calories !== undefined && calories !== null ? parseFloat(calories) : null,
       thoughts: thoughts || null,
       image_url: image_url || null,
       updated_at: new Date().toISOString()

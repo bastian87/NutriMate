@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Search, X, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react"
+import { Search, X, ChevronDown, ChevronUp, Plus, Trash2, Camera, Image as ImageIcon } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 
@@ -53,6 +53,9 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
   const [availableIngredients, setAvailableIngredients] = useState<any[]>([])
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [ingredientSearch, setIngredientSearch] = useState<{[key: string]: string}>({})
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   // Fetch recent items
   useEffect(() => {
@@ -63,6 +66,20 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
       }
     }
   }, [open, user?.id, advancedMode])
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setMenu("")
+      setSearchQuery("")
+      setCalories("")
+      setCategory("breakfast")
+      setAdvancedMode(false)
+      setIngredients([])
+      setSelectedImage(null)
+      setImagePreview(null)
+    }
+  }, [open])
 
   const fetchRecentItems = async () => {
     try {
@@ -104,9 +121,53 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
 
   const handleQuickSelect = (item: RecentItem) => {
     setMenu(item.menu)
-    setCalories(item.calories.toString())
+    setCalories(item.calories ? item.calories.toString() : "")
     setCategory(item.category as any)
     setSearchQuery("")
+  }
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please select an image file",
+        variant: "destructive"
+      })
+      return
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Error",
+        description: "Image size must be less than 5MB",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setSelectedImage(file)
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const removeImage = () => {
+    setSelectedImage(null)
+    setImagePreview(null)
+    // Reset file inputs (both simple and advanced mode)
+    const fileInput = document.getElementById('meal-image-input') as HTMLInputElement
+    const fileInputAdvanced = document.getElementById('meal-image-input-advanced') as HTMLInputElement
+    if (fileInput) fileInput.value = ''
+    if (fileInputAdvanced) fileInputAdvanced.value = ''
   }
 
   const addIngredient = () => {
@@ -160,7 +221,12 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
     if (advancedMode) {
       return ingredients.reduce((sum, ing) => sum + ing.calories, 0)
     }
-    return parseFloat(calories) || 0
+    // Return null if calories are not provided, otherwise parse the value
+    if (!calories || calories.trim() === '') {
+      return null
+    }
+    const parsed = parseFloat(calories)
+    return isNaN(parsed) ? null : parsed
   }
 
   const calculateMacros = () => {
@@ -200,18 +266,46 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
         return
       }
 
-      if (!calories || parseFloat(calories) <= 0) {
-        toast({
-          title: "Error",
-          description: "Please enter valid calories",
-          variant: "destructive"
-        })
-        return
-      }
+      // Calories are now optional - no validation needed
     }
 
     setLoading(true)
+    let imageUrl: string | null = null
+
     try {
+      // Upload image first if one is selected
+      if (selectedImage) {
+        setUploadingImage(true)
+        try {
+          const formData = new FormData()
+          formData.append('image', selectedImage)
+
+          const uploadResponse = await fetch("/api/upload-meal-image", {
+            method: "POST",
+            body: formData,
+          })
+
+          if (uploadResponse.ok) {
+            const uploadData = await uploadResponse.json()
+            imageUrl = uploadData.imageUrl
+          } else {
+            // If upload fails, log the meal without image (non-blocking)
+            const errorData = await uploadResponse.json()
+            console.warn('Image upload failed:', errorData.error)
+            toast({
+              title: "Image upload failed",
+              description: "Meal will be saved without photo",
+              variant: "default"
+            })
+          }
+        } catch (uploadError) {
+          console.error('Error uploading image:', uploadError)
+          // Continue without image - don't block meal logging
+        } finally {
+          setUploadingImage(false)
+        }
+      }
+
       const macros = advancedMode ? calculateMacros() : { carbs: 0, protein: 0, fats: 0 }
       const totalCalories = calculateTotalCalories()
       const mealName = advancedMode 
@@ -234,7 +328,7 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
           sugar: 0,
           amount: advancedMode ? `${ingredients.length} ingredients` : null,
           thoughts: null,
-          image_url: null
+          image_url: imageUrl
         })
       })
 
@@ -249,14 +343,7 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
             : "Meal logged successfully!"
         })
         
-        // Reset form
-        setMenu("")
-        setSearchQuery("")
-        setCalories("")
-        setCategory("breakfast")
-        setAdvancedMode(false)
-        setIngredients([])
-        
+        // Reset form (handled by useEffect when dialog closes)
         onSuccess?.()
         onOpenChange(false)
       } else {
@@ -316,7 +403,7 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
               }}
               className="pl-10"
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !advancedMode && calories) {
+                if (e.key === "Enter" && !advancedMode && (menu || searchQuery)) {
                   handleSubmit()
                 }
               }}
@@ -346,46 +433,10 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
           {/* Quick Entry Form */}
           {!advancedMode && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                {/* Calories */}
-                <div>
-                  <Label htmlFor="calories">Calories *</Label>
-                  <Input
-                    id="calories"
-                    type="number"
-                    placeholder="0"
-                    value={calories}
-                    onChange={(e) => setCalories(e.target.value)}
-                    className="mt-1"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && menu) {
-                        handleSubmit()
-                      }
-                    }}
-                  />
-                </div>
-
-                {/* Category */}
-                <div>
-                  <Label htmlFor="category">Meal *</Label>
-                  <Select value={category} onValueChange={(value: any) => setCategory(value)}>
-                    <SelectTrigger id="category" className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="breakfast">Breakfast</SelectItem>
-                      <SelectItem value="lunch">Lunch</SelectItem>
-                      <SelectItem value="dinner">Dinner</SelectItem>
-                      <SelectItem value="snack">Snack</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
               {/* Meal Name (if not from search) */}
               {menu && !searchQuery && (
                 <div>
-                  <Label>Meal Name</Label>
+                  <Label>Meal Name *</Label>
                   <div className="mt-1 flex items-center gap-2">
                     <Input
                       value={menu}
@@ -402,6 +453,94 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
                   </div>
                 </div>
               )}
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Calories - Optional */}
+                <div>
+                  <Label htmlFor="calories">Calories (optional)</Label>
+                  <Input
+                    id="calories"
+                    type="number"
+                    placeholder="Optional"
+                    value={calories}
+                    onChange={(e) => setCalories(e.target.value)}
+                    className="mt-1"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (menu || searchQuery)) {
+                        handleSubmit()
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* Category */}
+                <div>
+                  <Label htmlFor="category">Meal Type</Label>
+                  <Select value={category} onValueChange={(value: any) => setCategory(value)}>
+                    <SelectTrigger id="category" className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="breakfast">Breakfast</SelectItem>
+                      <SelectItem value="lunch">Lunch</SelectItem>
+                      <SelectItem value="dinner">Dinner</SelectItem>
+                      <SelectItem value="snack">Snack</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Photo Upload */}
+              <div>
+                <Label>Photo (optional)</Label>
+                <div className="mt-1 space-y-2">
+                  {!imagePreview ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="meal-image-input"
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('meal-image-input')?.click()}
+                        className="flex-1"
+                      >
+                        <Camera className="w-4 h-4 mr-2" />
+                        Upload photo
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <div className="relative w-full h-32 rounded-lg overflow-hidden border border-gray-200">
+                        <img
+                          src={imagePreview}
+                          alt="Meal preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-6 w-6"
+                          onClick={removeImage}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {selectedImage?.name} ({(selectedImage?.size || 0) / 1024 / 1024 < 1 
+                          ? `${Math.round((selectedImage?.size || 0) / 1024)} KB`
+                          : `${((selectedImage?.size || 0) / 1024 / 1024).toFixed(2)} MB`})
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -506,7 +645,7 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Total Calories:</span>
                     <span className="text-lg font-bold text-orange-600">
-                      {calculateTotalCalories()} kcal
+                      {calculateTotalCalories() !== null ? `${calculateTotalCalories()} kcal` : 'Not specified'}
                     </span>
                   </div>
                 </div>
@@ -514,7 +653,7 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
 
               {/* Category selector for advanced mode */}
               <div>
-                <Label htmlFor="category-advanced">Meal Category *</Label>
+                <Label htmlFor="category-advanced">Meal Category</Label>
                 <Select value={category} onValueChange={(value: any) => setCategory(value)}>
                   <SelectTrigger id="category-advanced" className="mt-1">
                     <SelectValue />
@@ -526,6 +665,58 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
                     <SelectItem value="snack">Snack</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Photo Upload for Advanced Mode */}
+              <div>
+                <Label>Photo (optional)</Label>
+                <div className="mt-1 space-y-2">
+                  {!imagePreview ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="meal-image-input-advanced"
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('meal-image-input-advanced')?.click()}
+                        className="flex-1"
+                      >
+                        <Camera className="w-4 h-4 mr-2" />
+                        Upload photo
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <div className="relative w-full h-32 rounded-lg overflow-hidden border border-gray-200">
+                        <img
+                          src={imagePreview}
+                          alt="Meal preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-6 w-6"
+                          onClick={removeImage}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {selectedImage?.name} ({(selectedImage?.size || 0) / 1024 / 1024 < 1 
+                          ? `${Math.round((selectedImage?.size || 0) / 1024)} KB`
+                          : `${((selectedImage?.size || 0) / 1024 / 1024).toFixed(2)} MB`})
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -544,9 +735,15 @@ export function QuickMealLogger({ open, onOpenChange, onSuccess }: QuickMealLogg
           <Button
             onClick={handleSubmit}
             className="flex-1 bg-orange-600 hover:bg-orange-700"
-            disabled={loading || (!advancedMode && !calories) || (advancedMode && ingredients.length === 0)}
+            disabled={loading || (!advancedMode && !menu && !searchQuery) || (advancedMode && ingredients.length === 0)}
           >
-            {loading ? "Logging..." : "Log Meal"}
+            {loading || uploadingImage ? (
+              <span className="flex items-center gap-2">
+                {uploadingImage ? "Uploading photo..." : "Logging..."}
+              </span>
+            ) : (
+              "Log Meal"
+            )}
           </Button>
         </div>
       </DialogContent>
