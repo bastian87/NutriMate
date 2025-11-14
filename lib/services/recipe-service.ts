@@ -3,23 +3,9 @@ import { supabase } from "@/lib/supabase/client"
 export interface RecipeWithDetails {
   id: string
   name: string
-  description?: string
   image_url?: string
-  prep_time_minutes: number
-  cook_time_minutes: number
-  servings: number
   calories: number
-  protein: number
-  carbs: number
-  fat: number
-  fiber?: number
-  sugar?: number
-  sodium?: number
-  difficulty_level?: string
-  cuisine_type?: string
-  meal_type?: string
-  instructions: string
-  ingredients: Array<{ id?: string; name: string; amount: string; original?: string }>
+  ingredients: Array<{ id?: string; name: string; amount: string }>
   created_at: string
   updated_at: string
   created_by?: string
@@ -28,19 +14,11 @@ export interface RecipeWithDetails {
     username: string | null
     full_name: string | null
   }
-  average_rating: number
-  total_ratings?: number
-  rating_count?: number
-  is_favorited: boolean // This will be true for all recipes from getUserFavorites
-  user_rating?: number
-  tags: Array<{ id: string; name: string }>
+  is_favorited: boolean
 }
 
 export interface RecipeFilters {
   search?: string
-  tags?: string[]
-  maxCookTime?: number
-  calorieRange?: [number, number]
   userId?: string
   limit?: number
 }
@@ -68,16 +46,10 @@ export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDet
     // Aplicar límite por defecto para mejorar rendimiento
     const limit = filters?.limit || 20;
     
-    let query = supabase.from("recipes").select("*, tags")
+    let query = supabase.from("recipes").select("*")
 
     if (filters?.search) {
-      query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
-    }
-    if (filters?.maxCookTime) {
-      query = query.lte("cook_time_minutes", filters.maxCookTime)
-    }
-    if (filters?.calorieRange) {
-      query = query.gte("calories", filters.calorieRange[0]).lte("calories", filters.calorieRange[1])
+      query = query.ilike("name", `%${filters.search}%`)
     }
     
     // Siempre aplicar límite para evitar cargar demasiados datos
@@ -91,23 +63,16 @@ export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDet
     const recipeIds = recipes.map((r) => r.id)
     if (recipeIds.length === 0) return []
 
-    // Optimizar: Solo cargar calificaciones para las recetas específicas
-    const [ingredientsResult, ratingsResult, favoritesResult] = await Promise.all([
+    // Cargar ingredientes y favoritos
+    const [ingredientsResult, favoritesResult] = await Promise.all([
       supabase.from("recipe_ingredients").select("*").in("recipe_id", recipeIds),
-      supabase.from("recipe_ratings").select("recipe_id, rating, user_id").in("recipe_id", recipeIds),
       filters?.userId
         ? supabase.from("user_favorites").select("recipe_id").eq("user_id", filters.userId).in("recipe_id", recipeIds)
         : Promise.resolve({ data: [] }),
     ]);
     
     const ingredientsData = ingredientsResult.data;
-    const ratingsData = ratingsResult.data;
     const favoritesData = favoritesResult.data;
-    
-    // Debug: verificar datos de calificaciones
-
-    
-
 
     // Función para normalizar IDs (quita guiones, minúsculas, trim)
     const normalize = (id: string) => id.replace(/-/g, "").toLowerCase().trim();
@@ -116,45 +81,23 @@ export const getRecipes = async (filters?: RecipeFilters): Promise<RecipeWithDet
       const recipeIngredients = (ingredientsData || []).filter(
         (ing) => normalize(String(ing.recipe_id)) === normalize(String(recipe.id))
       );
-      const recipeRatings = ratingsData?.filter((r) => r.recipe_id === recipe.id) || []
-      const averageRating =
-        recipeRatings.length > 0
-          ? recipeRatings.reduce((sum: number, r: any) => sum + r.rating, 0) / recipeRatings.length
-          : 0
-      
-
-      
 
       const isFavorited = favoritesData?.some((fav) => fav.recipe_id === recipe.id) || false
-      const userRating = filters?.userId ? recipeRatings.find((r) => r.user_id === filters.userId)?.rating : undefined
-
-      const ingredientes = recipeIngredients.map((i: any) =>
-        ((i.original ? i.original.toLowerCase() : "") + " " + (i.name ? i.name.toLowerCase() : "")).trim()
-      );
 
       return {
-        ...recipe,
+        id: recipe.id,
+        name: recipe.name,
+        image_url: recipe.image_url || undefined,
+        calories: recipe.calories || 0,
         ingredients: recipeIngredients.map((ing) => ({
           id: ing.id,
           name: ing.name,
-          amount: ing.amount,
-          original: ing.original,
+          amount: ing.amount || "",
         })),
-        average_rating: Number(averageRating.toFixed(1)),
-        rating_count: recipeRatings.length,
-        total_ratings: recipeRatings.length,
+        created_at: recipe.created_at,
+        updated_at: recipe.updated_at,
+        created_by: recipe.created_by,
         is_favorited: isFavorited,
-        user_rating: userRating,
-        tags: recipe.tags || [],
-        prep_time_minutes: recipe.prep_time_minutes || 0,
-        cook_time_minutes: recipe.cook_time_minutes || 0,
-        servings: recipe.servings || 1,
-        calories: recipe.calories || 0,
-        protein: recipe.protein || 0,
-        carbs: recipe.carbs || 0,
-        fat: recipe.fat || 0,
-        difficulty_level: recipe.difficulty_level || "easy",
-        instructions: recipe.instructions || "",
       }
     })
   } catch (error) {
@@ -176,58 +119,37 @@ export const getRecipeById = async (id: string, userId?: string): Promise<Recipe
     if (error) throw error
     if (!recipe) return null
 
-    const [{ data: ingredientsData }, { data: ratingsData }, { data: favoriteData }, { data: tagAssociationsData }, { data: creatorData }] =
+    const [{ data: ingredientsData }, { data: favoriteData }, { data: creatorData }] =
       await Promise.all([
         supabase.from("recipe_ingredients").select("*").eq("recipe_id", recipe.id),
-        supabase.from("recipe_ratings").select("*").eq("recipe_id", recipe.id),
         userId
           ? supabase.from("user_favorites").select("user_id,recipe_id").eq("user_id", userId).eq("recipe_id", recipe.id).maybeSingle()
           : Promise.resolve({ data: null }),
-        supabase
-          .from("recipe_tag_associations")
-          .select(`tag_id, recipe_tags!inner(id, name)`)
-          .eq("recipe_id", recipe.id),
         recipe.created_by
           ? supabase.from("users").select("id, username, full_name").eq("id", recipe.created_by).maybeSingle()
           : Promise.resolve({ data: null }),
       ])
 
-    const recipeRatings = ratingsData || []
-    const averageRating =
-      recipeRatings.length > 0
-        ? recipeRatings.reduce((sum: number, r: any) => sum + r.rating, 0) / recipeRatings.length
-        : 0
-    const userRating = userId ? recipeRatings.find((r: any) => r.user_id === userId)?.rating : undefined
-    const recipeTags = tagAssociationsData?.map((ta) => ta.recipe_tags).filter(Boolean) || []
-
     return {
-      ...recipe,
+      id: recipe.id,
+      name: recipe.name,
+      image_url: recipe.image_url || undefined,
+      calories: recipe.calories || 0,
       ingredients:
         ingredientsData?.map((ing) => ({
           id: ing.id,
           name: ing.name,
-          amount: ing.amount,
+          amount: ing.amount || "",
         })) || [],
+      created_at: recipe.created_at,
+      updated_at: recipe.updated_at,
+      created_by: recipe.created_by,
       creator: creatorData ? {
         id: creatorData.id,
         username: creatorData.username,
         full_name: creatorData.full_name,
       } : undefined,
-      average_rating: Number(averageRating.toFixed(1)),
-      rating_count: recipeRatings.length,
-      total_ratings: recipeRatings.length,
       is_favorited: !!favoriteData,
-      user_rating: userRating,
-      tags: recipeTags,
-      prep_time_minutes: recipe.prep_time_minutes || 0,
-      cook_time_minutes: recipe.cook_time_minutes || 0,
-      servings: recipe.servings || 1,
-      calories: recipe.calories || 0,
-      protein: recipe.protein || 0,
-      carbs: recipe.carbs || 0,
-      fat: recipe.fat || 0,
-      difficulty_level: recipe.difficulty_level || "easy",
-      instructions: recipe.instructions || "",
     }
   } catch (error) {
     console.error("Error in getRecipeById:", error)
@@ -241,18 +163,12 @@ export const getRecipeBySlug = async (slug: string, userId?: string): Promise<Re
 }
 
 export const createRecipe = async (
-  recipeData: Omit<
-    RecipeWithDetails,
-    | "id"
-    | "created_at"
-    | "updated_at"
-    | "average_rating"
-    | "is_favorited"
-    | "tags"
-    | "rating_count"
-    | "total_ratings"
-    | "user_rating"
-  > & { ingredients: Array<{ name: string; amount: string }>; tagsInput?: string[] },
+  recipeData: {
+    name: string
+    image_url?: string
+    calories: number
+    ingredients: Array<{ name: string; amount: string }>
+  },
 ): Promise<RecipeWithDetails | null> => {
   try {
     const response = await fetch('/api/recipes/private', {
@@ -262,24 +178,9 @@ export const createRecipe = async (
       },
       body: JSON.stringify({
         name: recipeData.name,
-        description: recipeData.description,
         image_url: recipeData.image_url,
-        prep_time_minutes: recipeData.prep_time_minutes,
-        cook_time_minutes: recipeData.cook_time_minutes,
-        servings: recipeData.servings,
         calories: recipeData.calories,
-        protein: recipeData.protein,
-        carbs: recipeData.carbs,
-        fat: recipeData.fat,
-        fiber: recipeData.fiber,
-        sugar: recipeData.sugar,
-        sodium: recipeData.sodium,
-        difficulty_level: recipeData.difficulty_level,
-        cuisine_type: recipeData.cuisine_type,
-        meal_type: recipeData.meal_type,
-        instructions: recipeData.instructions,
         ingredients: recipeData.ingredients,
-        tags: recipeData.tagsInput?.map(tag => ({ name: tag })) || []
       })
     })
 
@@ -295,16 +196,21 @@ export const createRecipe = async (
       throw new Error("Failed to create recipe")
     }
 
-    // Ingredients and tags are now handled by the API
     // Return the recipe data from the API response
     return {
-      ...recipe,
-      ingredients: recipeData.ingredients,
-      tags: recipeData.tagsInput?.map(tag => ({ id: '', name: tag })) || [],
-      average_rating: 0,
-      is_favorited: false,
+      id: recipe.id,
+      name: recipe.name,
+      image_url: recipe.image_url || undefined,
+      calories: recipe.calories || 0,
+      ingredients: recipeData.ingredients.map((ing, idx) => ({
+        id: idx.toString(),
+        name: ing.name,
+        amount: ing.amount,
+      })),
       created_at: recipe.created_at,
       updated_at: recipe.updated_at,
+      created_by: recipe.created_by,
+      is_favorited: false,
     } as RecipeWithDetails
   } catch (error) {
     console.error("Error in createRecipe:", error)
@@ -316,20 +222,9 @@ export const updateRecipe = async (
   id: string,
   recipeData: {
     name: string
-    description?: string
-    prep_time_minutes: number
-    cook_time_minutes: number
-    servings: number
-    meal_type: string
-    instructions: string
+    image_url?: string
+    calories: number
     ingredients: Array<{ name: string; amount: string }>
-    calories?: number
-    protein?: number
-    carbs?: number
-    fat?: number
-    sugar?: number
-    sodium?: number
-    fiber?: number
   }
 ): Promise<RecipeWithDetails | null> => {
   try {
@@ -341,19 +236,8 @@ export const updateRecipe = async (
       body: JSON.stringify({
         id,
         name: recipeData.name,
-        description: recipeData.description,
-        prep_time_minutes: recipeData.prep_time_minutes,
-        cook_time_minutes: recipeData.cook_time_minutes,
-        servings: recipeData.servings,
-        meal_type: recipeData.meal_type,
-        instructions: recipeData.instructions,
-        calories: recipeData.calories || 0,
-        protein: recipeData.protein || 0,
-        carbs: recipeData.carbs || 0,
-        fat: recipeData.fat || 0,
-        sugar: recipeData.sugar || 0,
-        sodium: recipeData.sodium || 0,
-        fiber: recipeData.fiber || 0,
+        image_url: recipeData.image_url,
+        calories: recipeData.calories,
         ingredients: recipeData.ingredients
       })
     })
@@ -370,7 +254,6 @@ export const updateRecipe = async (
       throw new Error("Failed to update recipe")
     }
 
-    // Ingredients are now handled by the API
     // Return the updated recipe with full details
     return await getRecipeById(id)
   } catch (error) {
@@ -384,33 +267,7 @@ export const deleteRecipe = async (id: string): Promise<boolean> => {
   return false // Placeholder
 }
 
-export const rateRecipe = async (recipeId: string, userId: string, rating: number, review?: string): Promise<any> => {
-  try {
-    const response = await fetch('/api/recipes/ratings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        recipe_id: recipeId,
-        rating,
-        review: review || ''
-      })
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.error || 'Failed to rate recipe')
-    }
-
-    const data = await response.json()
-    return data.rating
-  } catch (error) {
-    console.error("Error in rateRecipe:", error)
-    if (error instanceof Error) throw new Error(`Failed to rate recipe: ${error.message}`)
-    throw new Error("An unexpected error occurred while rating recipe")
-  }
-}
+// Removed rateRecipe - no longer needed
 
 export const toggleFavorite = async (recipeId: string, userId: string): Promise<boolean> => {
   try {
@@ -508,7 +365,6 @@ export const recipeService = {
   createRecipe,
   updateRecipe,
   deleteRecipe,
-  rateRecipe,
   toggleFavorite,
   getUserFavorites,
 }

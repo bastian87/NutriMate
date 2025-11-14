@@ -3,6 +3,7 @@ import { DayEntryUpsertSchema } from '@/lib/validation/zod';
 import { createServerClientWithCookies } from '@/lib/supabase/server';
 import { evaluateDay } from '@/lib/nutri/evaluateDay';
 import type { MacroGroup } from '@/types/nutri';
+import { updateStreakForDayCompletion, awardXpForDayCompletion } from '@/lib/gamification/gamification-service';
 
 export async function GET(req: NextRequest) {
   const response = NextResponse.next();
@@ -208,46 +209,16 @@ export async function POST(req: NextRequest) {
     
     console.log('Day Entries API - Items inserted successfully:', insertedItems);
 
-    // Streaks + XP
-    const yesterday = new Date(date);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yStr = yesterday.toISOString().slice(0, 10);
-
-    let current = 0;
-    const { data: y, error: yErr } = await supa
-      .from('day_entries')
-      .select('is_success')
-      .eq('user_id', userId)
-      .eq('date', yStr)
-      .maybeSingle();
-    if (yErr) throw yErr;
-
+    // Update streaks and award XP using gamification service
+    let currentStreak = 0;
+    
     if (evalRes.isSuccess) {
-      const { data: s, error: sErr } = await supa
-        .from('streaks')
-        .select('id,current,best')
-        .eq('user_id', userId)
-        .maybeSingle();
-      if (sErr) throw sErr;
+      // Update streak for day completion
+      const streakResult = await updateStreakForDayCompletion(supa, userId, date);
+      currentStreak = streakResult.current;
 
-      const nextCurrent = (y?.is_success ? (s?.current ?? 0) + 1 : 1);
-      const nextBest = Math.max(s?.best ?? 0, nextCurrent);
-
-      if (s?.id) {
-        await supa.from('streaks').update({ current: nextCurrent, best: nextBest }).eq('id', s.id);
-      } else {
-        await supa.from('streaks').insert({ user_id: userId, current: nextCurrent, best: nextBest });
-      }
-      current = nextCurrent;
-
-      await supa.from('xp_ledger').insert({
-        user_id: userId, date, reason: 'day', amount: 50, related_id: dayRow.id,
-      });
-      if (current >= 4) {
-        await supa.from('xp_ledger').insert({
-          user_id: userId, date, reason: 'streak', amount: 25, related_id: dayRow.id,
-        });
-      }
+      // Award XP for completing a day (includes streak bonuses)
+      await awardXpForDayCompletion(supa, userId, dayRow.id, date, currentStreak);
     }
 
     return NextResponse.json({
@@ -257,7 +228,7 @@ export async function POST(req: NextRequest) {
       flags: evalRes.flags,
       isSuccess: evalRes.isSuccess,
       goalId,
-      streakCurrent: current,
+      streakCurrent: currentStreak,
     });
   } catch (err: any) {
     console.error('Day Entries API - Error:', err);

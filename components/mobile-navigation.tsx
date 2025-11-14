@@ -9,8 +9,6 @@ import { usePathname } from "next/navigation"
 import { 
   Home, 
   ChefHat, 
-  ShoppingCart, 
-  Calendar, 
   BookOpen, 
   Target, 
   Flame, 
@@ -30,22 +28,15 @@ export const MobileNavigationMenu: React.FC<MobileNavigationMenuProps> = ({ onCl
   const { user, signOut } = useAuthContext()
   const pathname = usePathname()
 
+  // Simplified navigation - only 4 main tabs: Home, Add Meal, Achievements, Profile
   const navigationItems = [
-    { name: t("navigation.dashboard"), href: "/dashboard", icon: Home },
-    { name: t("navigation.recipes"), href: "/recipes", icon: ChefHat },
-    { name: t("navigation.groceryList"), href: "/grocery-list", icon: ShoppingCart },
-    { name: t("navigation.nutritionTracking"), href: "/calendar", icon: Calendar },
-    { name: t("navigation.foodDiary"), href: "/food-diary", icon: BookOpen },
-    { name: t("navigation.goals"), href: "/goals", icon: Target },
-    { name: t("navigation.gamification"), href: "/gamification", icon: Flame },
-    { name: t("navigation.weeklySummary"), href: "/weekly-summary", icon: BarChart3 },
-    { name: t("navigation.monthlySummary"), href: "/monthly-summary", icon: BarChart3 },
-    { name: t("navigation.ingredients"), href: "/ingredients", icon: Apple },
-    { name: t("navigation.savedRecipes"), href: "/saved-recipes", icon: Heart },
-    { name: t("navigation.calorieCalculator"), href: "/calorie-calculator", icon: Calculator },
+    { name: "Home", href: "/dashboard", icon: Home },
+    { name: "Add Meal", href: "/food-diary?openAddDialog=true", icon: BookOpen },
+    { name: "Achievements", href: "/gamification", icon: Flame },
+    { name: "Profile", href: "/account", icon: User },
   ]
 
-  const accountItems = user ? [{ name: t("navigation.account"), href: "/account", icon: User }] : []
+  // Profile is already in navigationItems, no separate account items needed
 
   const NavItem = ({ item }: { item: { name: string; href: string; icon: any } }) => {
     const Icon = item.icon
@@ -80,9 +71,6 @@ export const MobileNavigationMenu: React.FC<MobileNavigationMenuProps> = ({ onCl
       {/* Navigation Items */}
       <div className="flex-1 overflow-y-auto py-2 space-y-1">
         {navigationItems.map((item) => (
-          <NavItem key={item.href} item={item} />
-        ))}
-        {accountItems.map((item) => (
           <NavItem key={item.href} item={item} />
         ))}
       </div>

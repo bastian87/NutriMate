@@ -8,13 +8,9 @@
 export type FeatureKey = 
   | 'monthly_analytics'
   | 'analytics.trends'
-  | 'grocery_lists'
-  | 'grocery_lists.multiple'
-  | 'exports'
   | 'favorites'
   | 'custom_ingredients'
   | 'recipes.private_edit'
-  | 'recipes.bulk_import'
   | 'themes.extras'
   | 'ads'
 
@@ -31,15 +27,6 @@ export interface UsageLimits {
   customRecipes: {
     max: number
   }
-  exports: {
-    max: number
-  }
-  grocery_lists: {
-    lists: {
-      free: number
-      premium: number
-    }
-  }
 }
 
 /**
@@ -52,15 +39,6 @@ export const USAGE_LIMITS: UsageLimits = {
   },
   customRecipes: {
     max: 999999 // Free users can create unlimited custom recipes
-  },
-  exports: {
-    max: 0 // Free users cannot export (premium only)
-  },
-  grocery_lists: {
-    lists: {
-      free: 1, // Free users can create 1 grocery list
-      premium: 999999 // Premium users have unlimited lists
-    }
   }
 }
 
@@ -71,10 +49,7 @@ export const USAGE_LIMITS: UsageLimits = {
 export const PREMIUM_FEATURES: FeatureKey[] = [
   'monthly_analytics',
   'analytics.trends',
-  'grocery_lists.multiple',
-  'exports',
   'custom_ingredients',
-  'recipes.bulk_import',
   'themes.extras',
   'ads'
 ]
@@ -85,8 +60,7 @@ export const PREMIUM_FEATURES: FeatureKey[] = [
  */
 export const FREE_FEATURES: FeatureKey[] = [
   'favorites',
-  'recipes.private_edit',
-  'grocery_lists'
+  'recipes.private_edit'
 ]
 
 /**
@@ -150,10 +124,8 @@ export function getFeatureAccess(
  */
 export const LEGACY_KEY_MAPPING: Record<string, FeatureKey> = {
   'monthly_summary': 'monthly_analytics',
-  'smart_grocery_lists': 'grocery_lists',
   'advanced_meal_planning': 'monthly_analytics', // Redirect to analytics
   'unlimited_meal_plans': 'monthly_analytics', // Redirect to analytics
-  'export_meal_plans': 'exports', // Redirect to exports
   'create_meal_plans': 'monthly_analytics', // Redirect to analytics
   'basic_meal_planning': 'monthly_analytics' // Redirect to analytics
 }
@@ -186,10 +158,6 @@ export function getLimit(feature: string, isPremium: boolean = false): number {
   switch (feature) {
     case 'favorites':
       return USAGE_LIMITS.favorites.max
-    case 'grocery_lists.lists':
-      return isPremium ? USAGE_LIMITS.grocery_lists.lists.premium : USAGE_LIMITS.grocery_lists.lists.free
-    case 'exports':
-      return USAGE_LIMITS.exports.max
     case 'customRecipes':
       return USAGE_LIMITS.customRecipes.max
     default:

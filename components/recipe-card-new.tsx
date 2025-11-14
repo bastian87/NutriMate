@@ -8,14 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { 
   HeartIcon, 
-  ClockIcon, 
-  UsersIcon, 
-  StarIcon, 
-  UtensilsIcon,
   CaloriesIcon,
-  WeightIcon,
-  WaterIcon
+  UtensilsIcon,
 } from './icons-new'
+import { ImageWithFallback } from "@/components/image-with-fallback"
 import type { RecipeWithDetails } from "@/lib/services/recipe-service"
 
 interface RecipeCardNewProps {
@@ -44,6 +40,19 @@ export const RecipeCardNew = ({
     >
       <Card className="h-full hover:shadow-xl transition-all duration-300 border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600 bg-white dark:bg-gray-800">
         <CardContent className="p-6 h-full flex flex-col">
+          {/* Recipe Image */}
+          {recipe.image_url && (
+            <div className="mb-4 rounded-lg overflow-hidden">
+              <ImageWithFallback
+                src={recipe.image_url}
+                alt={recipe.name}
+                width={400}
+                height={250}
+                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          )}
+
           {/* Header con título y acciones */}
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1 min-w-0">
@@ -52,11 +61,6 @@ export const RecipeCardNew = ({
                   {recipe.name}
                 </h3>
               </Link>
-              {recipe.description && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">
-                  {recipe.description}
-                </p>
-              )}
             </div>
             
             {/* Botón de favoritos */}
@@ -77,35 +81,14 @@ export const RecipeCardNew = ({
             )}
           </div>
 
-          {/* Información nutricional destacada */}
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          {/* Calories */}
+          <div className="mb-6">
             <div className="text-center p-3 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800">
               <div className="flex items-center justify-center mb-1">
                 <CaloriesIcon className="h-4 w-4 text-orange-500 mr-1" />
               </div>
               <div className="text-lg font-bold text-orange-600">{recipe.calories || 0}</div>
               <div className="text-xs text-gray-600 dark:text-gray-400">kcal</div>
-            </div>
-            <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
-              <div className="flex items-center justify-center mb-1">
-                <WeightIcon className="h-4 w-4 text-blue-500 mr-1" />
-              </div>
-              <div className="text-lg font-bold text-blue-600">{recipe.protein || 0}g</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">proteína</div>
-            </div>
-            <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
-              <div className="flex items-center justify-center mb-1">
-                <div className="h-4 w-4 bg-green-500 rounded-full"></div>
-              </div>
-              <div className="text-lg font-bold text-green-600">{recipe.carbs || 0}g</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">carbos</div>
-            </div>
-            <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800">
-              <div className="flex items-center justify-center mb-1">
-                <WaterIcon className="h-4 w-4 text-purple-500 mr-1" />
-              </div>
-              <div className="text-lg font-bold text-purple-600">{recipe.fat || 0}g</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">grasas</div>
             </div>
           </div>
 
@@ -114,7 +97,7 @@ export const RecipeCardNew = ({
             <div className="mb-6">
               <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                 <UtensilsIcon className="h-4 w-4 mr-2 text-orange-500" />
-                Ingredientes principales
+                Ingredients
               </h4>
               <div className="flex flex-wrap gap-2">
                 {recipe.ingredients.slice(0, 4).map((ingredient, idx) => (
@@ -131,49 +114,10 @@ export const RecipeCardNew = ({
                     variant="outline"
                     className="text-xs px-3 py-1 bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300"
                   >
-                    +{recipe.ingredients.length - 4} más
+                    +{recipe.ingredients.length - 4} more
                   </Badge>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* Información adicional */}
-          <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400 mb-6">
-            <div className="flex items-center bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-lg">
-              <ClockIcon className="h-4 w-4 mr-2 text-orange-500" />
-              <span className="font-medium">{(recipe.prep_time_minutes || 0) + (recipe.cook_time_minutes || 0)} min</span>
-            </div>
-            <div className="flex items-center bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-lg">
-              <UsersIcon className="h-4 w-4 mr-2 text-blue-500" />
-              <span className="font-medium">{recipe.servings || 1} porciones</span>
-            </div>
-            <div className="flex items-center bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-lg">
-              <StarIcon className="h-4 w-4 mr-2 fill-orange-400 text-orange-400" />
-              <span className="font-medium">{recipe.average_rating ? recipe.average_rating.toFixed(1) : "N/A"}</span>
-            </div>
-          </div>
-
-          {/* Tags */}
-          {recipe.tags && recipe.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {recipe.tags.slice(0, 3).map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant="secondary"
-                  className="text-xs px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800"
-                >
-                  {tag.name}
-                </Badge>
-              ))}
-              {recipe.tags.length > 3 && (
-                <Badge
-                  variant="secondary"
-                  className="text-xs px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-                >
-                  +{recipe.tags.length - 3}
-                </Badge>
-              )}
             </div>
           )}
 
@@ -181,7 +125,7 @@ export const RecipeCardNew = ({
           <div className="mt-auto">
             <Link href={`/recipes/${recipe.id}`} className="block">
               <Button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
-                Ver Receta Completa
+                View Recipe
               </Button>
             </Link>
           </div>

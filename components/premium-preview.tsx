@@ -1,12 +1,11 @@
 "use client"
 
-import React, { useRef, useEffect } from "react"
+import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Crown, Lock, Sparkles } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/context"
-import { useAnalytics } from "@/hooks/use-analytics"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { normalizeFeatureKey } from "@/lib/entitlements"
@@ -25,9 +24,6 @@ interface PremiumPreviewProps {
   isBlurred?: boolean
 }
 
-// Session storage for debouncing paywall views
-const paywallViewTracker = new Map<string, number>()
-
 export function PremiumPreview({
   feature,
   title,
@@ -42,46 +38,15 @@ export function PremiumPreview({
   isBlurred = true
 }: PremiumPreviewProps) {
   const { t } = useLanguage()
-  const analytics = useAnalytics()
-  const hasTrackedView = useRef(false)
 
   // Normalize feature key to canonical form
   const canonicalFeature = normalizeFeatureKey(feature)
 
   const handleUpgradeClick = () => {
-    analytics.track("upgrade_click", { 
-      feature: canonicalFeature, 
-      source: "premium_preview",
-      location: window.location.pathname 
-    })
-    
     if (onUpgradeClick) {
       onUpgradeClick()
     }
   }
-
-  const handlePreviewView = () => {
-    const key = `${canonicalFeature}:${window.location.pathname}`
-    const now = Date.now()
-    const lastView = paywallViewTracker.get(key)
-    
-    // Debounce: only track once per session or after 5 minutes
-    if (!lastView || now - lastView > 5 * 60 * 1000) {
-      analytics.track("paywall_view", { 
-        feature: canonicalFeature, 
-        location: window.location.pathname 
-      })
-      paywallViewTracker.set(key, now)
-    }
-  }
-
-  // Track preview view on mount (debounced)
-  useEffect(() => {
-    if (!hasTrackedView.current) {
-      handlePreviewView()
-      hasTrackedView.current = true
-    }
-  }, [canonicalFeature])
 
   return (
     <div className={`relative ${className}`}>
@@ -191,37 +156,6 @@ export function MonthlyAnalyticsPreview({ children, ...props }: Omit<PremiumPrev
   )
 }
 
-export function GroceryListsPreview({ children, ...props }: Omit<PremiumPreviewProps, 'feature' | 'title' | 'description'>) {
-  const { t } = useLanguage()
-  
-  return (
-    <PremiumPreview
-      feature="grocery_lists"
-      title={t("premiumPreview.groceryLists.title")}
-      description={t("premiumPreview.groceryLists.description")}
-      ctaText={t("premiumPreview.groceryLists.cta")}
-      {...props}
-    >
-      {children}
-    </PremiumPreview>
-  )
-}
-
-export function ExportsPreview({ children, ...props }: Omit<PremiumPreviewProps, 'feature' | 'title' | 'description'>) {
-  const { t } = useLanguage()
-  
-  return (
-    <PremiumPreview
-      feature="exports"
-      title={t("premiumPreview.exports.title")}
-      description={t("premiumPreview.exports.description")}
-      ctaText={t("premiumPreview.exports.cta")}
-      {...props}
-    >
-      {children}
-    </PremiumPreview>
-  )
-}
 
 export function CustomIngredientsPreview({ children, ...props }: Omit<PremiumPreviewProps, 'feature' | 'title' | 'description'>) {
   const { t } = useLanguage()

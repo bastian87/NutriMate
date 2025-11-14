@@ -5,9 +5,7 @@ import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect, useRef } from "react"
 import { useRecipe } from "@/hooks/use-recipes"
-import { useGroceryList } from "@/hooks/use-grocery-list"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
-import { useToast } from "@/hooks/use-toast"
 import { useUserFavorites } from "@/hooks/use-user-favorites"
 import { useLanguage } from "@/lib/i18n/context"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
@@ -21,91 +19,13 @@ function cleanDescription(html = ""): string {
 export default function RecipePage({ params }: { params: { slug: string } }) {
   const { user } = useAuthContext()
   const { t } = useLanguage()
-  const { recipe, loading, error, toggleFavorite, rateRecipe } = useRecipe(params.slug, user?.id)
-  const { addRecipeIngredients } = useGroceryList(false)
-  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([])
-  const [isAddingToList, setIsAddingToList] = useState(false)
-  const [userRating, setUserRating] = useState<number>(recipe?.user_rating || 0)
-  // const [userReview, setUserReview] = useState<string>("") // Removido - solo calificaciones
-  const [savingRating, setSavingRating] = useState(false)
-  const [showSavedMsg, setShowSavedMsg] = useState(false)
+  const { recipe, loading, error, toggleFavorite } = useRecipe(params.slug, user?.id)
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [copied, setCopied] = useState(false)
   const shareMenuRef = useRef<HTMLDivElement>(null)
-  const { toast } = useToast()
   const { tryAddFavorite, showLimitModal, setShowLimitModal } = useUserFavorites()
 
-  useEffect(() => {
-    setUserRating(recipe?.user_rating || 0)
-  }, [recipe?.user_rating])
 
-  useEffect(() => {
-    // Si el usuario ya tiene calificación, mostrarla
-    if (recipe && user && recipe.id && recipe.user_rating) {
-      setUserRating(recipe.user_rating)
-    }
-  }, [recipe, user])
-
-  const toggleIngredient = (ingredientId: string) => {
-    setSelectedIngredients((prev) =>
-      prev.includes(ingredientId) ? prev.filter((id) => id !== ingredientId) : [...prev, ingredientId],
-    )
-  }
-
-  const addToGroceryList = async () => {
-    if (!recipe || !user) {
-      alert(t("recipes.pleaseLogin"))
-      return
-    }
-
-    if (!recipe.ingredients || recipe.ingredients.length === 0) {
-      alert(t("recipes.noIngredientsAvailable"))
-      return
-    }
-
-    setIsAddingToList(true)
-    try {
-      await addRecipeIngredients(recipe.id, selectedIngredients.length > 0 ? selectedIngredients : undefined)
-      const count = selectedIngredients.length > 0 ? selectedIngredients.length : recipe.ingredients.length
-      toast({
-        title: `${count} ${t("recipes.ingredientsAdded")}`,
-        description: t("recipes.viewInGroceryList"),
-        variant: "default"
-      });
-      setSelectedIngredients([])
-    } catch (error) {
-      console.error("Error adding to grocery list:", error)
-      alert(t("recipes.failedToAdd"))
-    } finally {
-      setIsAddingToList(false)
-    }
-  }
-
-  const getButtonText = () => {
-    if (isAddingToList) return t("recipes.adding")
-    if (selectedIngredients.length > 0) {
-      return `${t("recipes.addSelectedToGroceryList")} (${selectedIngredients.length})`
-    }
-    const totalIngredients = recipe?.ingredients?.length || 0
-    return `${t("recipes.addAllToGroceryList")} (${totalIngredients})`
-  }
-
-  const handleStarClick = (star: number) => {
-    setUserRating(star)
-  }
-
-  const handleSaveRating = async () => {
-    if (!user || !recipe) return
-    setSavingRating(true)
-    try {
-      await rateRecipe(userRating, "") // Solo calificación, sin comentario
-      setShowSavedMsg(true)
-    } catch (e) {
-      alert(t("recipes.errorSavingRating") + (e instanceof Error ? e.message : e))
-    } finally {
-      setSavingRating(false)
-    }
-  }
 
   const shareUrl = typeof window !== "undefined"
     ? window.location.href
@@ -167,15 +87,6 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
       <RecipeDetailNew
         recipe={recipe}
         user={user}
-        selectedIngredients={selectedIngredients}
-        toggleIngredient={toggleIngredient}
-        addToGroceryList={addToGroceryList}
-        isAddingToList={isAddingToList}
-        userRating={userRating}
-        handleStarClick={handleStarClick}
-        handleSaveRating={handleSaveRating}
-        savingRating={savingRating}
-        showSavedMsg={showSavedMsg}
         showShareMenu={showShareMenu}
         setShowShareMenu={setShowShareMenu}
         shareMenuRef={shareMenuRef}

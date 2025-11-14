@@ -34,10 +34,6 @@ export interface UsageLimit {
     created: number
     maxCreated: number
   }
-  exports: {
-    used: number
-    maxExports: number
-  }
 }
 
 export async function getUserSubscription(userId: string): Promise<Subscription | null> {
@@ -95,10 +91,6 @@ export async function getUserUsage(userId: string): Promise<UsageLimit | null> {
     customRecipes: {
       created: 0,
       maxCreated: USAGE_LIMITS.customRecipes.max,
-    },
-    exports: {
-      used: 0,
-      maxExports: USAGE_LIMITS.exports.max,
     },
   }
 }

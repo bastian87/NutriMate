@@ -1,287 +1,325 @@
 "use client";
 
+/**
+ * Achievements Screen - Simplified Gamification View
+ * 
+ * This screen displays:
+ * - Current level, total XP, and streak (prominent display)
+ * - A curated set of basic achievements with clear statuses
+ * 
+ * Achievements shown:
+ * 1. First Steps - Log your first meal
+ * 2. 3-Day Streak - Maintain a 3-day logging streak
+ * 3. Week Warrior - Maintain a 7-day logging streak
+ * 4. Consistent Logger - Log 30 meals total
+ */
+
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuthContext } from "@/components/auth/simple-auth-provider";
-import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/i18n/context";
-import { Flame, Zap, Trophy, Target, Calendar } from "lucide-react";
+import { Flame, Zap, Trophy, Lock, CheckCircle } from "lucide-react";
 
 interface GamificationData {
   currentStreak: number;
   longestStreak: number;
   totalXp: number;
   level: number;
+  xpInCurrentLevel: number;
   xpToNextLevel: number;
-  weeklyXp: number;
-  monthlyXp: number;
+  progressPercent: number;
+  todayXp: number;
+  dailyXpGoal: number;
+  totalMeals: number;
   achievements: Array<{
     id: string;
     name: string;
     description: string;
+    xpReward: number;
     unlocked: boolean;
     unlockedAt?: string;
   }>;
 }
 
+// Curated list of core achievements to display
+const CORE_ACHIEVEMENT_IDS = [
+  'first_log',
+  'streak_3',
+  'streak_7',
+  'log_30'
+];
+
 export default function GamificationPage() {
   const { user } = useAuthContext();
-  const { toast } = useToast();
   const { t } = useLanguage();
   const [data, setData] = useState<GamificationData | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch gamification data
-  const fetchGamificationData = async () => {
-    if (!user?.id) return;
-    
+  useEffect(() => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchData = async () => {
     try {
-      const response = await fetch('/api/gamification', {
-        headers: { 'x-user-id': user.id }
-      });
-      
+        const response = await fetch('/api/gamification');
       if (response.ok) {
         const result = await response.json();
         setData(result);
-      } else {
-        toast({
-          title: t("common.error"),
-          description: t("gamification.errorLoading"),
-          variant: "destructive"
-        });
       }
     } catch (error) {
       console.error('Error fetching gamification data:', error);
-      toast({
-        title: t("common.error"),
-        description: t("gamification.connectionError"),
-        variant: "destructive"
-      });
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchGamificationData();
+    fetchData();
   }, [user?.id]);
 
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">{t("gamification.accessRequired")}</h2>
+          <h2 className="text-2xl font-bold mb-4">Access Required</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {t("gamification.signInRequired")}
+            Please sign in to view your achievements
           </p>
-          <Button asChild>
-            <a href="/login">{t("gamification.signIn")}</a>
-          </Button>
         </div>
       </div>
     );
   }
 
-  const getLevelProgress = () => {
-    if (!data) return 0;
-    const currentLevelXp = data.level * 1000; // 1000 XP per level
-    const nextLevelXp = (data.level + 1) * 1000;
-    const progress = ((data.totalXp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100;
-    return Math.max(0, Math.min(100, progress));
-  };
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading achievements...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const getStreakColor = (streak: number) => {
-    if (streak >= 30) return "text-red-600";
-    if (streak >= 14) return "text-orange-600";
-    if (streak >= 7) return "text-yellow-600";
-    return "text-gray-600";
+  if (!data) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">
+            Could not load gamification data
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Filter to show only core achievements
+  const coreAchievements = data.achievements.filter(a => 
+    CORE_ACHIEVEMENT_IDS.includes(a.id)
+  );
+
+  // Calculate progress for achievements
+  const getAchievementProgress = (achievementId: string) => {
+    switch (achievementId) {
+      case 'first_log':
+        return data.totalMeals > 0 ? 100 : 0;
+      case 'streak_3':
+        return Math.min((data.currentStreak / 3) * 100, 100);
+      case 'streak_7':
+        return Math.min((data.currentStreak / 7) * 100, 100);
+      case 'log_30':
+        return Math.min((data.totalMeals / 30) * 100, 100);
+      default:
+        return 0;
+    }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="container mx-auto px-4 py-6 space-y-6 max-w-4xl">
+      {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{t("gamification.title")}</h1>
+        <h1 className="text-3xl font-bold mb-2">Achievements</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          {t("gamification.subtitle")}
+          Track your progress and unlock achievements
         </p>
       </div>
 
-      {loading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">{t("gamification.loadingGamification")}</p>
+      {/* Level, XP, and Streak - Prominent Display */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Level */}
+        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <Trophy className="w-6 h-6" />
+              <span className="text-sm font-medium text-orange-100">Level</span>
         </div>
-      ) : data ? (
-        <>
-          {/* Level and XP */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="w-5 h-5" />
-                {t("gamification.levelAndExperience")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-orange-600 mb-2">
-                    {t("gamification.currentLevel")} {data.level}
+            <div className="text-4xl font-bold mb-2">{data.level}</div>
+            <div className="text-sm text-orange-100">
+              {data.xpInCurrentLevel} / {data.xpInCurrentLevel + data.xpToNextLevel} XP
                   </div>
-                  <p className="text-gray-600">{t("gamification.currentLevel")}</p>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-blue-600 mb-2">
-                    {data.totalXp.toLocaleString()}
+            <Progress 
+              value={data.progressPercent} 
+              className="h-2 mt-3 bg-orange-400/30"
+            />
+          </CardContent>
+        </Card>
+
+        {/* Total XP */}
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <Zap className="w-6 h-6" />
+              <span className="text-sm font-medium text-blue-100">Total XP</span>
                   </div>
-                  <p className="text-gray-600">{t("gamification.totalXp")}</p>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-green-600 mb-2">
-                    {data.xpToNextLevel}
-                  </div>
-                  <p className="text-gray-600">{t("gamification.xpToNextLevel")}</p>
-                </div>
-              </div>
-              
-              <div className="mt-6">
-                <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>{t("gamification.progressToLevel", { level: data.level + 1 })}</span>
-                  <span>{Math.round(getLevelProgress())}%</span>
-                </div>
-                <Progress value={getLevelProgress()} className="h-3" />
+            <div className="text-4xl font-bold">{data.totalXp.toLocaleString()}</div>
+            <div className="text-sm text-blue-100 mt-2">
+              {data.xpToNextLevel} XP to next level
               </div>
             </CardContent>
           </Card>
 
-          {/* Streaks */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Flame className="w-5 h-5" />
-                {t("gamification.streak")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="text-center">
-                  <div className={`text-6xl font-bold mb-2 ${getStreakColor(data.currentStreak)}`}>
-                    {data.currentStreak}
+        {/* Streak */}
+        <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white border-0">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <Flame className="w-6 h-6" />
+              <span className="text-sm font-medium text-red-100">Streak</span>
                   </div>
-                  <p className="text-gray-600">{t("gamification.currentStreak")}</p>
-                  <Badge variant={data.currentStreak > 0 ? "default" : "secondary"} className="mt-2">
-                    {data.currentStreak > 0 ? t("gamification.onStreak") : t("gamification.noActiveStreak")}
-                  </Badge>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-6xl font-bold text-purple-600 mb-2">
-                    {data.longestStreak}
-                  </div>
-                  <p className="text-gray-600">{t("gamification.bestStreak")}</p>
-                  <Badge variant="outline" className="mt-2">
-                    {t("gamification.personalRecord")}
-                  </Badge>
-                </div>
+            <div className="text-4xl font-bold">{data.currentStreak}</div>
+            <div className="text-sm text-red-100 mt-2">
+              {data.currentStreak > 0 ? 'days in a row' : 'Start logging to build your streak!'}
               </div>
             </CardContent>
           </Card>
-
-          {/* Weekly and Monthly XP */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="w-5 h-5" />
-                {t("gamification.xpByPeriod")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-blue-600 mb-2">
-                    {data.weeklyXp}
-                  </div>
-                  <p className="text-gray-600">{t("gamification.weeklyXp")}</p>
                 </div>
                 
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-green-600 mb-2">
-                    {data.monthlyXp}
+      {/* Daily XP Goal */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-yellow-600" />
+              <span className="font-semibold">Daily XP Goal</span>
                   </div>
-                  <p className="text-gray-600">{t("gamification.monthlyXp")}</p>
+            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+              {data.todayXp} / {data.dailyXpGoal}
+            </Badge>
                 </div>
-              </div>
+          <Progress 
+            value={Math.min((data.todayXp / data.dailyXpGoal) * 100, 100)} 
+            className="h-3"
+          />
             </CardContent>
           </Card>
 
           {/* Achievements */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="w-5 h-5" />
-                {t("gamification.achievements")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {data.achievements.length === 0 ? (
+        <CardContent className="p-6">
+          <div className="flex items-center gap-2 mb-6">
+            <Trophy className="w-5 h-5 text-orange-600" />
+            <h2 className="text-xl font-bold">Achievements</h2>
+          </div>
+
+          {coreAchievements.length === 0 ? (
                 <div className="text-center py-8">
                   <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600 dark:text-gray-400">
-                    {t("gamification.noAchievementsAvailable")}
+                No achievements available
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {data.achievements.map((achievement) => (
+            <div className="space-y-4">
+              {coreAchievements.map((achievement) => {
+                const progress = getAchievementProgress(achievement.id);
+                const isUnlocked = achievement.unlocked;
+                const isInProgress = !isUnlocked && progress > 0;
+
+                return (
                     <div 
                       key={achievement.id}
-                      className={`border rounded-lg p-4 ${
-                        achievement.unlocked 
+                    className={`border-2 rounded-lg p-4 transition-all ${
+                      isUnlocked
                           ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
+                        : isInProgress
+                        ? 'border-orange-300 bg-orange-50 dark:bg-orange-900/10'
                           : 'border-gray-200 bg-gray-50 dark:bg-gray-800'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <Trophy className={`w-6 h-6 ${
-                          achievement.unlocked ? 'text-yellow-600' : 'text-gray-400'
-                        }`} />
-                        <div>
-                          <h3 className={`font-semibold ${
-                            achievement.unlocked ? 'text-green-800 dark:text-green-200' : 'text-gray-600'
+                    <div className="flex items-start gap-4">
+                      {/* Icon */}
+                      <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
+                        isUnlocked
+                          ? 'bg-green-100 dark:bg-green-900/30'
+                          : 'bg-gray-200 dark:bg-gray-700'
+                      }`}>
+                        {isUnlocked ? (
+                          <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <Lock className="w-6 h-6 text-gray-400" />
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className={`font-semibold text-lg ${
+                            isUnlocked 
+                              ? 'text-green-800 dark:text-green-200' 
+                              : 'text-gray-900 dark:text-gray-100'
                           }`}>
                             {achievement.name}
                           </h3>
-                          <p className={`text-sm ${
-                            achievement.unlocked ? 'text-green-600' : 'text-gray-500'
+                          <Badge 
+                            variant={isUnlocked ? "default" : "secondary"}
+                            className={isUnlocked ? "bg-green-600" : ""}
+                          >
+                            {isUnlocked ? "Unlocked" : isInProgress ? "In Progress" : "Locked"}
+                          </Badge>
+                        </div>
+                        <p className={`text-sm mb-3 ${
+                          isUnlocked 
+                            ? 'text-green-700 dark:text-green-300' 
+                            : 'text-gray-600 dark:text-gray-400'
                           }`}>
                             {achievement.description}
                           </p>
-                          {achievement.unlocked && achievement.unlockedAt && (
-                            <p className="text-xs text-green-500 mt-1">
-                              {t("gamification.unlocked", { date: new Date(achievement.unlockedAt).toLocaleDateString('es-ES') })}
-                            </p>
+
+                        {/* Progress Bar (for in-progress achievements) */}
+                        {isInProgress && (
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+                              <span>Progress</span>
+                              <span>{Math.round(progress)}%</span>
+                            </div>
+                            <Progress value={progress} className="h-2" />
+                          </div>
+                        )}
+
+                        {/* XP Reward */}
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge variant="outline" className="text-xs">
+                            +{achievement.xpReward} XP
+                          </Badge>
+                          {isUnlocked && achievement.unlockedAt && (
+                            <span className="text-xs text-green-600 dark:text-green-400">
+                              Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
+                            </span>
                           )}
                         </div>
                       </div>
                     </div>
-                  ))}
+                  </div>
+                );
+              })}
                 </div>
               )}
             </CardContent>
           </Card>
-        </>
-      ) : (
-        <div className="text-center py-12">
-          <Flame className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">
-            {t("gamification.couldNotLoadData")}
-          </p>
-        </div>
-      )}
     </div>
   );
 }

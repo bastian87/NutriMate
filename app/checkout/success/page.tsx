@@ -99,8 +99,8 @@ export default function CheckoutSuccessPage() {
                     2
                   </div>
                   <div>
-                    <h4 className="font-medium">Generate Your First Meal Plan</h4>
-                    <p className="text-sm text-gray-600">Get personalized recipes for the week</p>
+                    <h4 className="font-medium">Create Your First Recipe</h4>
+                    <p className="text-sm text-gray-600">Start building your custom recipe collection</p>
                   </div>
                 </div>
               </div>

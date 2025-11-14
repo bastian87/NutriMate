@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
-import { LanguageSelector } from "./language-selector"
+// LanguageSelector removed - single language mode
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useUserProfile } from "@/components/auth/user-profile-provider"
 import { cn } from "@/lib/utils"
@@ -24,7 +24,6 @@ import {
 import {
   Home,
   ChefHat,
-  ShoppingCart,
   Calendar,
   Heart,
   LogOut,
@@ -52,51 +51,18 @@ export function HorizontalNavigation() {
     setIsMobileOpen(false)
   }, [pathname])
 
-  // Categorías de navegación para mejor organización
+  // Simplified navigation - only 4 main tabs: Home, Add Meal, Achievements, Profile
   const navigationCategories = {
     main: [
-      { name: t("navigation.dashboard"), href: "/dashboard", icon: Home },
-      { name: t("navigation.recipes"), href: "/recipes", icon: ChefHat },
-      { name: t("navigation.groceryList"), href: "/grocery-list", icon: ShoppingCart },
-    ],
-    nutrition: [
-      { name: t("navigation.nutritionTracking"), href: "/calendar", icon: Calendar },
-      { name: "Food Diary", href: "/food-diary", icon: BookOpen },
-      { name: t("navigation.goals"), href: "/goals", icon: Target },
-      { name: t("navigation.ingredients"), href: "/ingredients", icon: Apple },
-      { name: t("navigation.calorieCalculator"), href: "/calorie-calculator", icon: Calculator },
-    ],
-    insights: [
-      { name: t("navigation.gamification"), href: "/gamification", icon: Flame },
-      { name: t("navigation.weeklySummary"), href: "/weekly-summary", icon: BarChart3 },
-      { name: t("navigation.monthlySummary"), href: "/monthly-summary", icon: BarChart3 },
-    ],
-    saved: [
-      { name: t("navigation.savedRecipes"), href: "/saved-recipes", icon: Heart },
+      { name: "Home", href: "/dashboard", icon: Home },
+      { name: "Add Meal", href: "/food-diary?openAddDialog=true", icon: BookOpen },
+      { name: "Achievements", href: "/gamification", icon: Flame },
+      { name: "Profile", href: "/account", icon: User },
     ]
   }
 
-  // Elementos principales (siempre visibles)
+  // Main navigation items (always visible)
   const mainItems = navigationCategories.main
-  
-  // Categorías con sus propios dropdowns
-  const categoryButtons = [
-    {
-      name: t("navigation.nutrition"),
-      icon: Target,
-      items: navigationCategories.nutrition
-    },
-    {
-      name: t("navigation.analysis"),
-      icon: BarChart3,
-      items: navigationCategories.insights
-    },
-    {
-      name: t("navigation.saved"),
-      icon: Heart,
-      items: navigationCategories.saved
-    }
-  ]
 
   const toggleMobileMenu = () => {
     setIsMobileOpen(!isMobileOpen)
@@ -172,39 +138,16 @@ export function HorizontalNavigation() {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-1">
-              {/* Elementos principales */}
+              {/* Main navigation items */}
               {mainItems.map((item) => (
                 <NavItem key={item.href} item={item} />
               ))}
 
-              {/* Botones de categorías */}
-              {categoryButtons.map((category) => (
-                <DropdownMenu key={category.name}>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2 px-3 py-2">
-                      <category.icon className="w-4 h-4" />
-                      <span>{category.name}</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    {category.items.map((item) => (
-                      <DropdownMenuItem key={item.href} asChild>
-                        <Link href={item.href} className="flex items-center gap-2">
-                          <item.icon className="w-4 h-4" />
-                          <span>{item.name}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ))}
-
-              {/* Separador */}
+              {/* Separator */}
               <div className="mx-2 h-6 w-px bg-gray-200 dark:bg-gray-700" />
 
               {/* Controles de usuario */}
               <div className="flex items-center gap-2">
-                <LanguageSelector isCompact={true} />
                 <ThemeToggle />
                 
                 {user ? (
@@ -249,7 +192,6 @@ export function HorizontalNavigation() {
 
             {/* Mobile menu button */}
             <div className="lg:hidden flex items-center space-x-2">
-              <LanguageSelector isCompact />
               <ThemeToggle />
               <button
                 onClick={toggleMobileMenu}
@@ -283,26 +225,12 @@ export function HorizontalNavigation() {
                   ))}
                 </div>
 
-                {/* Categorías */}
-                {categoryButtons.map((category) => (
-                  <div key={category.name} className="space-y-2">
-                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 flex items-center gap-2">
-                      <category.icon className="w-3 h-3" />
-                      {category.name}
-                    </div>
-                    {category.items.map((item) => (
-                      <NavItem key={item.href} item={item} isMobile={true} />
-                    ))}
-                  </div>
-                ))}
-
-                {/* Separador */}
+                {/* Separator */}
                 <div className="my-4 h-px bg-gray-200 dark:bg-gray-700" />
 
                 {/* Controles de usuario móvil */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <LanguageSelector isCompact={false} />
                     <ThemeToggle />
                   </div>
                   

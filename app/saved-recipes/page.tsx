@@ -24,84 +24,18 @@ export default function SavedRecipesPage() {
   const { isPremium } = useSubscription()
   const { user } = useAuthContext()
   const [searchQuery, setSearchQuery] = useState("")
-  const [showFilters, setShowFilters] = useState(false)
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [maxCookTime, setMaxCookTime] = useState([120])
-  const [calorieRange, setCalorieRange] = useState([0, 1000])
-  const [sortOption, setSortOption] = useState<"az" | "za" | "calories-asc" | "calories-desc">("az")
   // Paginación
   const ITEMS_PER_PAGE = 12;
   const { t } = useLanguage()
 
-  // Definir tipos de comida
-  const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"]
-
-  // Unir tags y tipos de comida para los filtros
-  const allTags = useMemo(() => {
-    if (!favorites || favorites.length === 0) return []
-    const tags = new Set<string>()
-    favorites.forEach((recipe) => {
-      if (recipe.tags && Array.isArray(recipe.tags)) {
-        recipe.tags.forEach((tag) => {
-          if (tag && tag.name) tags.add(tag.name)
-        })
-      }
-      if (recipe.meal_type && MEAL_TYPES.includes(recipe.meal_type)) {
-        tags.add(recipe.meal_type)
-      }
-    })
-    return Array.from(tags).filter(Boolean).sort()
-  }, [favorites])
-
   const filteredRecipes = useMemo(() => {
-    let arr = favorites
-
-    // Filtro por nombre
-    if (searchQuery.trim()) {
-      arr = arr.filter(recipe => recipe.name.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+    if (!searchQuery.trim()) {
+      return favorites
     }
-
-    // Filtro por tags y tipo de comida
-    if (selectedTags.length) {
-      arr = arr.filter((recipe) => {
-        const recipeTagNames = (recipe.tags || []).map((t) => t.name)
-        const hasTag = selectedTags.some((tag) => recipeTagNames.includes(tag))
-        const hasMealType = recipe.meal_type && selectedTags.includes(recipe.meal_type)
-        return hasTag || hasMealType
-      })
-    }
-
-    // Filtro por tiempo máximo
-    if (maxCookTime[0] !== 120) {
-      arr = arr.filter(recipe => (recipe.cook_time_minutes || 0) <= maxCookTime[0])
-    }
-
-    // Filtro por rango calórico
-    if (calorieRange[0] !== 0 || calorieRange[1] !== 1000) {
-      arr = arr.filter(recipe => {
-        const calories = recipe.calories || 0
-        return calories >= calorieRange[0] && calories <= calorieRange[1]
-      })
-    }
-
-    // Ordenamiento
-    switch (sortOption) {
-      case "az":
-        arr.sort((a, b) => a.name.localeCompare(b.name))
-        break
-      case "za":
-        arr.sort((a, b) => b.name.localeCompare(a.name))
-        break
-      case "calories-asc":
-        arr.sort((a, b) => (a.calories || 0) - (b.calories || 0))
-        break
-      case "calories-desc":
-        arr.sort((a, b) => (b.calories || 0) - (a.calories || 0))
-        break
-    }
-
-    return arr
-  }, [favorites, searchQuery, selectedTags, maxCookTime, calorieRange, sortOption])
+    return favorites.filter(recipe => 
+      recipe.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+    )
+  }, [favorites, searchQuery])
 
   // Aplicar paginación a las recetas filtradas
   const {
@@ -110,33 +44,6 @@ export default function SavedRecipesPage() {
     paginatedItems: paginatedRecipes,
     goToPage
   } = usePagination(filteredRecipes, ITEMS_PER_PAGE);
-
-  // Contador de filtros activos
-  const activeFiltersCount = useMemo(() => {
-    let count = 0
-    if (searchQuery.trim()) count++
-    if (selectedTags.length > 0) count++
-    if (maxCookTime[0] !== 120) count++
-    if (calorieRange[0] !== 0 || calorieRange[1] !== 1000) count++
-    return count
-  }, [searchQuery, selectedTags, maxCookTime, calorieRange])
-
-  const clearFilters = () => {
-    setSearchQuery("")
-    setSelectedTags([])
-    setMaxCookTime([120])
-    setCalorieRange([0, 1000])
-    goToPage(1)
-  }
-
-  const toggleTag = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
-    )
-    goToPage(1)
-  }
 
   if (loading) {
     return (
@@ -202,23 +109,10 @@ export default function SavedRecipesPage() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        {/* Search and Filters */}
+        {/* Search */}
         <RecipeFiltersNew
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-          selectedTags={selectedTags}
-          toggleTag={toggleTag}
-          allTags={allTags}
-          maxCookTime={maxCookTime}
-          setMaxCookTime={setMaxCookTime}
-          calorieRange={calorieRange}
-          setCalorieRange={setCalorieRange}
-          sortOption={sortOption}
-          setSortOption={setSortOption}
-          clearFilters={clearFilters}
-          activeFiltersCount={activeFiltersCount}
           t={t}
         />
 

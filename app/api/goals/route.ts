@@ -189,7 +189,7 @@ export async function DELETE(req: NextRequest) {
 
     if (dayEntries && dayEntries.length > 0) {
       return NextResponse.json({ 
-        error: 'No se puede eliminar este objetivo porque tiene entradas diarias asociadas. Primero elimina las entradas del calendario o crea un nuevo objetivo.' 
+        error: 'No se puede eliminar este objetivo porque tiene entradas diarias asociadas. Primero elimina las entradas del diario de comidas o crea un nuevo objetivo.' 
       }, { status: 400 });
     }
 

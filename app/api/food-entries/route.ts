@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClientWithCookies } from "@/lib/supabase/server";
+import { awardXpForMealLog, updateStreakForMealLog } from "@/lib/gamification/gamification-service";
 
 export async function GET(req: NextRequest) {
   try {
@@ -77,13 +78,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { category, menu, amount, carb, protein, fats, sugar, calories, thoughts, image_url } = body;
 
-    // Validate required fields
-    if (!menu) {
-      return NextResponse.json(
-        { error: "Menu is required" },
-        { status: 400 }
-      );
-    }
+    // Validate required fields - menu is now optional for quick entries
+    // If no menu provided, use a default name
+    const menuName = menu || `Quick ${category} entry`
 
     // Validate category
     const validCategories = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -104,7 +101,7 @@ export async function POST(req: NextRequest) {
         hour12: true 
       }),
       category,
-      menu,
+      menu: menuName,
       amount: amount || null,
       carb: parseFloat(carb) || 0,
       protein: parseFloat(protein) || 0,
@@ -130,8 +127,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Award XP and update streak using gamification service
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Award XP for logging a meal
+    const xpResult = await awardXpForMealLog(supa, userId, newEntry.id, today);
+    
+    // Update streak based on meal logging
+    const streakResult = await updateStreakForMealLog(supa, userId, today);
+
     return NextResponse.json({ 
       entry: newEntry,
+      xpAwarded: xpResult.totalXpAwarded,
+      streak: streakResult.current,
       message: "Food diary entry created successfully"
     });
 

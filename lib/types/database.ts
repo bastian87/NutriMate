@@ -36,66 +36,32 @@ export interface Database {
         Row: {
           id: string
           name: string
-          description: string | null
           image_url: string | null
-          prep_time_minutes: number
-          cook_time_minutes: number
-          servings: number
           calories: number
-          protein: number
-          carbs: number
-          fat: number
-          fiber: number | null
-          sugar: number | null
-          sodium: number | null
-          difficulty_level: string | null
-          cuisine_type: string | null
-          meal_type: string | null
-          instructions: string
+          created_by?: string | null
+          is_private?: boolean | null
           created_at: string
           updated_at: string
+          // Legacy fields may exist in database but are not used in application
+          // Removed from types to simplify schema: description, prep_time_minutes, cook_time_minutes,
+          // servings, protein, carbs, fat, fiber, sugar, sodium, difficulty_level, cuisine_type,
+          // meal_type, instructions
         }
         Insert: {
           id?: string
           name: string
-          description?: string | null
           image_url?: string | null
-          prep_time_minutes?: number
-          cook_time_minutes?: number
-          servings?: number
           calories?: number
-          protein?: number
-          carbs?: number
-          fat?: number
-          fiber?: number | null
-          sugar?: number | null
-          sodium?: number | null
-          difficulty_level?: string | null
-          cuisine_type?: string | null
-          meal_type?: string | null
-          instructions?: string
+          created_by?: string | null
+          is_private?: boolean | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           name?: string
-          description?: string | null
           image_url?: string | null
-          prep_time_minutes?: number
-          cook_time_minutes?: number
-          servings?: number
           calories?: number
-          protein?: number
-          carbs?: number
-          fat?: number
-          fiber?: number | null
-          sugar?: number | null
-          sodium?: number | null
-          difficulty_level?: string | null
-          cuisine_type?: string | null
-          meal_type?: string | null
-          instructions?: string
           created_at?: string
           updated_at?: string
         }
@@ -105,24 +71,21 @@ export interface Database {
           id: string
           recipe_id: string
           name: string
-          quantity: string
-          unit: string | null
+          amount: string
           created_at: string
         }
         Insert: {
           id?: string
           recipe_id: string
           name: string
-          quantity: string
-          unit?: string | null
+          amount: string
           created_at?: string
         }
         Update: {
           id?: string
           recipe_id?: string
           name?: string
-          quantity?: string
-          unit?: string | null
+          amount?: string
           created_at?: string
         }
       }
@@ -170,67 +133,6 @@ export interface Database {
           user_id?: string
           recipe_id?: string
           created_at?: string
-        }
-      }
-      grocery_lists: {
-        Row: {
-          id: string
-          user_id: string
-          name: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          name: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          name?: string
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      grocery_list_items: {
-        Row: {
-          id: string
-          grocery_list_id: string
-          recipe_id: string | null
-          name: string
-          quantity: string | null
-          unit: string | null
-          category: string | null
-          is_checked: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          grocery_list_id: string
-          recipe_id?: string | null
-          name: string
-          quantity?: string | null
-          unit?: string | null
-          category?: string | null
-          is_checked?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          grocery_list_id?: string
-          recipe_id?: string | null
-          name?: string
-          quantity?: string | null
-          unit?: string | null
-          category?: string | null
-          is_checked?: boolean
-          created_at?: string
-          updated_at?: string
         }
       }
       goals: {
@@ -423,61 +325,6 @@ export interface Database {
           updated_at?: string
         }
       }
-      // meal_plans: {
-      //   Row: {
-      //     id: string
-      //     user_id: string
-      //     name: string
-      //     start_date: string
-      //     end_date: string
-      //     created_at: string
-      //     updated_at: string
-      //   }
-      //   Insert: {
-      //     id?: string
-      //     user_id: string
-      //     name?: string
-      //     start_date?: string
-      //     end_date?: string
-      //     created_at?: string
-      //     updated_at?: string
-      //   }
-      //   Update: {
-      //     id?: string
-      //     user_id?: string
-      //     name?: string
-      //     start_date?: string
-      //     end_date?: string
-      //     created_at?: string
-      //     updated_at?: string
-      //   }
-      // }
-      // meal_plan_meals: {
-      //   Row: {
-      //     id: string
-      //     meal_plan_id: string
-      //     recipe_id: string
-      //     day_number: number
-      //     meal_type: string
-      //     created_at: string
-      //   }
-      //   Insert: {
-      //     id?: string
-      //     meal_plan_id: string
-      //     recipe_id: string
-      //     day_number?: number
-      //     meal_type?: string
-      //     created_at?: string
-      //   }
-      //   Update: {
-      //     id?: string
-      //     meal_plan_id?: string
-      //     recipe_id?: string
-      //     day_number?: number
-      //     meal_type?: string
-      //     created_at?: string
-      //   }
-      // }
     }
     Views: {
       [_ in never]: never

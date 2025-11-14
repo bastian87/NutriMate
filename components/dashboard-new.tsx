@@ -26,7 +26,7 @@ import {
 import { useLanguage } from "@/lib/i18n/context"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider"
-import { Crown, Calendar, RefreshCw } from "lucide-react"
+import { Crown, RefreshCw } from "lucide-react"
 import Link from "next/link"
 
 interface DashboardNewProps {
@@ -36,30 +36,17 @@ interface DashboardNewProps {
     carbs: number
     fat: number
   }
-  currentMealPlan: any
-  isGenerating: boolean
-  onGenerateNewPlan: () => void
 }
 
 export const DashboardNew = ({ 
-  todaysNutrition, 
-  currentMealPlan, 
-  isGenerating, 
-  onGenerateNewPlan 
+  todaysNutrition
 }: DashboardNewProps) => {
   const { t } = useLanguage()
   const { user } = useAuthContext()
   const { userData } = useUserProfile()
   const isPremium = useIsPremium()
 
-  const currentDate = new Date()
-  const monthNames = [
-    t("calendar.january"), t("calendar.february"), t("calendar.march"), t("calendar.april"),
-    t("calendar.may"), t("calendar.june"), t("calendar.july"), t("calendar.august"),
-    t("calendar.september"), t("calendar.october"), t("calendar.november"), t("calendar.december")
-  ]
 
-  const todaysMeals = currentMealPlan?.meals?.filter((meal: any) => meal.day === 1) || []
 
   return (
     <div className="flex-1 p-6 bg-background">
@@ -113,33 +100,6 @@ export const DashboardNew = ({
           />
         </div>
 
-        {/* Calendar */}
-        <div className="col-span-3">
-          <AnimatedCard delay={0.5}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-7 gap-1 text-xs">
-                {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day, i) => (
-                  <div key={i} className="text-center text-gray-500 py-1 font-medium">{day}</div>
-                ))}
-                {Array.from({ length: 31 }, (_, i) => (
-                  <button 
-                    key={i} 
-                    className={`text-center py-1 rounded text-sm ${
-                      i === currentDate.getDate() - 1 
-                        ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' 
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </AnimatedCard>
-        </div>
 
         {/* Nutrition Progress Card */}
         <div className="col-span-6">
@@ -212,40 +172,6 @@ export const DashboardNew = ({
           </AnimatedCard>
         </div>
 
-        {/* Today's Meals */}
-        {todaysMeals.length > 0 && (
-          <div className="col-span-3">
-            <AnimatedCard delay={0.8}>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <Badge className="bg-pastel-orange-100 text-pastel-orange-700 dark:bg-orange-900 dark:text-orange-300">
-                    Comidas de Hoy
-                  </Badge>
-                  <span className="text-sm text-gray-500">{todaysMeals.length} comidas</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {todaysMeals.slice(0, 2).map((meal: any, index: number) => (
-                    <div key={meal.id} className="flex gap-3">
-                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                        <CaloriesIcon className="w-6 h-6 text-pastel-orange-500" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-sm font-medium">{meal.recipe.name}</h4>
-                        <div className="flex gap-4 text-xs text-gray-500 mt-1">
-                          <span>{meal.recipe.calories} kcal</span>
-                          <span>{meal.recipe.protein}g prot</span>
-                          <span>{meal.recipe.carbs}g carb</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </AnimatedCard>
-          </div>
-        )}
 
         {/* Workout Progress */}
         <div className="col-span-6">
@@ -360,7 +286,7 @@ export const DashboardNew = ({
                   <span className="text-xs text-green-600 font-medium">✓</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-medium">Plan de comidas completado</h4>
+                  <h4 className="text-sm font-medium">Registro de comida completado</h4>
                   <p className="text-xs text-gray-500">Has alcanzado el 85% de tu objetivo calórico diario</p>
                   <span className="text-xs text-gray-400">2h ago</span>
                 </div>

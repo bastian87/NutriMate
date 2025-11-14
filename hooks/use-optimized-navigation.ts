@@ -75,15 +75,6 @@ export function useOptimizedNavigation() {
     navigateTo('/ingredients')
   }, [navigateTo])
 
-  const navigateToGroceryList = useCallback(() => {
-    navigateTo('/grocery-list')
-  }, [navigateTo])
-
-
-  const navigateToCalendar = useCallback(() => {
-    navigateTo('/calendar')
-  }, [navigateTo])
-
   const navigateToAccount = useCallback(() => {
     navigateTo('/account')
   }, [navigateTo])
@@ -93,8 +84,6 @@ export function useOptimizedNavigation() {
     navigateToDashboard,
     navigateToRecipes,
     navigateToIngredients,
-    navigateToGroceryList,
-    navigateToCalendar,
     navigateToAccount,
     isNavigating: stateRef.current.isNavigating
   }

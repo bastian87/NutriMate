@@ -23,10 +23,9 @@ import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { useActiveGoal } from "@/hooks/useActiveGoal";
-import { Crown, Calendar, RefreshCw, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { Crown, RefreshCw, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useState, useMemo } from "react";
 
 interface DashboardFoodDiaryProps {
   onRefresh?: () => void;
@@ -47,113 +46,9 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
     error 
   } = useDashboardData();
 
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const currentDate = new Date();
-  const monthNames = [
-    t("calendar.january"), t("calendar.february"), t("calendar.march"), t("calendar.april"),
-    t("calendar.may"), t("calendar.june"), t("calendar.july"), t("calendar.august"),
-    t("calendar.september"), t("calendar.october"), t("calendar.november"), t("calendar.december")
-  ];
-
   const targetCalories = activeGoal?.targetKcalDay || 2000;
   const calorieProgress = Math.min((todayNutrition.calories / targetCalories) * 100, 100);
   const isOnTrack = calorieProgress >= 80 && calorieProgress <= 120;
-
-  // Generate calendar days for the current month
-  const calendarDays = useMemo(() => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    
-    // First day of the month
-    const firstDay = new Date(year, month, 1);
-    // Last day of the month
-    const lastDay = new Date(year, month + 1, 0);
-    // First day of the week (Monday = 1)
-    const firstDayOfWeek = (firstDay.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
-    
-    const days = [];
-    
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < firstDayOfWeek; i++) {
-      days.push(null);
-    }
-    
-    // Add all days of the month
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      days.push(dateStr);
-    }
-    
-    return days;
-  }, [currentMonth]);
-
-  // Process food entries for calendar display
-  const processFoodEntriesForCalendar = (entries: any[], startDate: Date, endDate: Date) => {
-    const targetCalories = activeGoal?.targetKcalDay || 2000;
-    const daysMap = new Map();
-    
-    // Initialize all days in the month
-    const currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().slice(0, 10);
-      daysMap.set(dateStr, {
-        date: dateStr,
-        entries: [],
-        totalCalories: 0,
-        status: 'normal'
-      });
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-    
-    // Process entries
-    entries.forEach(entry => {
-      const dateStr = entry.date;
-      if (daysMap.has(dateStr)) {
-        const dayData = daysMap.get(dateStr);
-        dayData.entries.push(entry);
-        dayData.totalCalories += entry.calories || 0;
-      }
-    });
-    
-    // Calculate status for each day
-    daysMap.forEach((dayData) => {
-      if (dayData.entries.length === 0) {
-        dayData.status = 'normal'; // No entries
-      } else {
-        const calorieRatio = dayData.totalCalories / targetCalories;
-        if (calorieRatio <= 1.0) {
-          dayData.status = 'positive'; // Green if within or under target
-        } else {
-          dayData.status = 'negative'; // Red if over target
-        }
-      }
-    });
-    
-    return Array.from(daysMap.values());
-  };
-
-  // Get day status for calendar
-  const getDayStatus = (dateStr: string) => {
-    if (!recentEntries) return null;
-    
-    const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-    const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-    const processedDays = processFoodEntriesForCalendar(recentEntries, startDate, endDate);
-    
-    return processedDays.find(d => d.date === dateStr);
-  };
-
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentMonth(prev => {
-      const newDate = new Date(prev);
-      if (direction === 'prev') {
-        newDate.setMonth(prev.getMonth() - 1);
-      } else {
-        newDate.setMonth(prev.getMonth() + 1);
-      }
-      return newDate;
-    });
-  };
 
   if (loading) {
     return (
@@ -251,103 +146,9 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
           />
         </div>
 
-        {/* Mini Calendar */}
-        <div className="col-span-3">
-          <AnimatedCard delay={0.5}>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">
-                  {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-                </CardTitle>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigateMonth('prev')}
-                    className="h-6 w-6 p-0"
-                  >
-                    <ChevronLeft className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigateMonth('next')}
-                    className="h-6 w-6 p-0"
-                  >
-                    <ChevronRight className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {/* Week Days Header */}
-              <div className="grid grid-cols-7 gap-1 mb-2">
-                {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day) => (
-                  <div key={day} className="text-center text-xs font-semibold text-gray-500 py-1">
-                    {day}
-                  </div>
-                ))}
-              </div>
-              
-              {/* Calendar Grid */}
-              <div className="grid grid-cols-7 gap-1">
-                {calendarDays.map((dateStr, index) => {
-                  if (!dateStr) {
-                    return <div key={index} className="h-6" />;
-                  }
-                  
-                  const dayStatus = getDayStatus(dateStr);
-                  const dayNumber = parseInt(dateStr.split('-')[2]);
-                  const isToday = dateStr === new Date().toISOString().slice(0, 10);
-                  
-                  return (
-                    <button
-                      key={dateStr}
-                      className={`
-                        h-6 w-6 text-xs rounded transition-transform duration-100 ease-out hover:scale-110 flex items-center justify-center relative
-                        ${dayStatus?.status === 'positive'
-                          ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300' 
-                          : dayStatus?.status === 'negative'
-                            ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300'
-                            : 'hover:bg-muted dark:hover:bg-gray-800'
-                        }
-                        ${isToday ? 'ring-2 ring-primary font-bold' : ''}
-                      `}
-                      title={dayStatus ? `${dayStatus.totalCalories} kcal` : 'Sin datos'}
-                    >
-                      {dayNumber}
-                      {isToday && (
-                        <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-primary rounded-full" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-              
-              {/* Legend */}
-              <div className="mt-3 pt-3 border-t border-border">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-100 rounded-full"></div>
-                    <span>Bien</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-100 rounded-full"></div>
-                    <span>Regular</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-muted rounded-full"></div>
-                    <span>Sin datos</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </AnimatedCard>
-        </div>
-
         {/* Today's Progress */}
-        <div className="col-span-6">
-          <AnimatedCard delay={0.6}>
+        <div className="col-span-9">
+          <AnimatedCard delay={0.5}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>{t("dashboard.todayProgress")}</CardTitle>
@@ -408,7 +209,7 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
 
         {/* Recent Entries & Quick Actions */}
         <div className="col-span-3">
-          <AnimatedCard delay={0.7}>
+          <AnimatedCard delay={0.6}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">{t("dashboard.recentEntries")}</CardTitle>
@@ -428,12 +229,6 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
                       <Button size="sm" className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30">
                         <PlusIcon className="w-4 h-4 mr-2" />
 {t("dashboard.registerFood")}
-                      </Button>
-                    </Link>
-                    <Link href="/calendar">
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Calendar className="w-4 h-4 mr-2" />
-{t("dashboard.viewCalendar")}
                       </Button>
                     </Link>
                   </div>
@@ -466,7 +261,7 @@ export const DashboardFoodDiary = ({ onRefresh }: DashboardFoodDiaryProps) => {
 
         {/* Week Summary */}
         <div className="col-span-12">
-          <AnimatedCard delay={0.8}>
+          <AnimatedCard delay={0.7}>
             <CardHeader>
               <CardTitle>{t("dashboard.weekSummary")}</CardTitle>
             </CardHeader>

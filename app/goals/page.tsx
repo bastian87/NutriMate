@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/i18n/context";
-import { Target, Calendar, Zap, Trash2, Plus, TrendingUp } from "lucide-react";
+import { Target, Zap, Trash2, Plus, TrendingUp } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { motion } from "framer-motion";
 
@@ -323,7 +323,7 @@ export default function GoalsPage() {
           <Card className="bg-white shadow-lg border border-gray-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-orange-600" />
+                <Target className="w-5 h-5 text-orange-600" />
                 {t("goals.myGoals")}
               </CardTitle>
             </CardHeader>

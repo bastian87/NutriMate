@@ -1,72 +1,24 @@
 "use client"
 
-import { useState } from "react"
-import { Check, Globe } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+// Language selector is hidden in single-language mode
+// Structure kept for future re-enablement of multi-language support
 import { useLanguage } from "@/lib/i18n/context"
-import Image from "next/image"
 
 interface LanguageSelectorProps {
   isCompact?: boolean
 }
 
-// Componente de bandera usando imágenes SVG desde CDN
-function Flag({ country }: { country: string }) {
-  // flagcdn usa códigos en minúsculas
-  return (
-    <Image
-      src={`https://flagcdn.com/24x18/${country}.png`}
-      alt={`${country.toUpperCase()} flag`}
-      width={24}
-      height={18}
-      className="w-5 h-5 rounded-sm shadow border"
-      style={{ minWidth: 20, minHeight: 20, objectFit: 'cover' }}
-    />
-  );
-}
-
+/**
+ * LanguageSelector component - Hidden in single-language mode
+ * 
+ * This component is kept for API compatibility but returns null.
+ * To re-enable multi-language support:
+ * 1. Restore the original implementation below
+ * 2. Update lib/i18n/context.tsx to support language switching
+ * 3. Add language switcher back to navigation components
+ */
 export function LanguageSelector({ isCompact = false }: LanguageSelectorProps) {
-  const { language, setLanguage, t } = useLanguage()
-  const [open, setOpen] = useState(false)
-
-  const languages = [
-    { code: "en", name: t("language.english"), flag: "us" },
-    { code: "es", name: t("language.spanish"), flag: "ar" },
-  ]
-
-  const currentLanguage = languages.find(lang => lang.code === language)
-
-  return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size={isCompact ? "icon" : "default"} className="gap-2">
-          {isCompact ? (
-            <Flag country={currentLanguage?.flag || "us"} />
-          ) : (
-            <>
-              <Globe className="h-4 w-4" />
-              <span>{t("language.select")}</span>
-            </>
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {languages.map((lang) => (
-          <DropdownMenuItem
-            key={lang.code}
-            onClick={() => {
-              setLanguage(lang.code as "en" | "es")
-              setOpen(false)
-            }}
-            className="flex items-center gap-3"
-          >
-            <Flag country={lang.flag} />
-            <span className={language === lang.code ? "font-medium" : ""}>{lang.name}</span>
-            {language === lang.code && <Check className="h-4 w-4 ml-auto" />}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
+  // Component is hidden - single language mode active
+  // Always returns null to maintain API compatibility
+  return null
 }

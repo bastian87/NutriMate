@@ -60,8 +60,6 @@ export default function PricingPage() {
       features: [
         t("pricing.basicRecipeSearch"),
         t("pricing.saveUpTo10"),
-        t("pricing.simpleMealPlanning"),
-        t("pricing.basicGroceryLists"),
         t("pricing.mobileAppAccess"),
       ],
       buttonText: t("pricing.getStarted"),
@@ -76,11 +74,8 @@ export default function PricingPage() {
       description: t("pricing.premiumDesc"),
       features: [
         t("pricing.unlimitedRecipeAccess"),
-        // t("pricing.advancedMealPlanning"), // Oculto temporalmente
-        t("pricing.smartGroceryLists"),
         t("pricing.nutritionalAnalysis"),
         t("pricing.customRecipeCreation"),
-        // t("pricing.exportMealPlans"), // Oculto temporalmente
         t("pricing.prioritySupport"),
       ],
       buttonText: t("pricing.startPremium"),

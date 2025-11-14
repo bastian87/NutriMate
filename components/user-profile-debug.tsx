@@ -10,7 +10,6 @@ export function UserProfileDebug() {
   const isPremium = useIsPremium()
   const accountType = useAccountType()
   const saveRecipesAccess = useFeatureAccess("save_recipes")
-  const smartGroceryAccess = useFeatureAccess("grocery_lists")
 
   if (loading) {
     return (
@@ -128,10 +127,6 @@ export function UserProfileDebug() {
               <span className="font-medium">Custom Recipes:</span>
               <span>{userData.usage.customRecipes.created}/{userData.usage.customRecipes.maxCreated}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="font-medium">Exports:</span>
-              <span>{userData.usage.exports.used}/{userData.usage.exports.maxExports}</span>
-            </div>
           </CardContent>
         </Card>
       )}
@@ -154,18 +149,6 @@ export function UserProfileDebug() {
             </div>
           </div>
           
-          
-          <div className="flex items-center justify-between">
-            <span className="font-medium">Smart Grocery Lists:</span>
-            <div className="flex items-center gap-2">
-              {smartGroceryAccess.canAccess ? (
-                <CheckCircle className="h-4 w-4 text-green-600" />
-              ) : (
-                <XCircle className="h-4 w-4 text-red-600" />
-              )}
-              <span className="text-sm">{smartGroceryAccess.canAccess ? "Allowed" : "Premium Only"}</span>
-            </div>
-          </div>
         </CardContent>
       </Card>
 

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Star, Clock, Users, Sparkles, Heart, ChefHat, Target } from "lucide-react"
+import { ArrowRight, Users, Sparkles, ChefHat, Target } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
@@ -13,16 +13,8 @@ import { useLanguage } from "@/lib/i18n/context"
 interface Recipe {
   id: string
   name: string
-  description: string
   calories: number
-  protein: number
-  carbs: number
-  fat: number
-  time: number
-  difficulty: string
   image: string
-  rating: number
-  reviews: number
 }
 
 interface HomeClientProps {
@@ -107,32 +99,11 @@ export default function HomeClient({ isLoggedIn, featuredRecipes }: HomeClientPr
                           e.currentTarget.src = "/placeholder.svg?height=200&width=300"
                         }}
                       />
-                      <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-white px-2 py-1 text-xs font-medium">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        {recipe.rating}
-                      </div>
                     </div>
                     <CardContent className="p-4">
                       <h3 className="font-bold text-gray-900">{recipe.name}</h3>
-                      <p className="mt-1 text-sm text-gray-600 line-clamp-2">{recipe.description}</p>
                       <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {recipe.time} min
-                        </div>
                         <div>{recipe.calories} cal</div>
-                        <div className="flex items-center gap-1">
-                          <Heart className="h-3 w-3" />
-                          {recipe.reviews}
-                        </div>
-                      </div>
-                      <div className="mt-3 flex gap-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {recipe.difficulty}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {recipe.protein}g protein
-                        </Badge>
                       </div>
                     </CardContent>
                   </Card>

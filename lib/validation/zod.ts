@@ -23,10 +23,6 @@ export const DayEntryUpsertSchema = z.object({
   items: z.array(DayEntryItemSchema).min(1).max(50),
 });
 
-export const CalendarQuerySchema = z.object({
-  range: z.enum(['week','month']),
-  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-});
 
 export const WeeklySummaryQuerySchema = z.object({
   weekStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),

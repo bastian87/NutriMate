@@ -1,51 +1,25 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { useAuthContext } from "@/components/auth/simple-auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/i18n/context";
-import { Calendar, Target, Zap, TrendingUp, CheckCircle, XCircle } from "lucide-react";
+import { useIsPremium } from "@/components/auth/user-profile-provider";
+import { Calendar, Crown, Lock } from "lucide-react";
+import Link from "next/link";
 
 interface WeeklySummary {
-  weekStart: string;
-  weekEnd: string;
-  totalDays: number;
-  successfulDays: number;
-  totalKcal: number;
-  targetKcal: number;
-  averageKcalPerDay: number;
-  xpEarned: number;
-  streak: number;
-  goals: {
-    kcalGoal: boolean;
-    macroGoals: boolean;
-    consistencyGoal: boolean;
-  };
-  dailyBreakdown: Array<{
-    date: string;
-    isSuccess: boolean;
-    totalKcal: number;
-    targetKcal: number;
-    flags: {
-      hasCarb: boolean;
-      hasProtein: boolean;
-      hasFat: boolean;
-      hasVegFruit: boolean;
-      extrasCount: number;
-    };
-  }>;
+  daysLogged: number;
+  averageCaloriesPerDay: number;
 }
 
 export default function WeeklySummaryPage() {
   const { user } = useAuthContext();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const isPremium = useIsPremium();
   const [summary, setSummary] = useState<WeeklySummary | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -53,17 +27,17 @@ export default function WeeklySummaryPage() {
   const getWeekStart = (date: Date) => {
     const d = new Date(date);
     const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     d.setDate(diff);
-    return d;
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString().split('T')[0];
   };
 
-  const [selectedWeek, setSelectedWeek] = useState(() => {
-    const today = new Date();
-    return getWeekStart(today).toISOString().slice(0, 10);
+  const [selectedWeek] = useState(() => {
+    return getWeekStart(new Date());
   });
 
-  // Fetch weekly summary
+  // Fetch weekly summary (always fetch, even for non-premium)
   const fetchWeeklySummary = async (weekStart: string) => {
     if (!user?.id) return;
     
@@ -74,11 +48,14 @@ export default function WeeklySummaryPage() {
       
       if (response.ok) {
         const result = await response.json();
-        setSummary(result);
+        setSummary({
+          daysLogged: result.totalDays || 0,
+          averageCaloriesPerDay: result.averageKcalPerDay || 0
+        });
       } else {
         toast({
           title: t("common.error"),
-          description: t("weeklySummary.errorLoading"),
+          description: "Failed to load weekly summary",
           variant: "destructive"
         });
       }
@@ -86,7 +63,7 @@ export default function WeeklySummaryPage() {
       console.error('Error fetching weekly summary:', error);
       toast({
         title: t("common.error"),
-        description: t("weeklySummary.connectionError"),
+        description: "Connection error",
         variant: "destructive"
       });
     } finally {
@@ -94,275 +71,140 @@ export default function WeeklySummaryPage() {
     }
   };
 
-  const handleWeekChange = (weekStart: string) => {
-    setSelectedWeek(weekStart);
-    setLoading(true);
-    fetchWeeklySummary(weekStart);
-  };
-
   useEffect(() => {
-    fetchWeeklySummary(selectedWeek);
+    if (user?.id) {
+      fetchWeeklySummary(selectedWeek);
+    } else {
+      setLoading(false);
+    }
   }, [user?.id, selectedWeek]);
 
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">{t("weeklySummary.accessRequired")}</h2>
+          <h2 className="text-2xl font-bold mb-4">Access Required</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {t("weeklySummary.signInRequired")}
+            Please sign in to view your weekly summary
           </p>
           <Button asChild>
-            <a href="/login">{t("weeklySummary.signIn")}</a>
+            <a href="/login">Sign In</a>
           </Button>
         </div>
       </div>
     );
   }
 
-  const getSuccessRate = () => {
-    if (!summary) return 0;
-    return Math.round((summary.successfulDays / summary.totalDays) * 100);
-  };
-
-  const getKcalProgress = () => {
-    if (!summary) return 0;
-    return Math.min(100, (summary.totalKcal / summary.targetKcal) * 100);
-  };
-
-  const getWeekRange = (weekStart: string) => {
-    const start = new Date(weekStart);
+  const weekRange = () => {
+    const start = new Date(selectedWeek);
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
     return {
-      start: start.toLocaleDateString('es-ES'),
-      end: end.toLocaleDateString('es-ES')
+      start: start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      end: end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     };
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{t("weeklySummary.title")}</h1>
+        <h1 className="text-3xl font-bold mb-2">Weekly Summary</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          {t("weeklySummary.subtitle")}
+          {weekRange().start} - {weekRange().end}
         </p>
       </div>
-
-      {/* Week Selector */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            {t("weeklySummary.selectWeek")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="weekStart">{t("weeklySummary.weekStart")}</Label>
-              <Input
-                id="weekStart"
-                type="date"
-                value={selectedWeek}
-                onChange={(e) => handleWeekChange(e.target.value)}
-              />
-            </div>
-            <div className="text-sm text-gray-600">
-              {summary && (
-                <span>
-                  {t("weeklySummary.weekRange", { 
-                    start: getWeekRange(selectedWeek).start, 
-                    end: getWeekRange(selectedWeek).end 
-                  })}
-                </span>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">{t("weeklySummary.loadingWeeklySummary")}</p>
+          <p className="mt-4 text-gray-600">Loading weekly summary...</p>
         </div>
       ) : summary ? (
-        <>
-          {/* Overview Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{t("weeklySummary.successfulDays")}</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {summary.successfulDays}/{summary.totalDays}
-                    </p>
+        <div className="relative">
+          {/* Content - blurred if not premium */}
+          <div className={isPremium ? "" : "blur-sm pointer-events-none select-none"}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-orange-600" />
+                    Days Logged
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-6">
+                    <div className="text-5xl font-bold text-orange-600 mb-2">
+                      {summary.daysLogged}
+                    </div>
+                    <p className="text-sm text-gray-600">days this week</p>
                   </div>
-                  <CheckCircle className="w-8 h-8 text-green-600" />
-                </div>
-                <div className="mt-4">
-                  <Progress value={getSuccessRate()} className="h-2" />
-                  <p className="text-xs text-gray-500 mt-1">{t("weeklySummary.successRate", { rate: getSuccessRate() })}</p>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{t("weeklySummary.totalCalories")}</p>
-                    <p className="text-2xl font-bold text-blue-600">
-                      {summary.totalKcal.toLocaleString()}
-                    </p>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-blue-600" />
+                    Average Calories
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-6">
+                    <div className="text-5xl font-bold text-blue-600 mb-2">
+                      {Math.round(summary.averageCaloriesPerDay)}
+                    </div>
+                    <p className="text-sm text-gray-600">kcal per day</p>
                   </div>
-                  <Target className="w-8 h-8 text-blue-600" />
-                </div>
-                <div className="mt-4">
-                  <Progress value={getKcalProgress()} className="h-2" />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {t("weeklySummary.objectiveProgress", { progress: Math.round(getKcalProgress()) })}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{t("weeklySummary.dailyAverage")}</p>
-                    <p className="text-2xl font-bold text-purple-600">
-                      {Math.round(summary.averageKcalPerDay)}
-                    </p>
-                  </div>
-                  <TrendingUp className="w-8 h-8 text-purple-600" />
-                </div>
-                <p className="text-xs text-gray-500 mt-1">{t("weeklySummary.kcalPerDay")}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{t("weeklySummary.xpEarned")}</p>
-                    <p className="text-2xl font-bold text-orange-600">
-                      {summary.xpEarned}
-                    </p>
-                  </div>
-                  <Zap className="w-8 h-8 text-orange-600" />
-                </div>
-                <p className="text-xs text-gray-500 mt-1">{t("weeklySummary.thisWeek")}</p>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
-          {/* Goals Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("weeklySummary.goalsStatus")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3">
-                  {summary.goals.kcalGoal ? (
-                    <CheckCircle className="w-6 h-6 text-green-600" />
-                  ) : (
-                    <XCircle className="w-6 h-6 text-red-600" />
-                  )}
-                  <div>
-                    <p className="font-medium">{t("weeklySummary.calorieGoal")}</p>
-                    <Badge variant={summary.goals.kcalGoal ? "default" : "destructive"}>
-                      {summary.goals.kcalGoal ? t("weeklySummary.achieved") : t("weeklySummary.notAchieved")}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  {summary.goals.macroGoals ? (
-                    <CheckCircle className="w-6 h-6 text-green-600" />
-                  ) : (
-                    <XCircle className="w-6 h-6 text-red-600" />
-                  )}
-                  <div>
-                    <p className="font-medium">{t("weeklySummary.macroGoals")}</p>
-                    <Badge variant={summary.goals.macroGoals ? "default" : "destructive"}>
-                      {summary.goals.macroGoals ? t("weeklySummary.achieved") : t("weeklySummary.notAchieved")}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  {summary.goals.consistencyGoal ? (
-                    <CheckCircle className="w-6 h-6 text-green-600" />
-                  ) : (
-                    <XCircle className="w-6 h-6 text-red-600" />
-                  )}
-                  <div>
-                    <p className="font-medium">{t("weeklySummary.consistencyGoal")}</p>
-                    <Badge variant={summary.goals.consistencyGoal ? "default" : "destructive"}>
-                      {summary.goals.consistencyGoal ? t("weeklySummary.achieved") : t("weeklySummary.notAchieved")}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Daily Breakdown */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("weeklySummary.dailyBreakdown")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {summary.dailyBreakdown.map((day) => (
-                  <div key={day.date} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      {day.isSuccess ? (
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-600" />
-                      )}
-                      <div>
-                        <p className="font-medium">
-                          {new Date(day.date).toLocaleDateString('es-ES', { 
-                            weekday: 'long', 
-                            day: 'numeric', 
-                            month: 'short' 
-                          })}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {day.totalKcal} / {day.targetKcal} kcal
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      {day.flags.hasCarb && <Badge variant="outline" className="text-xs">C</Badge>}
-                      {day.flags.hasProtein && <Badge variant="outline" className="text-xs">P</Badge>}
-                      {day.flags.hasFat && <Badge variant="outline" className="text-xs">G</Badge>}
-                      {day.flags.hasVegFruit && <Badge variant="outline" className="text-xs">V</Badge>}
-                      {day.flags.extrasCount > 0 && (
-                        <Badge variant="destructive" className="text-xs">
-                          +{day.flags.extrasCount}
-                        </Badge>
-                      )}
+          {/* Premium Paywall Overlay */}
+          {!isPremium && (
+            <div className="absolute inset-0 flex items-center justify-center z-10">
+              <Card className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-2xl border-2 border-orange-200 dark:border-orange-800 max-w-md w-full mx-4">
+                <CardHeader className="text-center">
+                  <div className="flex justify-center mb-4">
+                    <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+                      <Crown className="w-8 h-8 text-orange-600 dark:text-orange-400" />
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </>
+                  <CardTitle className="text-2xl">Unlock Weekly Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 text-center">
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Get insights into your weekly progress with Premium. Track your consistency and see your average daily calories.
+                  </p>
+                  <div className="space-y-2 pt-2">
+                    <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <Lock className="w-4 h-4 text-orange-600" />
+                      <span>Days logged this week</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <Lock className="w-4 h-4 text-orange-600" />
+                      <span>Average calories per day</span>
+                    </div>
+                  </div>
+                  <Button 
+                    asChild 
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white mt-6"
+                    size="lg"
+                  >
+                    <Link href="/pricing">
+                      Unlock Premium
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
       ) : (
         <div className="text-center py-12">
           <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">
-            {t("weeklySummary.couldNotLoadData")}
+            Could not load weekly data
           </p>
         </div>
       )}

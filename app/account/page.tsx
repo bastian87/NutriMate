@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { userService } from "@/lib/services/user-service"
 import { useLanguage } from "@/lib/i18n/context"
-import { Settings, Target, Heart } from "lucide-react"
+import { Settings, Target, Heart, Trophy } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import SubscriptionStatus from "@/components/subscription-status"
@@ -44,7 +44,18 @@ export default function AccountPage() {
   const [saving, setSaving] = useState(false)
   const [formPrefs, setFormPrefs] = useState<UserPreferences | null>(null);
   const [excludedIngredientsInput, setExcludedIngredientsInput] = useState("");
+  const [gamificationData, setGamificationData] = useState<any>(null);
   const { toast } = useToast();
+
+  // Fetch gamification data
+  useEffect(() => {
+    if (user?.id) {
+      fetch('/api/gamification')
+        .then(res => res.json())
+        .then(data => setGamificationData(data))
+        .catch(err => console.error('Error fetching gamification data:', err));
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     if (formPrefs?.excluded_ingredients) {
@@ -218,6 +229,78 @@ export default function AccountPage() {
           </Link>
         </div>
       </motion.div>
+
+      {/* XP, Level, and Streak Section */}
+      {gamificationData && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8"
+        >
+          <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-orange-600" />
+                Progress & Achievements
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Level */}
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-2">Level</p>
+                  <p className="text-4xl font-bold text-orange-600 mb-1">{gamificationData.level}</p>
+                  <p className="text-xs text-gray-500">{gamificationData.totalXp} total XP</p>
+                </div>
+                
+                {/* XP Progress */}
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-2">Progress</p>
+                  <div className="mb-2">
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div
+                        className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full h-3 transition-all"
+                        style={{ width: `${gamificationData.progressPercent}%` }}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500">{gamificationData.xpToNextLevel} XP to next level</p>
+                </div>
+                
+                {/* Streak */}
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-2">Streak</p>
+                  <p className="text-4xl font-bold text-orange-600 mb-1">{gamificationData.currentStreak}</p>
+                  <p className="text-xs text-gray-500">days in a row</p>
+                </div>
+              </div>
+              
+              {/* Daily XP Goal */}
+              <div className="mt-6 pt-6 border-t border-yellow-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Daily XP Goal</p>
+                    <p className="text-xs text-gray-500">Earn {gamificationData.dailyXpGoal} XP today</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-yellow-600">{gamificationData.todayXp} / {gamificationData.dailyXpGoal}</p>
+                    <p className="text-xs text-gray-500">
+                      {Math.round((gamificationData.todayXp / gamificationData.dailyXpGoal) * 100)}% complete
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-yellow-500 rounded-full h-2 transition-all"
+                    style={{ width: `${Math.min((gamificationData.todayXp / gamificationData.dailyXpGoal) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Formulario unificado con Tabs */}
       <form

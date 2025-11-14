@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
-import { LanguageSelector } from "./language-selector"
+// LanguageSelector removed - single language mode
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useUserProfile } from "@/components/auth/user-profile-provider"
 import { cn } from "@/lib/utils"
@@ -16,7 +16,6 @@ import { ThemeToggle } from "./theme-toggle"
 import {
   Home,
   ChefHat,
-  ShoppingCart,
   Calendar,
   Heart,
   LogOut,
@@ -68,8 +67,6 @@ export function Sidebar() {
   const navigationItems = [
     { name: t("navigation.dashboard"), href: "/dashboard", icon: Home },
     { name: t("navigation.recipes"), href: "/recipes", icon: ChefHat },
-    { name: t("navigation.groceryList"), href: "/grocery-list", icon: ShoppingCart },
-    { name: t("navigation.nutritionTracking"), href: "/calendar", icon: Calendar },
     { name: t("navigation.foodDiary"), href: "/food-diary", icon: BookOpen },
     { name: t("navigation.goals"), href: "/goals", icon: Target },
     { name: t("navigation.gamification"), href: "/gamification", icon: Flame },
@@ -259,9 +256,8 @@ export function Sidebar() {
             <NavItem key={item.href} item={item} isCollapsed={isCollapsed} />
           ))}
           
-          {/* Selectores de idioma y tema */}
+          {/* Theme selector */}
           <div className="px-3 pb-2 flex flex-col gap-2 mt-auto">
-            <LanguageSelector isCompact={false} />
             <div>
               <ThemeToggle className="w-full h-10 rounded-md border bg-white dark:bg-gray-800 flex items-center justify-center" />
             </div>
@@ -372,10 +368,7 @@ export function Sidebar() {
               )}
 
               <div className="mt-2">
-                <LanguageSelector isCompact={false} />
-                <div className="mt-2">
-                  <ThemeToggle />
-                </div>
+                <ThemeToggle />
               </div>
             </div>
           </motion.aside>

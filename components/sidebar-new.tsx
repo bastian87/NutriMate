@@ -5,28 +5,17 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/i18n/context"
-import { LanguageSelector } from "./language-selector"
+// LanguageSelector removed - single language mode
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useUserProfile } from "@/components/auth/user-profile-provider"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { ThemeToggle } from "./theme-toggle"
 import {
-  NutrigoLogo,
   DashboardIcon,
-  CalendarIcon,
-  HealthyMenuIcon,
-  GroceryListIcon,
   FoodDiaryIcon,
-  IngredientsIcon,
-  CalculatorIcon,
-  TargetIcon,
   FlameIcon,
-  BarChartIcon,
-  HeartIcon,
   UserIcon,
-  ChefHatIcon,
-  ChevronDownIcon,
   ChevronRightIcon,
   ChevronLeftIcon,
   LogOutIcon,
@@ -80,52 +69,22 @@ export function SidebarNew() {
     setIsMobileOpen(false)
   }, [pathname])
 
-  // Navigation categories
+  // Simplified navigation - only 4 main tabs: Home, Add Meal, Achievements, Profile
   const navigationCategories: NavigationCategory[] = [
-          {
-            name: t("navigation.main"),
-            icon: DashboardIcon,
-            items: [
-              { name: t("navigation.dashboard"), href: "/dashboard", icon: DashboardIcon },
-              { name: t("navigation.recipes"), href: "/recipes", icon: ChefHatIcon },
-              { name: t("navigation.groceryList"), href: "/grocery-list", icon: GroceryListIcon },
-            ],
-            isCollapsible: false
-          },
     {
-      name: t("navigation.nutritionHealth"),
-      icon: TargetIcon,
+      name: t("navigation.main"),
+      icon: DashboardIcon,
       items: [
-        { name: t("navigation.nutritionTracking"), href: "/calendar", icon: CalendarIcon },
-        { name: t("navigation.foodDiary"), href: "/food-diary", icon: FoodDiaryIcon },
-        { name: t("navigation.ingredients"), href: "/ingredients", icon: IngredientsIcon },
-        { name: t("navigation.goals"), href: "/goals", icon: TargetIcon },
-        { name: t("navigation.calorieCalculator"), href: "/calorie-calculator", icon: CalculatorIcon },
-      ],
-      isCollapsible: true
-    },
-    {
-      name: t("navigation.analysisProgress"),
-      icon: BarChartIcon,
-      items: [
-        { name: t("navigation.weeklySummary"), href: "/weekly-summary", icon: BarChartIcon },
-        { name: t("navigation.monthlySummary"), href: "/monthly-summary", icon: BarChartIcon },
-        { name: t("navigation.gamification"), href: "/gamification", icon: FlameIcon },
-      ],
-      isCollapsible: true
-    },
-    {
-      name: t("navigation.saved"),
-      icon: HeartIcon,
-      items: [
-        { name: t("navigation.savedRecipes"), href: "/saved-recipes", icon: HeartIcon },
+        { name: "Home", href: "/dashboard", icon: DashboardIcon },
+        { name: "Add Meal", href: "/food-diary?openAddDialog=true", icon: FoodDiaryIcon },
+        { name: "Achievements", href: "/gamification", icon: FlameIcon },
       ],
       isCollapsible: false
     }
   ]
 
   const accountItems: NavigationItem[] = user ? [
-    { name: t("navigation.account"), href: "/account", icon: UserIcon }
+    { name: "Profile", href: "/account", icon: UserIcon }
   ] : []
 
   const toggleSidebar = () => {
@@ -180,7 +139,10 @@ export function SidebarNew() {
   }
 
   const NavItem = ({ item, isCollapsed }: { item: NavigationItem; isCollapsed: boolean }) => {
-    const isActive = pathname === item.href
+    // Handle Add Meal link with query param
+    const isActive = item.href === "/food-diary?openAddDialog=true"
+      ? pathname === "/food-diary"
+      : pathname === item.href || pathname?.startsWith(item.href + "/")
     return (
       <Link
         href={item.href}
@@ -398,9 +360,8 @@ export function SidebarNew() {
             </div>
           ))}
           
-          {/* Selectores de idioma y tema */}
+          {/* Theme selector */}
           <div className="px-3 pb-2 flex flex-col gap-2 mt-auto">
-            <LanguageSelector isCompact={false} />
             <div>
               <ThemeToggle className="w-full h-10 rounded-md border bg-white dark:bg-gray-800 flex items-center justify-center" />
             </div>
@@ -542,10 +503,7 @@ export function SidebarNew() {
               )}
 
               <div className="mt-2">
-                <LanguageSelector isCompact={false} />
-                <div className="mt-2">
-                  <ThemeToggle />
-                </div>
+                <ThemeToggle />
               </div>
             </div>
           </motion.aside>

@@ -6,13 +6,11 @@ import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useToast } from "@/hooks/use-toast"
 import { useSubscription } from "@/hooks/use-subscription"
 import { USAGE_LIMITS } from "@/lib/entitlements"
-import { useAnalytics } from "@/hooks/use-analytics"
 
 export function useUserFavorites() {
   const { user, loading: authLoading } = useAuthContext()
   const { toast } = useToast()
   const { isPremium } = useSubscription()
-  const analytics = useAnalytics()
   const [favorites, setFavorites] = useState<RecipeWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -95,8 +93,6 @@ export function useUserFavorites() {
       const maxUsage = USAGE_LIMITS.favorites.max
       
       if (!isPremium && currentUsage >= maxUsage) {
-        // Fire limit_reached event with detailed data
-        analytics.limitReached("favorites", currentUsage, maxUsage)
         setShowLimitModal(true)
         return false
       }
@@ -110,7 +106,7 @@ export function useUserFavorites() {
         return false
       }
     },
-    [user, isPremium, favorites.length, toast, fetchFavorites, analytics]
+    [user, isPremium, favorites.length, toast, fetchFavorites]
   )
 
   const localFavoriteCount = favorites.filter((r) => r.is_favorited).length

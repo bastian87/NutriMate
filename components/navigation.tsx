@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, BookOpen, ShoppingCart, User, Calculator } from "lucide-react"
+import { Home, BookOpen, Trophy, User } from "lucide-react"
 import Image from "next/image"
 import { useLanguage } from "@/lib/i18n/context"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
@@ -14,12 +14,12 @@ export function Navigation() {
   const { user } = useAuthContext()
   const isLoggedIn = !!user
 
+  // Simplified navigation - only 4 main tabs: Home, Add Meal, Achievements, Profile
   const navItems = [
-    { href: "/", label: t("navigation.home"), icon: Home },
-    { href: "/recipes", label: t("navigation.recipes"), icon: BookOpen },
-    { href: "/grocery-list", label: t("navigation.groceryList"), icon: ShoppingCart },
-    { href: "/profile", label: t("navigation.profile"), icon: User },
-    { label: "Calculadora de Calorías", href: "/calorie-calculator", icon: Calculator },
+    { href: "/dashboard", label: "Home", icon: Home },
+    { href: "/food-diary?openAddDialog=true", label: "Add Meal", icon: BookOpen },
+    { href: "/gamification", label: "Achievements", icon: Trophy },
+    { href: "/account", label: "Profile", icon: User },
   ]
 
   return (

@@ -1,24 +1,140 @@
 "use client"
 
+/**
+ * Home Screen - Fast Daily Logging with Gamification
+ * 
+ * This screen is the main entry point for users and focuses on:
+ * 1. Today's calories and macros (minimal display)
+ * 2. XP gained today and current streak (gamification)
+ * 3. Today's logged meals (simple list)
+ * 4. Clear call to action to add a meal
+ * 
+ * Layout:
+ * - Header: "Today" with user greeting
+ * - Calories Card: Large, prominent display with progress
+ * - Quick Stats: XP Today and Streak side-by-side
+ * - Macros: Simple percentage display
+ * - Meals List: Today's logged meals with name, kcal, time
+ * - Floating Action Button: "Add Meal" (always visible)
+ */
+
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar, Home, Crown, Plus as PlusIcon } from "lucide-react"
-import Link from "next/link"
-import { motion } from "framer-motion"
+import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/lib/i18n/context"
 import { useAuthContext } from "@/components/auth/simple-auth-provider"
 import { useUserProfile, useIsPremium } from "@/components/auth/user-profile-provider"
-import { Badge } from "@/components/ui/badge"
 import { DashboardSkeleton } from "@/components/loading-skeleton"
-import { CaloriesIcon, WeightIcon, CarbsIcon, FatsIcon } from "@/components/icons-new"
+import { useActiveGoal } from "@/hooks/useActiveGoal"
+import { Plus, Zap, Flame, Clock } from "lucide-react"
+import Link from "next/link"
+import { motion } from "framer-motion"
+
+interface TodayData {
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+  xpToday: number
+  streak: number
+  mealsCount: number
+  meals: Array<{
+    id: string
+    category: string
+    menu?: string
+    calories?: number
+    time: string
+  }>
+}
 
 export default function DashboardPage() {
   const { t } = useLanguage()
   const { user, loading: authLoading } = useAuthContext()
   const { userData, loading: profileLoading } = useUserProfile()
   const isPremium = useIsPremium()
+  const { activeGoal } = useActiveGoal()
+  const [todayData, setTodayData] = useState<TodayData>({
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+    xpToday: 0,
+    streak: 0,
+    mealsCount: 0,
+    meals: []
+  })
+  const [loading, setLoading] = useState(true)
 
-  if (authLoading) {
+  useEffect(() => {
+    if (!user?.id || authLoading) {
+      if (!authLoading) setLoading(false)
+      return
+    }
+
+    const fetchTodayData = async () => {
+      try {
+        setLoading(true)
+        const today = new Date().toISOString().split('T')[0]
+
+        // Fetch food entries for today
+        const entriesRes = await fetch(`/api/food-entries?date=${today}`)
+        const entriesData = await entriesRes.json()
+        const entries = entriesData.entries || []
+
+        // Calculate nutrition totals
+        const nutrition = entries.reduce((acc: any, entry: any) => ({
+          calories: acc.calories + (entry.calories || 0),
+          protein: acc.protein + (entry.protein || 0),
+          carbs: acc.carbs + (entry.carb || 0),
+          fat: acc.fat + (entry.fats || 0)
+        }), { calories: 0, protein: 0, carbs: 0, fat: 0 })
+
+        // Fetch gamification data (XP and streak)
+        const gamificationRes = await fetch('/api/gamification')
+        const gamificationData = await gamificationRes.json()
+        const xpToday = gamificationData.todayXp || 0
+        const streak = gamificationData.currentStreak || 0
+
+        // Format meals
+        const meals = entries.map((entry: any) => ({
+          id: entry.id,
+          category: entry.category,
+          menu: entry.menu,
+          calories: entry.calories,
+          time: entry.time
+        }))
+
+        setTodayData({
+          calories: nutrition.calories,
+          protein: nutrition.protein,
+          carbs: nutrition.carbs,
+          fat: nutrition.fat,
+          xpToday: xpToday,
+          streak: streak,
+          mealsCount: entries.length,
+          meals: meals
+        })
+      } catch (error) {
+        console.error('Error fetching today data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTodayData()
+  }, [user?.id, authLoading])
+
+  // Calculate macro percentages (for display only)
+  const totalMacros = todayData.protein + todayData.carbs + todayData.fat
+  const proteinPercent = totalMacros > 0 ? Math.round((todayData.protein / totalMacros) * 100) : 0
+  const carbsPercent = totalMacros > 0 ? Math.round((todayData.carbs / totalMacros) * 100) : 0
+  const fatPercent = totalMacros > 0 ? Math.round((todayData.fat / totalMacros) * 100) : 0
+
+  const targetCalories = activeGoal?.targetKcalDay || 2000
+  const calorieProgress = Math.min((todayData.calories / targetCalories) * 100, 100)
+
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
         <div className="container mx-auto px-4 py-8">
@@ -34,7 +150,6 @@ export default function DashboardPage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <Card className="w-full max-w-md">
             <CardContent className="p-8 text-center">
-              <Home className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold mb-2">{t("dashboard.accessRequired")}</h2>
               <p className="text-gray-600 dark:text-gray-400 mb-6">{t("dashboard.pleaseSignIn")}</p>
               <div className="space-y-3">
@@ -55,233 +170,191 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50 pb-24">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b">
-        <div className="container mx-auto px-4 py-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col gap-6"
-          >
-            {/* Welcome Section */}
-            <div className="text-center sm:text-left">
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("dashboard.welcome")}</h1>
-              <p className="text-gray-600 dark:text-gray-400 text-base mb-3">{t("dashboard.subtitle")}</p>
+      <div className="bg-white dark:bg-gray-800 shadow-sm border-b sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Today</h1>
               {userData?.profile?.full_name && (
-                <p className="text-sm text-gray-500 mb-4">{t("dashboard.welcomeBack", { name: userData.profile.full_name })}</p>
+                <p className="text-sm text-gray-500">Welcome back, {userData.profile.full_name}</p>
               )}
-              <div className="flex justify-center sm:justify-start">
-                <Badge className={isPremium ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 px-3 py-1" : "px-3 py-1"}>
-                  {isPremium ? (
-                    <>
-                      <Crown className="h-3 w-3 mr-1" />
-                      <span>{t("subscriptionStatus.premiumAccount")}</span>
-                    </>
-                  ) : (
-                    <span>{t("subscriptionStatus.freeAccount")}</span>
-                  )}
-                </Badge>
-              </div>
             </div>
-            
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 w-full">
-              <Link href="/food-diary?openAddDialog=true" className="flex-1">
-                <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30 px-6 py-3 text-base font-semibold w-full h-12">
-                  <PlusIcon className="h-5 w-5 mr-2" />
-                  {t("dashboard.registerFood")}
-                </Button>
-              </Link>
-              <Link href="/calendar" className="flex-1">
-                <Button variant="outline" className="px-6 py-3 text-base font-semibold border-2 border-orange-200 hover:border-orange-300 hover:bg-orange-50 w-full h-12">
-                  <Calendar className="h-5 w-5 mr-2" />
-                  {t("dashboard.viewCalendar")}
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
+            {isPremium && (
+              <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300">
+                Premium
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="space-y-8">
-          {/* Quick Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-orange-100 rounded-lg">
-                    <CaloriesIcon className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-orange-600">0</div>
-                    <div className="text-xs text-gray-500">kcal</div>
-                  </div>
-                </div>
-                <div className="text-sm font-medium text-gray-700">Calorías Hoy</div>
-                <div className="text-xs text-gray-500 mt-1">Meta: 2000 kcal</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <WeightIcon className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-blue-600">0.0g</div>
-                    <div className="text-xs text-gray-500">proteína</div>
-                  </div>
-                </div>
-                <div className="text-sm font-medium text-gray-700">Proteína</div>
-                <div className="text-xs text-gray-500 mt-1">Meta: 150g</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <CarbsIcon className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600">0.0g</div>
-                    <div className="text-xs text-gray-500">carbohidratos</div>
-                  </div>
-                </div>
-                <div className="text-sm font-medium text-gray-700">Carbohidratos</div>
-                <div className="text-xs text-gray-500 mt-1">Meta: 250g</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <FatsIcon className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-purple-600">0.0g</div>
-                    <div className="text-xs text-gray-500">grasas</div>
-                  </div>
-                </div>
-                <div className="text-sm font-medium text-gray-700">Grasas</div>
-                <div className="text-xs text-gray-500 mt-1">Meta: 65g</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Main Dashboard Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Calendar Widget */}
-            <Card className="bg-white shadow-sm">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Octubre 2025</h3>
-                <div className="space-y-2">
-                  {/* Week Days Header */}
-                  <div className="grid grid-cols-7 gap-1">
-                    {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day, index) => (
-                      <div key={index} className="text-xs font-medium text-gray-500 py-2 text-center">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Calendar Grid */}
-                  <div className="grid grid-cols-7 gap-1">
-                    {/* Empty cells for days before the first day of the month */}
-                    {Array.from({ length: 1 }, (_, i) => (
-                      <div key={`empty-${i}`} className="h-8" />
-                    ))}
-                    
-                    {/* Days of the month */}
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                      <div 
-                        key={day} 
-                        className={`text-sm py-2 rounded-lg text-center min-h-[2rem] flex items-center justify-center ${
-                          day === 15 ? 'bg-orange-100 text-orange-800 font-semibold' : 
-                          'hover:bg-gray-100 cursor-pointer'
-                        }`}
-                      >
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Today's Progress */}
-            <Card className="bg-white shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Progreso de Hoy</h3>
-                  <Badge className="bg-red-100 text-red-800">▲ Necesita atención</Badge>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Calorías</span>
-                      <span>0 / 2000</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-orange-500 h-2 rounded-full" style={{ width: '0%' }}></div>
-                    </div>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    <div>0 0.0g 0.0g</div>
-                    <div>Comidas Proteína Carbohidratos registradas</div>
-                  </div>
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm text-orange-800">
-                    Registra más comidas para alcanzar tu meta diaria.
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Recent Entries */}
-            <Card className="bg-white shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Entradas Recientes</h3>
-                  <Calendar className="h-5 w-5 text-gray-400" />
-                </div>
-                <div className="text-center py-8">
-                  <div className="text-gray-400 mb-2">No hay entradas recientes</div>
-                  <Button variant="outline" size="sm" className="mt-2">
-                    Ver Calendario
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Week Summary */}
-          <Card className="bg-white shadow-sm">
+      <div className="container mx-auto px-4 py-6 space-y-4">
+        {/* Calories Card - Large and Prominent */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Resumen de la Semana</h3>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-orange-100 text-sm font-medium mb-1">Calories Today</p>
+                  <h2 className="text-5xl font-bold">{Math.round(todayData.calories)}</h2>
+                  <p className="text-orange-100 text-sm mt-1">of {targetCalories} kcal</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold">{Math.round(calorieProgress)}%</div>
+                  <p className="text-orange-100 text-xs">Progress</p>
+                </div>
+              </div>
+              {/* Progress Bar */}
+              <div className="w-full bg-orange-400/30 rounded-full h-3">
+                <div
+                  className="bg-white rounded-full h-3 transition-all duration-500"
+                  style={{ width: `${calorieProgress}%` }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* XP Today and Streak - Side by Side */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <div className="grid grid-cols-2 gap-4">
+            <Card className="bg-white shadow-sm border-0">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+                    <Zap className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">XP Today</p>
+                    <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{todayData.xpToday}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white shadow-sm border-0">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                    <Flame className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Streak</p>
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{todayData.streak} days</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </motion.div>
+
+        {/* Macros - Simple Percentage Display */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
+        >
+          <Card className="bg-white shadow-sm border-0">
+            <CardContent className="p-4">
+              <h3 className="text-sm font-semibold mb-3 text-gray-700 dark:text-gray-300">Macros</h3>
+              <div className="grid grid-cols-3 gap-3">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600 mb-1">0</div>
-                  <div className="text-sm text-gray-600">Calorías promedio</div>
+                  <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{proteinPercent}%</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Protein</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600 mb-1">0g</div>
-                  <div className="text-sm text-gray-600">Proteína total</div>
+                  <div className="text-xl font-bold text-green-600 dark:text-green-400">{carbsPercent}%</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Carbs</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600 mb-1">0g</div>
-                  <div className="text-sm text-gray-600">Carbohidrato total</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600 mb-1">0g</div>
-                  <div className="text-sm text-gray-600">Grasas total</div>
+                  <div className="text-xl font-bold text-purple-600 dark:text-purple-400">{fatPercent}%</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Fat</div>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
+
+        {/* Today's Logged Meals - Simple List */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
+          <Card className="bg-white shadow-sm border-0">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Meals Today</h3>
+                <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300">
+                  {todayData.mealsCount}
+                </Badge>
+              </div>
+              {todayData.meals.length === 0 ? (
+                <div className="text-center py-8 text-gray-400 dark:text-gray-500">
+                  <p className="text-sm font-medium mb-1">No meals logged yet</p>
+                  <p className="text-xs">Tap the button below to add your first meal</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {todayData.meals.map((meal) => (
+                    <div
+                      key={meal.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Clock className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm capitalize text-gray-900 dark:text-gray-100 truncate">
+                            {meal.menu || meal.category}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{meal.time}</p>
+                        </div>
+                      </div>
+                      {meal.calories && (
+                        <div className="text-right flex-shrink-0 ml-3">
+                          <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                            {Math.round(meal.calories)} kcal
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
+
+      {/* Floating Add Meal Button - Always Visible */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50"
+      >
+        <Link href="/food-diary?openAddDialog=true">
+          <Button
+            size="lg"
+            className="h-14 w-14 md:h-16 md:w-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-2xl shadow-orange-500/50 hover:shadow-orange-600/60 transition-all"
+            aria-label="Add Meal"
+          >
+            <Plus className="w-6 h-6 md:w-8 md:h-8" />
+          </Button>
+        </Link>
+      </motion.div>
     </div>
   )
 }

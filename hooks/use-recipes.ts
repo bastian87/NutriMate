@@ -146,19 +146,5 @@ export function useRecipe(slugOrId: string, userId?: string) {
     }
   }
 
-  const rateRecipe = async (rating: number, review?: string) => {
-    if (!recipe || !userId) return
-
-    try {
-      // Solo calificación, sin comentario
-      await recipeService.rateRecipe(recipe.id, userId, rating, "")
-      // Refetch recipe to get updated average rating
-      const updatedRecipe = await recipeService.getRecipeById(recipe.id, userId)
-      setRecipe(updatedRecipe)
-    } catch (err) {
-      console.error("Failed to rate recipe:", err)
-    }
-  }
-
-  return { recipe, loading, error, toggleFavorite, rateRecipe }
+  return { recipe, loading, error, toggleFavorite }
 }

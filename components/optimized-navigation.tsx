@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { 
   Home, 
   ChefHat, 
-  ShoppingCart, 
   Calendar, 
   Apple, 
   Target,
@@ -34,18 +33,6 @@ const navigationItems = [
     description: "Base de datos"
   },
   {
-    name: "Lista de Compras",
-    href: "/grocery-list",
-    icon: ShoppingCart,
-    description: "Compras inteligentes"
-  },
-  {
-    name: "Calendario",
-    href: "/calendar",
-    icon: Calendar,
-    description: "Vista mensual"
-  },
-  {
     name: "Cuenta",
     href: "/account",
     icon: User,
@@ -59,8 +46,6 @@ export function OptimizedNavigation() {
     navigateToDashboard,
     navigateToRecipes,
     navigateToIngredients,
-    navigateToGroceryList,
-    navigateToCalendar,
     navigateToAccount,
     isNavigating
   } = useOptimizedNavigation()
@@ -84,10 +69,6 @@ export function OptimizedNavigation() {
               return () => handleNavigation(item.href, navigateToRecipes)
             case "/ingredients":
               return () => handleNavigation(item.href, navigateToIngredients)
-            case "/grocery-list":
-              return () => handleNavigation(item.href, navigateToGroceryList)
-            case "/calendar":
-              return () => handleNavigation(item.href, navigateToCalendar)
             case "/account":
               return () => handleNavigation(item.href, navigateToAccount)
             default:

@@ -82,11 +82,18 @@ export async function POST(request: NextRequest) {
     const userId = session.user.id;
     const body = await request.json();
     
-    const { name, description, instructions, ingredients, tags, ...recipeData } = body;
+    const { name, image_url, calories, ingredients } = body;
     
-    if (!name || !instructions) {
+    if (!name) {
       return NextResponse.json(
-        { error: 'Recipe name and instructions are required' },
+        { error: 'Recipe name is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!ingredients || ingredients.length === 0) {
+      return NextResponse.json(
+        { error: 'At least one ingredient is required' },
         { status: 400 }
       );
     }
@@ -95,10 +102,9 @@ export async function POST(request: NextRequest) {
     const { data: recipe, error: recipeError } = await supabase
       .from('recipes')
       .insert({
-        ...recipeData,
         name,
-        description: description || '',
-        instructions,
+        image_url: image_url || null,
+        calories: calories || 0,
         created_by: userId,
         is_private: true
       })
@@ -113,39 +119,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Add ingredients if provided
-    if (ingredients && ingredients.length > 0) {
-      const ingredientInserts = ingredients.map((ing: any) => ({
-        recipe_id: recipe.id,
-        name: ing.name,
-        amount: ing.amount
-      }));
+    // Add ingredients
+    const ingredientInserts = ingredients.map((ing: any) => ({
+      recipe_id: recipe.id,
+      name: ing.name,
+      amount: ing.amount || ''
+    }));
 
-      const { error: ingredientsError } = await supabase
-        .from('recipe_ingredients')
-        .insert(ingredientInserts);
+    const { error: ingredientsError } = await supabase
+      .from('recipe_ingredients')
+      .insert(ingredientInserts);
 
-      if (ingredientsError) {
-        console.error('Error adding ingredients:', ingredientsError);
-        // Continue without failing the request
-      }
-    }
-
-    // Add tags if provided
-    if (tags && tags.length > 0) {
-      const tagInserts = tags.map((tag: any) => ({
-        recipe_id: recipe.id,
-        name: tag.name
-      }));
-
-      const { error: tagsError } = await supabase
-        .from('recipe_tags')
-        .insert(tagInserts);
-
-      if (tagsError) {
-        console.error('Error adding tags:', tagsError);
-        // Continue without failing the request
-      }
+    if (ingredientsError) {
+      console.error('Error adding ingredients:', ingredientsError);
+      return NextResponse.json(
+        { error: 'Failed to add ingredients', details: ingredientsError.message },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
@@ -182,7 +172,7 @@ export async function PUT(request: NextRequest) {
     const userId = session.user.id;
     const body = await request.json();
     
-    const { id, name, description, instructions, ingredients, tags, ...recipeData } = body;
+    const { id, name, image_url, calories, ingredients } = body;
     
     if (!id) {
       return NextResponse.json(
@@ -207,7 +197,7 @@ export async function PUT(request: NextRequest) {
     // Verify ownership
     const { data: existingRecipe, error: fetchError } = await supabase
       .from('recipes')
-      .select('created_by, is_private, name, description, instructions')
+      .select('created_by, is_private, name')
       .eq('id', id)
       .single();
 
@@ -229,10 +219,9 @@ export async function PUT(request: NextRequest) {
     const { data: recipe, error: recipeError } = await supabase
       .from('recipes')
       .update({
-        ...recipeData,
         name: name || existingRecipe.name,
-        description: description || existingRecipe.description,
-        instructions: instructions || existingRecipe.instructions,
+        image_url: image_url !== undefined ? image_url : null,
+        calories: calories !== undefined ? calories : 0,
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
@@ -261,33 +250,20 @@ export async function PUT(request: NextRequest) {
         const ingredientInserts = ingredients.map((ing: any) => ({
           recipe_id: id,
           name: ing.name,
-          amount: ing.amount
+          amount: ing.amount || ''
         }));
 
-        await supabase
+        const { error: ingredientsError } = await supabase
           .from('recipe_ingredients')
           .insert(ingredientInserts);
-      }
-    }
 
-    // Update tags if provided
-    if (tags) {
-      // Delete existing tags
-      await supabase
-        .from('recipe_tags')
-        .delete()
-        .eq('recipe_id', id);
-
-      // Insert new tags
-      if (tags.length > 0) {
-        const tagInserts = tags.map((tag: any) => ({
-          recipe_id: id,
-          name: tag.name
-        }));
-
-        await supabase
-          .from('recipe_tags')
-          .insert(tagInserts);
+        if (ingredientsError) {
+          console.error('Error updating ingredients:', ingredientsError);
+          return NextResponse.json(
+            { error: 'Failed to update ingredients', details: ingredientsError.message },
+            { status: 500 }
+          );
+        }
       }
     }
 
@@ -363,11 +339,6 @@ export async function DELETE(request: NextRequest) {
     // Delete related data first
     await supabase
       .from('recipe_ingredients')
-      .delete()
-      .eq('recipe_id', id);
-
-    await supabase
-      .from('recipe_tags')
       .delete()
       .eq('recipe_id', id);
 
