@@ -155,7 +155,7 @@ export function HorizontalNavigation() {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="flex items-center gap-2">
                         <User className="w-4 h-4" />
-                        <span className="hidden xl:inline">{t("navigation.myAccount")}</span>
+                        <span className="hidden xl:inline">Profile</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">

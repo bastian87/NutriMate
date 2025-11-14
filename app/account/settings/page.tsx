@@ -100,7 +100,7 @@ const AccountSettingsPage = () => {
       <div className="mb-6">
         <Link href="/account" className="inline-flex items-center text-gray-600 hover:text-orange-600">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("accountSettings.backToAccount")}
+          Back to Profile
         </Link>
       </div>
 
@@ -111,8 +111,8 @@ const AccountSettingsPage = () => {
         transition={{ duration: 0.5 }}
         className="mb-8"
       >
-        <h1 className="text-3xl font-bold tracking-tight">{t("accountSettings.title")}</h1>
-        <p className="text-muted-foreground">{t("accountSettings.description")}</p>
+        <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
+        <p className="text-muted-foreground">Manage your profile settings and update your account information.</p>
       </motion.div>
 
       {/*
@@ -148,7 +148,7 @@ const AccountSettingsPage = () => {
               <div className="p-4 bg-red-50 rounded-lg border border-red-200">
                 <h3 className="font-medium text-red-800 mb-2">Delete Account</h3>
                 <p className="text-sm text-red-700 mb-4">
-                  {t("accountSettings.deleteWarning")} <strong>{t("accountSettings.deleteWarningStrong")}</strong>
+                  This action cannot be undone. This will permanently delete your account, all your logged meals, gamification progress, and remove all associated data. <strong>{t("accountSettings.deleteWarningStrong")}</strong>
                 </p>
                 <Button
                   variant="destructive"
@@ -183,7 +183,8 @@ const AccountSettingsPage = () => {
                 <p className="text-sm text-red-800 font-medium mb-2">This will permanently delete:</p>
                 <ul className="text-sm text-red-700 space-y-1">
                   <li>• {t("accountSettings.deleteProfile")}</li>
-                  <li>• All saved recipes</li>
+                  <li>• All logged meals and nutrition data</li>
+                  <li>• All gamification data (XP, levels, streaks, achievements)</li>
                   <li>• Your subscription and billing history</li>
                   <li>• All preferences and settings</li>
                   <li>• <strong>{t("accountSettings.deleteSignIn")}</strong></li>
